@@ -1,5 +1,18 @@
 # Proxmox-LXC
-LXC Container Builds
+The following is for creating LXC containers.
+Network Prerequisites are:
+- [x] Network Gateway is `192.168.1.5`
+- [x] Network DNS server is `192.168.1.5`
+- [x] Network DHCP server is `192.168.1.5`
+
+Other Prerequisites are:
+- [x] Synology NAS, including NFS, is fully configured as per [synobuild](https://github.com/ahuacate/synobuild)
+
+
+Tasks to be performed are:
+- [ ] Proxmox Installation
+- [ ] Update Proxmox OS and turnkeylinux templates
+
 ## LXC Installs
 ### 1. PiHole LXC Container - CentOS7
 Deploy an LXC container using the CentOS7 proxmox lxc template image:
