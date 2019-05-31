@@ -2,12 +2,12 @@
 The following is for creating LXC containers.
 Network Prerequisites are:
 - [x] Network Gateway is `192.168.1.5`
-- [x] Network DNS server is `192.168.1.5`
+- [x] Network DNS server is `192.168.1.5` (Note: set DNS server: primary DNS `1.1.1.1` ; secondary DNS `192.168.1.254`)
 - [x] Network DHCP server is `192.168.1.5`
 
 Other Prerequisites are:
 - [x] Synology NAS, including NFS, is fully configured as per [synobuild](https://github.com/ahuacate/synobuild)
-
+- [x] Proxmox node fully configured as per [proxmox-node](https://github.com/ahuacate/proxmox-node)
 
 Tasks to be performed are:
 - [ ] Proxmox Installation
