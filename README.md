@@ -1,5 +1,6 @@
 # Proxmox-LXC
 The following is for creating LXC containers.
+
 Network Prerequisites are:
 - [x] Network Gateway is `192.168.1.5`
 - [x] Network DNS server is `192.168.1.5` (Note: set DNS server: primary DNS `1.1.1.1` ; secondary DNS `192.168.1.254`)
@@ -10,10 +11,12 @@ Other Prerequisites are:
 - [x] Proxmox node fully configured as per [proxmox-node](https://github.com/ahuacate/proxmox-node)
 
 Tasks to be performed are:
-- [ ] Proxmox Installation
-- [ ] Update Proxmox OS and turnkeylinux templates
+- [ ] Install PiHole LXC
+- [ ] Install OpenVPN Gateway LXC
 
-## LXC Installs
+## LXC Installations
+I use CentosOS7 as my preferred linux distribution for VMs and LXC containers. Proxmox itself ships a set of basic templates and to download the prebuilt CentosOS7 LXC use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select the `centos-7-default` template for downloading.
+
 ### 1. PiHole LXC Container - CentOS7
 Deploy an LXC container using the CentOS7 proxmox lxc template image:
 
