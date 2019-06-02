@@ -104,7 +104,7 @@ reboot
 ```
 systemctl status openvpn@vpn-gateway.service
 
-### Results Should be like ###
+### Results Should be ###
 [root@vpn-gateway ~]# systemctl status openvpn@vpn-gateway.service
 ● openvpn@vpn-gateway.service - OpenVPN Robust And Highly Flexible Tunneling Application On vpn/gateway
    Loaded: loaded (/usr/lib/systemd/system/openvpn@.service; enabled; vendor preset: disabled)
@@ -123,6 +123,6 @@ Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip rout
 Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 0.0.0.0/1 via xxx.xxx.xxx.xx
 Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 128.0.0.0/1 via xxx.xxx.xxx.xx
 Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add xxx.xxx.xxx.xxx/32 via xxx.xxx.xxx.xx
-Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 *Initialization Sequence Completed*
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 **Initialization Sequence Completed**
 ```
 
