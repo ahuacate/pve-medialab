@@ -39,7 +39,8 @@ Using the proxmox LXC `pihole` instance web interface cli install pihole:
 Follow the generic prompts making sure to set server IP to `192.168.1.254` (same as LXC host) and Gateway to `192.168.1.5`.
 
 ### 2. OpenVPN Gateway LXC - CentOS7
-Deploy an LXC container using the CentOS7 proxmox lxc template image:
+This service will only allow VPN traffic to leave your network. If the VPN connection drops, so will your client device.
+Kick off the installation by deploying a LXC container using the CentOS7 proxmox lxc template image:
 
 | Option | Node 1 Value |
 | :---  | :---: |
@@ -85,3 +86,43 @@ In the cli `>_console` type the following:
 echo -e "username
 password" > /etc/openvpn/auth-vpn-gateway.txt
 ```
+5. We need to enable kernel IP forwarding on a permananent basis. In the cli `>_console` type the following:
+```
+echo -e "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf &&
+sysctl -w net.ipv4.ip_forward=1 &&
+systemctl restart network.service
+```
+6. Next we need to install and configure your Iptables by using the `iptables.sh` script your previously downloaded. At this stage will will reboot the lxc container. In the cli `>_console` type the following:
+```
+yum install -y iptables-services &&
+systemctl enable iptables &&
+bash /etc/openvpn/iptables.sh &&
+systemctl start iptables &&
+reboot
+```
+7. You are finished. After the reboot check to see if your OpenVPN-Gateway is working. The key word in the results is "Initialization Sequence Completed". In the cli `>_console` type the following:
+```
+systemctl status openvpn@vpn-gateway.service
+
+### Results Should be like ###
+[root@vpn-gateway ~]# systemctl status openvpn@vpn-gateway.service
+● openvpn@vpn-gateway.service - OpenVPN Robust And Highly Flexible Tunneling Application On vpn/gateway
+   Loaded: loaded (/usr/lib/systemd/system/openvpn@.service; enabled; vendor preset: disabled)
+   Active: active (running) since Sun 2019-06-02 05:58:23 UTC; 3min 37s ago
+ Main PID: 287 (openvpn)
+   Status: "Initialization Sequence Completed"
+   CGroup: /system.slice/system-openvpn.slice/openvpn@vpn-gateway.service
+           └─287 /usr/sbin/openvpn --cd /etc/openvpn/ --config vpn-gateway.conf
+
+Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 ROUTE_GATEWAY 192.168.1.5/255.255.255.0 IFACE=eth0 HWADDR=1e:b4:a3:6f:f8:91
+Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 TUN/TAP device tun0 opened
+Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 TUN/TAP TX queue length set to 100
+Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 /sbin/ip link set dev tun0 up mtu 1500
+Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 /sbin/ip addr add dev tun0 local 10.118.0.170 peer 10.118.0.169
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 178.162.199.91/32 via 192.168.1.5
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 0.0.0.0/1 via 10.118.0.169
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 128.0.0.0/1 via 10.118.0.169
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 10.118.0.1/32 via 10.118.0.169
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 ![##c5f015] Initialization Sequence Completed `[#c5f015]`
+```
+
