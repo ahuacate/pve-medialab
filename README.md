@@ -52,7 +52,7 @@ Deploy an LXC container using the CentOS7 proxmox lxc template image:
 | `CPU Cores` |1|
 | `Memory (MiB)` |2048|
 | `Swap (MiB)` |512|
-| `IPv4/CIDR` |192.168.1.254/24|
+| `IPv4/CIDR` |192.168.1.253/24|
 | `Gateway` |192.168.1.5|
 
 You have two options to install and configure a OpenVPN Gateway. Use a automated script or manually.
