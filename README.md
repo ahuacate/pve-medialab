@@ -52,11 +52,14 @@ Deploy an LXC container using the CentOS7 proxmox lxc template image:
 | `CPU Cores` |1|
 | `Memory (MiB)` |2048|
 | `Swap (MiB)` |512|
-| `IPv4/CIDR` |192.168.1.253/24|
+| `IPv4/CIDR` |192.168.1.254/24|
 | `Gateway` |192.168.1.5|
 
-Using the proxmox LXC `vpn-gateway` instance web interface cli install openvpn and configure:
-1.  First step is to mod the host (typhoon-01) proxmox lxc container config file for CT ID 253 located /etc/pve/lxc/253.conf
+You have two options to install and configure a OpenVPN Gateway. Use a automated script or manually.
+#### 1. Automated Installation
+Test
+#### 2. Manual Installation
+1.  We need to enable Tun for OpenvVPN on our proxmox host lxc configuration file, go to the path /etc/pve/lxc/253.conf on typhoon-01 and add the following to the last line. Note, this must be performed on all proxmox nodes (i.e typhoon-01, typhoon-02 etc).
 Using the typhoon-01 instance web interface `typhoon-01` > `>_Shell` type:
 ```
 cat >> /etc/pve/lxc/253.conf << EOL
@@ -64,7 +67,8 @@ lxc.cgroup.devices.allow: c 10:200 rwm
 lxc.hook.autodev: sh -c "modprobe tun; cd ${LXC_ROOTFS_MOUNT}/dev; mkdir net; mknod net/tun c 10 200; chmod 0666 net/tun"
 EOL
 ```
-
-2.  Now change to the lxc instance `253 (vpn-gateway)` > `>_console` and type the following:
-```yum -y install epel-release && yum -y update```
+2.  Next on the vpn-gateway lxc instance type the following to install the epel-release repository and install Open-VPN, openssh-server, wget and nano. In the cli `>_console` type the following:
+```
+yum -y install epel-release && yum -y update && yum install -y openvpn openssh-server wget nano
+```
 
