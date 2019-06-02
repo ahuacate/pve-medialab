@@ -72,7 +72,7 @@ EOL
 ```
 yum -y install epel-release && yum -y update && yum install -y openvpn openssh-server wget nano
 ```
-3.  Next we are going to download from github 3 prebuilt files for your OpenVPN Gateway (preconfigured for a ExpressVPN service - so edit `vpn-gateway.ovpn` if you are using another service provider (i.e PIA)) and a CentOS7 tables script.
+3.  Next we are going to download from github 3 prebuilt files for your OpenVPN Gateway (preconfigured for a ExpressVPN service - so edit `vpn-gateway.ovpn` if you are using another service provider (i.e PIA)) and a CentOS7 tables script. Also the scripts use port 1195 and if your vpn service uses another port you must edit the port number in two files: a) vpn-gateway.ovpn, and; b) iptables.sh before executing step 6.
 In the cli `>_console` type the following:
 ```
 cd /etc/openvpn &&
