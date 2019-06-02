@@ -101,7 +101,7 @@ systemctl start iptables &&
 reboot
 ```
 7. You are finished. After the reboot check to see if your OpenVPN-Gateway is working. The key word in the results is "Initialization Sequence Completed". In the cli `>_console` type the following:
-```
+```diff
 systemctl status openvpn@vpn-gateway.service
 
 ### Results Should be like ###
@@ -123,6 +123,6 @@ Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip rout
 Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 0.0.0.0/1 via 10.118.0.169
 Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 128.0.0.0/1 via 10.118.0.169
 Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 10.118.0.1/32 via 10.118.0.169
-Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 ![#c5f015] Initialization Sequence Completed `#c5f015`
++Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 Initialization Sequence Completed
 ```
 
