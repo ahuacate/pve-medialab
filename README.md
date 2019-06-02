@@ -36,6 +36,7 @@ Deploy an LXC container using the CentOS7 proxmox lxc template image:
 
 Using the proxmox LXC `pihole` instance web interface cli install pihole:
 `curl -sSL https://install.pi-hole.net | bash`
+Follow the generic prompts making sure to set server IP to `192.168.1.254` (same as LXC host) and Gateway to `192.168.1.5`.
 
 ### 2. OpenVPN Gateway LXC - CentOS7
 Deploy an LXC container using the CentOS7 proxmox lxc template image:
@@ -54,4 +55,10 @@ Deploy an LXC container using the CentOS7 proxmox lxc template image:
 | `IPv4/CIDR` |192.168.1.253/24|
 | `Gateway` |192.168.1.5|
 
-Using the proxmox LXC `vpn-gateway` instance web interface cli install openvpn and configure.
+Using the proxmox LXC `vpn-gateway` instance web interface cli install openvpn and configure:
+1. First step is to mod the host (typhoon-01) proxmox lxc container config file for CT ID 253.
+   `typhoon-01` > `>_Shell` and using cli type:
+`cat >> /etc/pve/lxc/253.conf << EOL
+lxc.cgroup.devices.allow: c 10:200 rwm
+lxc.hook.autodev: sh -c "modprobe tun; cd ${LXC_ROOTFS_MOUNT}/dev; mkdir net; mknod net/tun c 10 200; chmod 0666 net/tun"
+EOL`
