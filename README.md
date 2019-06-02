@@ -17,7 +17,7 @@ Tasks to be performed are:
 ## LXC Installations
 I use CentosOS7 as my preferred linux distribution for VMs and LXC containers. Proxmox itself ships a set of basic templates and to download the prebuilt CentosOS7 LXC use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select the `centos-7-default` template for downloading.
 
-### 1. PiHole LXC Container - CentOS7
+### 1. PiHole LXC - CentOS7
 Deploy an LXC container using the CentOS7 proxmox lxc template image:
 
 | Option | Node 1 Value |
@@ -46,7 +46,7 @@ Kick off the installation by deploying a LXC container using the CentOS7 proxmox
 | :---  | :---: |
 | `CT ID` |253|
 | `Hostname` |vpn-gateway|
-| `Unprivileged container` | ☐  (must be be privileged)|
+| `Unprivileged container` | ☐  (must be privileged)|
 | `Template` |centos-7-default_****_amd|
 | `Storage` |typhoon-share-01|
 | `Disk Size` |8 GiB|
@@ -101,7 +101,7 @@ systemctl start iptables &&
 reboot
 ```
 7. You are finished. After the reboot check to see if your OpenVPN-Gateway is working. The key word in the results is "Initialization Sequence Completed". In the cli `>_console` type the following:
-```diff
+```
 systemctl status openvpn@vpn-gateway.service
 
 ### Results Should be like ###
@@ -114,15 +114,15 @@ systemctl status openvpn@vpn-gateway.service
    CGroup: /system.slice/system-openvpn.slice/openvpn@vpn-gateway.service
            └─287 /usr/sbin/openvpn --cd /etc/openvpn/ --config vpn-gateway.conf
 
-Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 ROUTE_GATEWAY 192.168.1.5/255.255.255.0 IFACE=eth0 HWADDR=1e:b4:a3:6f:f8:91
+Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 ROUTE_GATEWAY 192.168.1.5/255.255.255.0 IFACE=eth0 HWADDR=xx:xx:xx:xx:xx:xx
 Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 TUN/TAP device tun0 opened
 Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 TUN/TAP TX queue length set to 100
 Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 /sbin/ip link set dev tun0 up mtu 1500
-Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 /sbin/ip addr add dev tun0 local 10.118.0.170 peer 10.118.0.169
-Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 178.162.199.91/32 via 192.168.1.5
-Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 0.0.0.0/1 via 10.118.0.169
-Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 128.0.0.0/1 via 10.118.0.169
-Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 10.118.0.1/32 via 10.118.0.169
-+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 Initialization Sequence Completed
+Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 /sbin/ip addr add dev tun0 local xxx.xxx.xxx.xx peer xxx.xxx.xxx.xx
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add xxx.xxx.xxx.xxx/32 via 192.168.1.5
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 0.0.0.0/1 via xxx.xxx.xxx.xx
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add 128.0.0.0/1 via xxx.xxx.xxx.xx
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add xxx.xxx.xxx.xxx/32 via xxx.xxx.xxx.xx
+Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 *Initialization Sequence Completed*
 ```
 
