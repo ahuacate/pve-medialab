@@ -60,15 +60,28 @@ You have two options to install and configure a OpenVPN Gateway. Use a automated
 Test
 #### 2. Manual Installation
 1.  We need to enable Tun for OpenvVPN on our proxmox host lxc configuration file, go to the path /etc/pve/lxc/253.conf on typhoon-01 and add the following to the last line. Note, this must be performed on all proxmox nodes (i.e typhoon-01, typhoon-02 etc).
-Using the typhoon-01 instance web interface `typhoon-01` > `>_Shell` type:
+In typhoon-01 instance web interface `typhoon-01` > `>_Shell` type the following:
 ```
 cat >> /etc/pve/lxc/253.conf << EOL
 lxc.cgroup.devices.allow: c 10:200 rwm
 lxc.hook.autodev: sh -c "modprobe tun; cd ${LXC_ROOTFS_MOUNT}/dev; mkdir net; mknod net/tun c 10 200; chmod 0666 net/tun"
 EOL
 ```
-2.  Next on the vpn-gateway lxc instance type the following to install the epel-release repository and install Open-VPN, openssh-server, wget and nano. In the cli `>_console` type the following:
+2.  Next on the vpn-gateway lxc instance type the following to install the epel-release repository and Open-VPN, openssh-server, wget and nano software. In the cli `>_console` type the following:
 ```
 yum -y install epel-release && yum -y update && yum install -y openvpn openssh-server wget nano
 ```
-
+3.  Next we are going to download from github 3 prebuilt files for your OpenVPN Gateway (preconfigured for a ExpressVPN service - so edit `vpn-gateway.ovpn` if you are using another service provider (i.e PIA)) and a CentOS7 tables script.
+In the cli `>_console` type the following:
+```
+cd /etc/openvpn &&
+wget -N https://raw.githubusercontent.com/ahuacate/proxmox/master/openvpn/auth-vpn-gateway.txt -P /etc/openvpn &&
+wget -N https://raw.githubusercontent.com/ahuacate/proxmox/master/openvpn/iptables.sh -P /etc/openvpn &&
+wget -N https://raw.githubusercontent.com/ahuacate/proxmox/master/openvpn/vpn-gateway.ovpn -P /etc/openvpn
+```
+4. You need to insert your VPN Provider access username and password into the `auth-vpn-gateway.txt`. Change `username` and `password` below accordingly (note: must be on two lines as shown).
+In the cli `>_console` type the following:
+```
+echo -e "username
+password" > /etc/openvpn/auth-vpn-gateway.txt
+```
