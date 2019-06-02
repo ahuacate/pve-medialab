@@ -56,7 +56,7 @@ Deploy an LXC container using the CentOS7 proxmox lxc template image:
 | `Gateway` |192.168.1.5|
 
 Using the proxmox LXC `vpn-gateway` instance web interface cli install openvpn and configure:
-1. First step is to mod the host (typhoon-01) proxmox lxc container config file for CT ID 253.
+1.  First step is to mod the host (typhoon-01) proxmox lxc container config file for CT ID 253.
 `typhoon-01` > `>_Shell` and using cli type:
 `cat >> /etc/pve/lxc/253.conf << EOL
 lxc.cgroup.devices.allow: c 10:200 rwm
