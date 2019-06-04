@@ -70,13 +70,14 @@ EOL
 ```
 2.  To fast track the process there is script for a automated installation. In the vpn-gateway lxc instance use the cli `>_console` and type the following:
 ```
-yum install -y wget && wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway-expressvpn.sh | bash
+yum install -y wget && yum -y update && wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway-expressvpn.sh | bash
 ```
-3. You need to insert your VPN Provider access username and password into `auth-vpn-gateway.txt`. Change `username` and `password` below accordingly (note: must be on two lines as shown).
+3. Last you need to insert your VPN Provider access username and password into `auth-vpn-gateway.txt`. Change `username` and `password` below accordingly (note: must be on two lines as shown).
 In the cli `>_console` type the following:
 ```
 echo -e "username
 password" > /etc/openvpn/auth-vpn-gateway.txt
+reboot
 ```
 
 #### 2. Manual Installation
