@@ -23,12 +23,13 @@ echo -e "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 #sysctl -w net.ipv4.ip_forward=1
 systemctl restart network.service
 
+# Start OpenVPN on Boot
+systemctl start openvpn@vpn-gateway-expressvpn.service
+systemctl enable --now openvpn@vpn-gateway-expressvpn.service
+
 # Install and configure Iptables
 yum install -y iptables-services
 systemctl enable iptables
 systemctl start iptables
 bash /etc/openvpn/iptables-vpn-gateway-expressvpn.sh
 service iptables restart
-
-# Start OpenVPN on Boot
-systemctl enable --now openvpn@vpn-gateway-expressvpn.service
