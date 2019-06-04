@@ -34,8 +34,10 @@ Deploy an LXC container using the CentOS7 proxmox lxc template image:
 | `IPv4/CIDR` |192.168.1.254/24|
 | `Gateway` |192.168.1.5|
 
-Using the proxmox LXC `pihole` instance web interface cli install pihole:
-`curl -sSL https://install.pi-hole.net | bash`
+In the pihole lxc instance use the cli `>_console` and type the following:
+```
+curl -sSL https://install.pi-hole.net | bash
+```
 Follow the generic prompts making sure to set server IP to `192.168.1.254` (same as LXC host) and Gateway to `192.168.1.5`.
 
 ### 2. OpenVPN Gateway LXC - CentOS7
@@ -66,7 +68,7 @@ lxc.cgroup.devices.allow: c 10:200 rwm
 lxc.hook.autodev: sh -c "modprobe tun; cd ${LXC_ROOTFS_MOUNT}/dev; mkdir net; mknod net/tun c 10 200; chmod 0666 net/tun"
 EOL
 ```
-2.  To fast track the process there is script for a automated installation on the vpn-gateway lxc instance in the cli `>_console` type the following:
+2.  To fast track the process there is script for a automated installation. In the vpn-gateway lxc instance use the cli `>_console` and type the following:
 ```
 yum install -y wget && wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway-expressvpn.sh | bash
 ```
@@ -189,7 +191,8 @@ Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip rout
 Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 /sbin/ip route add xxx.xxx.xxx.xxx/32 via xxx.xxx.xxx.xx
 Jun 02 05:58:27 vpn-gateway openvpn[287]: Sun Jun  2 05:58:27 2019 **Initialization Sequence Completed**
 ```
-8.  Finally here are some helpful commands. In the cli `>_console` type the following:
+#### 3.  Some helpful commands.
+In the vpn-gateway lxc instance use the cli `>_console` and type the following:
 
 Stop the OpenVPN connection:
 ```
