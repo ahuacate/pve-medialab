@@ -64,15 +64,15 @@ You have two options to install and configure a OpenVPN Gateway. Use a automated
 In typhoon-01 instance web interface `typhoon-01` > `>_Shell` type the following:
 ```
 cat >> /etc/pve/lxc/253.conf << EOL
-lxc.cgroup.devices.allow: c 10:200 rwm
-lxc.hook.autodev: sh -c "modprobe tun; cd ${LXC_ROOTFS_MOUNT}/dev; mkdir net; mknod net/tun c 10 200; chmod 0666 net/tun"
+lxc.cgroup.devices.allow = c 10:200 rwm
+lxc.hook.autodev = sh -c "modprobe tun; cd ${LXC_ROOTFS_MOUNT}/dev; mkdir net; mknod net/tun c 10 200; chmod 0666 net/tun"
 EOL
 ```
 2.  To fast track the process there is script for a automated installation. In the vpn-gateway lxc instance use the cli `>_console` and type the following:
 ```
-yum install -y wget && yum -y update && wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway-expressvpn.sh | bash
+curl https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway-expressvpn.sh | bash
 ```
-3. Last you need to insert your VPN Provider access username and password into `auth-vpn-gateway.txt`. Change `username` and `password` below accordingly (note: must be on two lines as shown).
+3. Last you need to insert your VPN Provider access username and password into `auth-vpn-gateway.txt`. Replace `username` and `password` below accordingly (note: must be on two lines as shown).
 In the cli `>_console` type the following:
 ```
 echo -e "username
@@ -85,13 +85,13 @@ reboot
 In typhoon-01 instance web interface `typhoon-01` > `>_Shell` type the following:
 ```
 cat >> /etc/pve/lxc/253.conf << EOL
-lxc.cgroup.devices.allow: c 10:200 rwm
-lxc.hook.autodev: sh -c "modprobe tun; cd ${LXC_ROOTFS_MOUNT}/dev; mkdir net; mknod net/tun c 10 200; chmod 0666 net/tun"
+lxc.cgroup.devices.allow = c 10:200 rwm
+lxc.hook.autodev = sh -c "modprobe tun; cd ${LXC_ROOTFS_MOUNT}/dev; mkdir net; mknod net/tun c 10 200; chmod 0666 net/tun"
 EOL
 ```
 2.  Next on the vpn-gateway lxc instance type the following to install the epel-release repository and Open-VPN, openssh-server, wget and nano software. In the cli `>_console` type the following:
 ```
-yum -y install epel-release && yum -y update && yum install -y openvpn openssh-server wget nano
+yum -y install epel-release && yum -y update && yum install -y openvpn openssh-server nano wget
 ```
 3.  Next we are going to download from github 3 prebuilt files for your OpenVPN Gateway (preconfigured for a ExpressVPN service - so edit `vpn-gateway.ovpn` if you are using another service provider (i.e PIA)) and a CentOS7 tables script. Also the scripts use port 1195 and if your vpn service uses another port, for example port 1194, you must edit the port number in two files: a) vpn-gateway.ovpn, and; b) iptables.sh before executing step 6.
 In the cli `>_console` type the following:
