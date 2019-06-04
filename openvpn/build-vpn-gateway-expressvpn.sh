@@ -6,9 +6,10 @@
 # yum install -y wget && wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway-expressvpn.sh | bash
 
 # Enable TUN
-mkdir /dev/net
-mknod /dev/net/tun c 10 200
-chmod 0666 /dev/net/tun
+cd ${LXC_ROOTFS_MOUNT}/dev
+mkdir net
+mknod net/tun c 10 200
+chmod 0666 net/tun
 
 # To install the EPEL release package
 yum -y install epel-release
