@@ -196,15 +196,15 @@ In the vpn-gateway lxc instance use the cli `>_console` and type the following:
 
 Stop the OpenVPN connection:
 ```
-systemctl stop openvpn@vpn-gateway.service
+systemctl stop openvpn@vpn-gateway-expressvpn.service
 ```
 Start the OpenVPN connection:
 ```
-systemctl start openvpn@vpn-gateway.service
+systemctl start openvpn@vpn-gateway-expressvpn.service
 ```
 Get the status of OpenVPN connection:
 ```
-systemctl status openvpn@vpn-gateway.service
+systemctl status openvpn@vpn-gateway-expressvpn.service
 ```
 See your linux Iptables:
 ```
