@@ -3,7 +3,7 @@
 #### Proxmox LXC VPN-GATEWAY build script ####
 
 # Command to run script on CentOS7 lxc node
-# wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway.sh | bash
+# wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway-expressvpn.sh | ash
 
 # To install the EPEL release package
 yum -y install epel-release
@@ -15,8 +15,8 @@ yum install -y openvpn openssh-server wget nano
 # Copy the OpenVPN config files from Github
 cd /etc/openvpn
 wget -N https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/auth-vpn-gateway.txt -P /etc/openvpn
-wget -N https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/iptables.sh -P /etc/openvpn
-wget -N https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/vpn-gateway.ovpn -P /etc/openvpn
+wget -N https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/iptables-vpn-gateway-expressvpn.sh -P /etc/openvpn
+wget -N https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/vpn-gateway-expressvpn.ovpn -P /etc/openvpn
 
 # Enable kernel IP forwarding
 echo -e "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
@@ -28,3 +28,6 @@ yum install -y iptables-services
 systemctl enable iptables
 bash /etc/openvpn/iptables.sh
 systemctl start iptables
+
+# Start OpenVPN on Boot
+systemctl enable --now openvpn@vpn-gateway-expressvpn.service
