@@ -10,7 +10,7 @@ yum -y install epel-release
 yum -y update
 
 # Install Software
-yum install -y openvpn openssh-server wget nano
+yum install -y openvpn openssh-server nano
 
 # Copy the OpenVPN config files from Github
 cd /etc/openvpn
