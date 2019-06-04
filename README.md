@@ -46,9 +46,9 @@ Kick off the installation by deploying a LXC container using the CentOS7 proxmox
 
 | Option | Node 1 Value |
 | :---  | :---: |
-| `CT ID` |253|
+| `CT ID` |253 (must be 253!)|
 | `Hostname` |vpn-gateway|
-| `Unprivileged container` | ☐  (must be privileged)|
+| `Unprivileged container` | ☐  (must be privileged!)|
 | `Template` |centos-7-default_****_amd|
 | `Storage` |typhoon-share-01|
 | `Disk Size` |8 GiB|
