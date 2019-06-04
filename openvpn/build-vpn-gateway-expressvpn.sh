@@ -26,7 +26,7 @@ systemctl restart network.service
 # Install and configure Iptables
 yum install -y iptables-services
 systemctl enable iptables
-bash /etc/openvpn/iptables.sh
+bash /etc/openvpn/iptables-vpn-gateway-expressvpn.sh
 systemctl start iptables
 
 # Start OpenVPN on Boot
