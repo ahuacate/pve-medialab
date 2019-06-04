@@ -57,8 +57,26 @@ Kick off the installation by deploying a LXC container using the CentOS7 proxmox
 | `Gateway` |192.168.1.5|
 
 You have two options to install and configure a OpenVPN Gateway. Use a automated script or manually.
-#### 1. Automated Installation
-Test
+#### 1. Automated Installation - 3 steps
+1.  We need to enable Tun for OpenvVPN on our proxmox host lxc configuration file, go to the path /etc/pve/lxc/253.conf on typhoon-01 and add the following to the last line. Note, this must be performed on all proxmox nodes (i.e typhoon-01, typhoon-02 etc).
+In typhoon-01 instance web interface `typhoon-01` > `>_Shell` type the following:
+```
+cat >> /etc/pve/lxc/253.conf << EOL
+lxc.cgroup.devices.allow: c 10:200 rwm
+lxc.hook.autodev: sh -c "modprobe tun; cd ${LXC_ROOTFS_MOUNT}/dev; mkdir net; mknod net/tun c 10 200; chmod 0666 net/tun"
+EOL
+```
+2.  To fast track the process there is script for a automated installation on the vpn-gateway lxc instance in the cli `>_console` type the following:
+```
+yum install -y wget && wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway-expressvpn.sh | bash
+```
+3. You need to insert your VPN Provider access username and password into `auth-vpn-gateway.txt`. Change `username` and `password` below accordingly (note: must be on two lines as shown).
+In the cli `>_console` type the following:
+```
+echo -e "username
+password" > /etc/openvpn/auth-vpn-gateway.txt
+```
+
 #### 2. Manual Installation
 1.  We need to enable Tun for OpenvVPN on our proxmox host lxc configuration file, go to the path /etc/pve/lxc/253.conf on typhoon-01 and add the following to the last line. Note, this must be performed on all proxmox nodes (i.e typhoon-01, typhoon-02 etc).
 In typhoon-01 instance web interface `typhoon-01` > `>_Shell` type the following:
@@ -72,7 +90,7 @@ EOL
 ```
 yum -y install epel-release && yum -y update && yum install -y openvpn openssh-server wget nano
 ```
-3.  Next we are going to download from github 3 prebuilt files for your OpenVPN Gateway (preconfigured for a ExpressVPN service - so edit `vpn-gateway.ovpn` if you are using another service provider (i.e PIA)) and a CentOS7 tables script. Also the scripts use port 1195 and if your vpn service uses another port you must edit the port number in two files: a) vpn-gateway.ovpn, and; b) iptables.sh before executing step 6.
+3.  Next we are going to download from github 3 prebuilt files for your OpenVPN Gateway (preconfigured for a ExpressVPN service - so edit `vpn-gateway.ovpn` if you are using another service provider (i.e PIA)) and a CentOS7 tables script. Also the scripts use port 1195 and if your vpn service uses another port, for example port 1194, you must edit the port number in two files: a) vpn-gateway.ovpn, and; b) iptables.sh before executing step 6.
 In the cli `>_console` type the following:
 ```
 cd /etc/openvpn &&
@@ -185,7 +203,7 @@ Get the status of OpenVPN connection:
 ```
 systemctl status openvpn@vpn-gateway.service
 ```
-See your Iptables
+See your linux Iptables:
 ```
 cat /etc/sysconfig/iptables
 ```
