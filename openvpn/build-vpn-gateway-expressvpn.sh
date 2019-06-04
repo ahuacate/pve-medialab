@@ -20,7 +20,7 @@ wget -N https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/vp
 
 # Enable kernel IP forwarding
 echo -e "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-sysctl -w net.ipv4.ip_forward=1
+#sysctl -w net.ipv4.ip_forward=1
 systemctl restart network.service
 
 # Install and configure Iptables
