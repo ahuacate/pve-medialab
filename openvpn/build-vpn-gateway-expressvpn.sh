@@ -29,7 +29,7 @@ systemctl enable --now openvpn@vpn-gateway-expressvpn.service
 
 # Install and configure Iptables
 yum install -y iptables-services
+bash /etc/openvpn/iptables-vpn-gateway-expressvpn.sh
 systemctl enable iptables
 systemctl start iptables
-bash /etc/openvpn/iptables-vpn-gateway-expressvpn.sh
-service iptables restart
+#service iptables restart
