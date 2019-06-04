@@ -16,7 +16,7 @@ yum install -y openvpn openssh-server wget nano
 cd /etc/openvpn
 wget -N https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/auth-vpn-gateway.txt -P /etc/openvpn
 wget -N https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/iptables-vpn-gateway-expressvpn.sh -P /etc/openvpn
-wget -N https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/vpn-gateway-expressvpn.ovpn -P /etc/openvpn
+wget -N https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/vpn-gateway-expressvpn.conf -P /etc/openvpn
 
 # Enable kernel IP forwarding
 echo -e "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
