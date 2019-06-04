@@ -76,7 +76,7 @@ yum install -y wget && yum -y update && wget -O - https://raw.githubusercontent.
 In the cli `>_console` type the following:
 ```
 echo -e "username
-password" > /etc/openvpn/auth-vpn-gateway.txt
+password" > /etc/openvpn/auth-vpn-gateway.txt &&
 reboot
 ```
 
