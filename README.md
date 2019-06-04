@@ -98,8 +98,8 @@ In the cli `>_console` type the following:
 ```
 cd /etc/openvpn &&
 wget -N https://raw.githubusercontent.com/ahuacate/proxmox/master/openvpn/auth-vpn-gateway.txt -P /etc/openvpn &&
-wget -N https://raw.githubusercontent.com/ahuacate/proxmox/master/openvpn/iptables.sh -P /etc/openvpn &&
-wget -N https://raw.githubusercontent.com/ahuacate/proxmox/master/openvpn/vpn-gateway.ovpn -P /etc/openvpn
+wget -N https://raw.githubusercontent.com/ahuacate/proxmox/master/openvpn/iptables-vpn-gateway-expressvpn.sh -P /etc/openvpn &&
+wget -N https://raw.githubusercontent.com/ahuacate/proxmox/master/openvpn/vpn-gateway-expressvpn.conf -P /etc/openvpn
 ```
 4. You need to insert your VPN Provider access username and password into `auth-vpn-gateway.txt`. Change `username` and `password` below accordingly (note: must be on two lines as shown).
 In the cli `>_console` type the following:
@@ -110,15 +110,13 @@ password" > /etc/openvpn/auth-vpn-gateway.txt
 5. We need to enable kernel IP forwarding on a permananent basis. In the cli `>_console` type the following:
 ```
 echo -e "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf &&
-sysctl -w net.ipv4.ip_forward=1 &&
 systemctl restart network.service
 ```
 6. Next we need to install and configure your Iptables by using the `iptables.sh` script your previously downloaded. At this stage will will reboot the lxc container. In the cli `>_console` type the following:
 ```
 yum install -y iptables-services &&
+bash /etc/openvpn/iptables-vpn-gateway-expressvpn.sh &&
 systemctl enable iptables &&
-bash /etc/openvpn/iptables.sh &&
-systemctl start iptables &&
 reboot
 ```
 If you want to check your iptables have been updated by the `iptables.sh` script type the following:
@@ -169,17 +167,17 @@ COMMIT
 ```
 7. You are finished. After the reboot check to see if your OpenVPN-Gateway is working. The key word in the results is "Initialization Sequence Completed". In the cli `>_console` type the following:
 ```
-systemctl status openvpn@vpn-gateway.service
+systemctl status openvpn@vpn-gateway-expressvpn.service
 
 --- Results ---
-[root@vpn-gateway ~]# systemctl status openvpn@vpn-gateway.service
+[root@vpn-gateway ~]# systemctl status openvpn@vpn-gateway-expressvpn.service
 ● openvpn@vpn-gateway.service - OpenVPN Robust And Highly Flexible Tunneling Application On vpn/gateway
    Loaded: loaded (/usr/lib/systemd/system/openvpn@.service; enabled; vendor preset: disabled)
    Active: active (running) since Sun 2019-06-02 05:58:23 UTC; 3min 37s ago
- Main PID: 287 (openvpn)
+ Main PID: 273 (openvpn)
    Status: "Initialization Sequence Completed"
-   CGroup: /system.slice/system-openvpn.slice/openvpn@vpn-gateway.service
-           └─287 /usr/sbin/openvpn --cd /etc/openvpn/ --config vpn-gateway.conf
+   CGroup: /system.slice/system-openvpn.slice/openvpn@vpn-gateway-expressvpn.service
+           └─273 /usr/sbin/openvpn --cd /etc/openvpn/ --config vpn-gateway-expressvpn.conf
 
 Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 ROUTE_GATEWAY 192.168.1.5/255.255.255.0 IFACE=eth0 HWADDR=xx:xx:xx:xx:xx:xx
 Jun 02 05:58:25 vpn-gateway openvpn[287]: Sun Jun  2 05:58:25 2019 TUN/TAP device tun0 opened
