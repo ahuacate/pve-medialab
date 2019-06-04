@@ -3,7 +3,7 @@
 #### Proxmox LXC VPN-GATEWAY build script ####
 
 # Command to run script on CentOS7 lxc node
-# wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-openvpn-gateway.sh | bash
+# wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway.sh | bash
 
 # To install the EPEL release package
 yum -y install epel-release
