@@ -2,37 +2,80 @@
 The following is for creating LXC containers.
 
 Network Prerequisites are:
+- [x] Layer 2 Network Switches
 - [x] Network Gateway is `192.168.1.5`
-- [x] Network DNS server is `192.168.1.5` (Note: set DNS server: primary DNS `1.1.1.1` ; secondary DNS `192.168.1.254`)
+- [x] Network DNS server is `192.168.1.5` (Note: your Gateway hardware should enable you to a configure DNS server(s), like a UniFi USG Gateway, so set the following: primary DNS `192.168.1.254` which will be your PiHole server IP address; and, secondary DNS `1.1.1.1` which is a backup Cloudfare DNS server in the event your PiHole server 192.168.1.254 fails or os down)
 - [x] Network DHCP server is `192.168.1.5`
+- [x] A DDNS service is fully configured and enabled (I recommend you use the free Synology DDNS service)
+- [x] A ExpressVPN account (or any preferred VPN provider) is valid and its smart DNS feature is working (public IP registration is working with your DDNS provider)
 
 Other Prerequisites are:
-- [x] Synology NAS, including NFS, is fully configured as per [synobuild](https://github.com/ahuacate/synobuild)
-- [x] Proxmox node fully configured as per [proxmox-node](https://github.com/ahuacate/proxmox-node)
+- [x] Synology NAS, or linux variant of a NAS, is fully configured as per [SYNOBUILD](https://github.com/ahuacate/synobuild#synobuild)
+- [x] Proxmox node fully configured as per [PROXMOX-NODE BUILDING](https://github.com/ahuacate/proxmox-node/blob/master/README.md#proxmox-node-building)
 
 Tasks to be performed are:
 - [ ] Install PiHole LXC
 - [ ] Install OpenVPN Gateway LXC
 
-## LXC Installations
+**About LXC Installations**
 I use CentosOS7 as my preferred linux distribution for VMs and LXC containers. Proxmox itself ships a set of basic templates and to download the prebuilt CentosOS7 LXC use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select the `centos-7-default` template for downloading.
 
-### 1. PiHole LXC - CentOS7
-Deploy an LXC container using the CentOS7 proxmox lxc template image:
+## 1.0 PiHole LXC - CentOS7
+Here we are going install PiHole which is a internet tracker blocking application which acts as a DNS sinkhole. Basically its charter is to block advertisments, tracking domains, tracking cookies and all those personal data mining collection companies.
 
-| Option | Node 1 Value |
+### 1.1 Deploy an LXC container using the CentOS7 LXC
+Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
 | :---  | :---: |
-| `CT ID` |100|
+| **General**
+| `Node` | typhoon-01 |
+| `CT ID` |254|
 | `Hostname` |pihole|
 | `Unprivileged container` | ☑ |
+| `Resource Pool` | Leave Blank
+| `Password` | Enter your pasword
+| `Password` | Enter your pasword
+| `SSH Public key` | Add one if you want to
+| **Template**
+| `Storage` | local |
 | `Template` |centos-7-default_****_amd|
-| `Storage` |typhoon-share-01|
+| **Root Disk**
+| `Storage` |typhoon-share|
 | `Disk Size` |8 GiB|
-| `CPU Cores` |2|
-| `Memory (MiB)` |1024|
-| `Swap (MiB)` |512|
+| **CPU**
+| `Cores` |1|
+| `CPU limit` | Leave Blank
+| `CPU Units` | 1024
+| **Memory**
+| `Memory (MiB)` |256|
+| `Swap (MiB)` |256|
+| **Network**
+| `Name` | eth0
+| `Mac Address` | auto
+| `Bridge` | vmbr0
+| `VLAN Tag` | Leave Blank
+| `Rate limit (MN/s)` | Leave Default (unlimited)
+| `Firewall` | [x]
+| `IPv4` | [x] Static
 | `IPv4/CIDR` |192.168.1.254/24|
-| `Gateway` |192.168.1.5|
+| `Gateway (IPv4)` |192.168.1.5|
+| `IPv6` | Leave Blank
+| `IPv4/CIDR` | Leave Blank |
+| `Gateway (IPv6)` | Leave Blank |
+| **DNS**
+| `DNS domain` | Leave Default (use host settings)
+| `DNS servers` | Leave Default (use host settings)
+| **Confirm**
+| `Start after Created` | [x]
+
+And Click `Finish` to create your PiHole LXC.
+
+pct create 254 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 1 --hostname pihole --cpulimit 1 --cpuunits 1024 --memory 256 --net0 name=eth0,bridge=vmbr0,firewall=1,gw=192.168.1.5,hwaddr=DE:96:12:B7:2F:B3,ip=192.168.1.254/24,type=veth --ostype centos --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=1 --password
+
+qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
+
+### 1.2 Install PiHole
 
 In the pihole lxc instance use the cli `>_console` and type the following:
 ```
