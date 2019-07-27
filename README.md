@@ -12,12 +12,13 @@ Network Prerequisites are:
 Other Prerequisites are:
 - [x] Synology NAS, or linux variant of a NAS, is fully configured as per [SYNOBUILD](https://github.com/ahuacate/synobuild#synobuild)
 - [x] Proxmox node fully configured as per [PROXMOX-NODE BUILDING](https://github.com/ahuacate/proxmox-node/blob/master/README.md#proxmox-node-building)
+- [x] pfSense is fully configured on typhoon-01 including both OpenVPN Gateways VPNGATE-LOCAL and VPNGATE-WORLD.
 
 Tasks to be performed are:
 - [ ] Install PiHole LXC
 - [ ] Install OpenVPN Gateway LXC
 
-**About LXC Installations**
+>  **About LXC Installations**
 I use CentosOS7 as my preferred linux distribution for VMs and LXC containers. Proxmox itself ships a set of basic templates and to download the prebuilt CentosOS7 LXC use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select the `centos-7-default` template for downloading.
 
 ## 1.0 PiHole LXC - CentOS7
