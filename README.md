@@ -30,45 +30,45 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Create: LXC Container | Value |
 | :---  | :---: |
 | **General**
-| `Node` | typhoon-01 |
-| `CT ID` |254|
-| `Hostname` |pihole|
-| `Unprivileged container` | ☑ |
-| `Resource Pool` | Leave Blank
-| `Password` | Enter your pasword
-| `Password` | Enter your pasword
-| `SSH Public key` | Add one if you want to
+| Node | `typhoon-01` |
+| CT ID |`254`|
+| Hostname |`pihole`|
+| Unprivileged container | ☑ |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
 | **Template**
-| `Storage` | local |
-| `Template` |centos-7-default_xxxx_amd|
+| Storage | `local` |
+| Template |`centos-7-default_xxxx_amd`|
 | **Root Disk**
-| `Storage` |typhoon-share|
-| `Disk Size` |8 GiB|
+| Storage |`typhoon-share`|
+| Disk Size |`8 GiB`|
 | **CPU**
-| `Cores` |1|
-| `CPU limit` | Leave Blank
-| `CPU Units` | 1024
+| Cores |`1`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
 | **Memory**
-| `Memory (MiB)` |256|
-| `Swap (MiB)` |256|
+| Memory (MiB) |`256`|
+| Swap (MiB) |`256`|
 | **Network**
-| `Name` | eth0
-| `Mac Address` | auto
-| `Bridge` | vmbr0
-| `VLAN Tag` | Leave Blank
-| `Rate limit (MN/s)` | Leave Default (unlimited)
-| `Firewall` | ☑ 
-| `IPv4` | ☑  Static
-| `IPv4/CIDR` |192.168.1.254/24|
-| `Gateway (IPv4)` |192.168.1.5|
-| `IPv6` | Leave Blank
-| `IPv4/CIDR` | Leave Blank |
-| `Gateway (IPv6)` | Leave Blank |
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | Leave Blank
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | ☑ 
+| IPv4 | ☑  Static
+| IPv4/CIDR |`192.168.1.254/24`|
+| Gateway (IPv4) |`192.168.1.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
 | **DNS**
-| `DNS domain` | Leave Default (use host settings)
-| `DNS servers` | Leave Default (use host settings)
+| DNS domain | Leave Default (use host settings)
+| DNS servers | Leave Default (use host settings)
 | **Confirm**
-| `Start after Created` | - [x]
+| Start after Created | ☑ 
 
 And Click `Finish` to create your PiHole LXC.
 
@@ -88,20 +88,20 @@ The PiHole installation package will download and the installation will commence
 
 | PiHole Installation | Value | Notes
 | :---  | :---: | :--- |
-| `PiHole automated installer` | <OK> | *Just hit your ENTER key*
-| `Free and open source` | <OK> | *Just hit your ENTER key*
-| `Static IP Needed` | <OK> | *Just hit your ENTER key*
-| `Select UPstream DNS Provider` | Cloudfare | *And tab key to highlight <OK> and hit your ENTER key*
-| `Pihole relies on third party ....` | Leave Default, all selected | *And tab key to highlight <OK> and hit your ENTER key*
-| `Select Protocols` | Leave default, all selected | *And tab key to highlight <OK> and hit your ENTER key*
-| `Static IP Address` | Leave Default | *It should show IP Address: 192.168.1.254/24, and Gateway: 192.168.1.5. And tab key to highlight <Yes> and hit your ENTER key*
-| `FYI: IP Conflict` | Nothing to do here | *And tab key to highlight <OK> and hit your ENTER key*
-| `Do you wish to install the web admin interface` | [x] On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
-| `Do you wish to install the web server` |  [x] On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
-| `Do you want to log queries?` |  [x] On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
-| `Select a privacy mode for FTL` |  [x] 0 Show Everything  | *And tab key to highlight <OK> and hit your ENTER key*
+| PiHole automated installer | `<OK>` | *Just hit your ENTER key*
+| Free and open source | `<OK>` | *Just hit your ENTER key*
+| Static IP Needed | `<OK>` | *Just hit your ENTER key*
+| Select UPstream DNS Provider | `Cloudfare` | *And tab key to highlight <OK> and hit your ENTER key*
+| Pihole relies on third party .... | Leave Default, all selected | *And tab key to highlight <OK> and hit your ENTER key*
+| Select Protocols | Leave default, all selected | *And tab key to highlight <OK> and hit your ENTER key*
+| Static IP Address | Leave Default | *It should show IP Address: 192.168.1.254/24, and Gateway: 192.168.1.5. And tab key to highlight <Yes> and hit your ENTER key*
+| FYI: IP Conflict | Nothing to do here | *And tab key to highlight <OK> and hit your ENTER key*
+| Do you wish to install the web admin interface | ☑ On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
+| Do you wish to install the web server |  ☑ On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
+| Do you want to log queries? |  ☑ On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
+| Select a privacy mode for FTL |  ☑ 0 Show Everything  | *And tab key to highlight <OK> and hit your ENTER key*
 | **And the installation script will commence ...**
-| `Installation Complete` | <OK> | *Just hit your ENTER key*
+| Installation Complete | `<OK>` | *Just hit your ENTER key*
 
 Your installation should be complete.
 
@@ -126,45 +126,45 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Create: LXC Container | Value |
 | :---  | :---: |
 | **General**
-| `Node` | typhoon-01 |
-| `CT ID` |251|
-| `Hostname` |unifi|
-| `Unprivileged container` | ☑ |
-| `Resource Pool` | Leave Blank
-| `Password` | Enter your pasword
-| `Password` | Enter your pasword
-| `SSH Public key` | Add one if you want to
+| Node | `typhoon-01` |
+| CT ID |`251`|
+| Hostname |`unifi`|
+| Unprivileged container | ☑ |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
 | **Template**
-| `Storage` | local |
-| `Template` |centos-7-default_xxxx_amd|
+| Storage | `local` |
+| Template |`centos-7-default_xxxx_amd`|
 | **Root Disk**
-| `Storage` |typhoon-share|
-| `Disk Size` |8 GiB|
+| Storage |`typhoon-share`|
+| Disk Size |`8 GiB`|
 | **CPU**
-| `Cores` |1|
-| `CPU limit` | Leave Blank
-| `CPU Units` | 1024
+| Cores |`1`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
 | **Memory**
-| `Memory (MiB)` |1024|
-| `Swap (MiB)` |1024|
+| Memory (MiB) |`1024`|
+| Swap (MiB) |`256`|
 | **Network**
-| `Name` | eth0
-| `Mac Address` | auto
-| `Bridge` | vmbr0
-| `VLAN Tag` | Leave Blank
-| `Rate limit (MN/s)` | Leave Default (unlimited)
-| `Firewall` | [x]
-| `IPv4` | [x] Static
-| `IPv4/CIDR` |192.168.1.251/24|
-| `Gateway (IPv4)` |192.168.1.5|
-| `IPv6` | Leave Blank
-| `IPv4/CIDR` | Leave Blank |
-| `Gateway (IPv6)` | Leave Blank |
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | Leave Blank
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | ☑ 
+| IPv4 | ☑  Static
+| IPv4/CIDR |`192.168.1.251/24`|
+| Gateway (IPv4) |`192.168.1.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
 | **DNS**
-| `DNS domain` | Leave Default (use host settings)
-| `DNS servers` | Leave Default (use host settings)
+| DNS domain | Leave Default (use host settings)
+| DNS servers | Leave Default (use host settings)
 | **Confirm**
-| `Start after Created` | [x]
+| Start after Created | ☑ 
 
 And Click `Finish` to create your UniFi LXC.
 
@@ -208,45 +208,45 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Create: LXC Container | Value |
 | :---  | :---: |
 | **General**
-| `Node` | typhoon-01 |
-| `CT ID` |121|
-| `Hostname` |jellyfin|
-| `Unprivileged container` | ☑ |
-| `Resource Pool` | Leave Blank
-| `Password` | Enter your pasword
-| `Password` | Enter your pasword
-| `SSH Public key` | Add one if you want to
+| Node | `typhoon-01` |
+| CT ID |`121`|
+| Hostname |`jellyfin`|
+| Unprivileged container | ☑ |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
 | **Template**
-| `Storage` | local |
-| `Template` |centos-7-default_****_amd|
+| Storage | `local` |
+| Template |`centos-7-default_xxxx_amd`|
 | **Root Disk**
-| `Storage` |typhoon-share|
-| `Disk Size` |20 GiB|
+| Storage |`typhoon-share`|
+| Disk Size |`20 GiB`|
 | **CPU**
-| `Cores` |1|
-| `CPU limit` | Leave Blank
-| `CPU Units` | 1024
+| Cores |`2`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
 | **Memory**
-| `Memory (MiB)` |4096|
-| `Swap (MiB)` |1024|
+| Memory (MiB) |`4096`|
+| Swap (MiB) |`256`|
 | **Network**
-| `Name` | eth0
-| `Mac Address` | auto
-| `Bridge` | vmbr0
-| `VLAN Tag` | 50
-| `Rate limit (MN/s)` | Leave Default (unlimited)
-| `Firewall` | [x]
-| `IPv4` | [x] Static
-| `IPv4/CIDR` |192.168.50.121/24|
-| `Gateway (IPv4)` |192.168.50.5|
-| `IPv6` | Leave Blank
-| `IPv4/CIDR` | Leave Blank |
-| `Gateway (IPv6)` | Leave Blank |
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | `50`
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | ☑ 
+| IPv4 | ☑  Static
+| IPv4/CIDR |`192.168.50.121/24`|
+| Gateway (IPv4) |`192.168.50.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
 | **DNS**
-| `DNS domain` | Leave Default (use host settings)
-| `DNS servers` | Leave Default (use host settings)
+| DNS domain | Leave Default (use host settings)
+| DNS servers | Leave Default (use host settings)
 | **Confirm**
-| `Start after Created` | [x]
+| Start after Created | ☑ 
 
 And Click `Finish` to create your JellyFin LXC.
 
