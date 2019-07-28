@@ -136,7 +136,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | `SSH Public key` | Add one if you want to
 | **Template**
 | `Storage` | local |
-| `Template` |centos-7-default_****_amd|
+| `Template` |centos-7-default_xxxx_amd|
 | **Root Disk**
 | `Storage` |typhoon-share|
 | `Disk Size` |8 GiB|
