@@ -127,7 +127,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | :---  | :---: |
 | **General**
 | `Node` | typhoon-01 |
-| `CT ID` |20|
+| `CT ID` |251|
 | `Hostname` |unifi|
 | `Unprivileged container` | ☑ |
 | `Resource Pool` | Leave Blank
@@ -155,7 +155,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | `Rate limit (MN/s)` | Leave Default (unlimited)
 | `Firewall` | [x]
 | `IPv4` | [x] Static
-| `IPv4/CIDR` |192.168.1.20/24|
+| `IPv4/CIDR` |192.168.1.251/24|
 | `Gateway (IPv4)` |192.168.1.5|
 | `IPv6` | Leave Blank
 | `IPv4/CIDR` | Leave Blank |
@@ -170,5 +170,29 @@ And Click `Finish` to create your UniFi LXC.
 
 Or if you prefer you can simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following to achieve the same thing (note, you will need to create a password for UniFi LXC):
 ```
-pct create 20 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 1 --hostname unifi --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,firewall=1,gw=192.168.1.5,ip=192.168.1.20/24,type=veth --ostype centos --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=1 --password
+pct create 251 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 1 --hostname unifi --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,firewall=1,gw=192.168.1.5,ip=192.168.1.251/24,type=veth --ostype centos --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=1 --password
 ```
+
+**Note:** test CentOS UniFi package listing is available [HERE](https://community.ui.com/questions/Unofficial-RHEL-CentOS-UniFi-Controller-rpm-packages/a5db143e-e659-4137-af8d-735dfa53e36d).
+
+### 2.2 Install UniFi
+First Start your `251 (unifi)` LXC container using the web interface `Datacenter` > `251 (unifi)` > `Start`. Then login into your `251 (unifi)` LXC by going to  `Datacenter` > `251 (unifi)` > `>_ Console and logging in with username `root` and the password you created in the previous step 2.1.
+
+Now using the web interface `Datacenter` > `251 (unifi)` > `>_ Console` run the following command:
+
+```
+yum install epel-release -y &&
+yum install http://dl.marmotte.net/rpms/redhat/el7/x86_64/unifi-controller-5.8.24-1.el7/unifi-controller-5.8.24-1.el7.x86_64.rpm -y &&
+systemctl enable unifi.service &&
+systemctl start unifi.service
+
+```
+
+### 2.3 Move the UniFi Controller to your LXC Instance
+You can backup the current configuration and move it to a different computer.
+
+Take a backup of the existing controller using the UniFi WebGUI interface and go to `Settings` > `Maintenance` > `Backup` > `Download Backup`. This will create a `xxx.unf` file format which will saved at your chosen destination on your PC.
+
+Now on your Proxmox UniFi LXC, https://192.168.1.20:8443/ , you must restore the downloaded backup unf file to the new machine by going to `Settings` > `Maintenance` > `Restore` > `Choose File` and selecting the unf file saved on your local PC.
+
+But make sure when you are restoring the backup you Have closed the previous UniFi Controller server and software because you cannot manage the APs by two controller at a time.
