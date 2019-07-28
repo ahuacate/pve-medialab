@@ -68,7 +68,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | `DNS domain` | Leave Default (use host settings)
 | `DNS servers` | Leave Default (use host settings)
 | **Confirm**
-| `Start after Created` | ☑ 
+| `Start after Created` | - [x]
 
 And Click `Finish` to create your PiHole LXC.
 
