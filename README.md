@@ -24,7 +24,7 @@ I use CentosOS7 as my preferred linux distribution for VMs and LXC containers. P
 ## 1.0 PiHole LXC - CentOS7
 Here we are going install PiHole which is a internet tracker blocking application which acts as a DNS sinkhole. Basically its charter is to block advertisments, tracking domains, tracking cookies and all those personal data mining collection companies.
 
-### 1.1 Deploy an LXC container using the CentOS7 LXC
+### 1.1 Create a CentOS7 LXC for PiHole
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -116,4 +116,59 @@ You can now login to your PiHole server using your preferred web browser with th
 You can enable DNSSEC when using Cloudfare which support DNSSEC. Using the PiHole webadmin URL http://192.168.1.254/admin/index.php go to `Settings` > `DNS Tab` and enable `USE DNSSEC` under Advanced DNS Settings. Click `Save`.
 
 ## 2.0 UniFi Controller - CentOS7
+Rather than buy a UniFi Cloud Key to securely run a instance of the UniFi Controller software you can use Proxmox LXC container to host your UniFi Controller software.
 
+For this we will use a CentOS LXC container.
+
+### 2.1 Create a CentOS7 LXC for UniFi Controller
+Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
+| :---  | :---: |
+| **General**
+| `Node` | typhoon-01 |
+| `CT ID` |20|
+| `Hostname` |unifi|
+| `Unprivileged container` | ☑ |
+| `Resource Pool` | Leave Blank
+| `Password` | Enter your pasword
+| `Password` | Enter your pasword
+| `SSH Public key` | Add one if you want to
+| **Template**
+| `Storage` | local |
+| `Template` |centos-7-default_****_amd|
+| **Root Disk**
+| `Storage` |typhoon-share|
+| `Disk Size` |8 GiB|
+| **CPU**
+| `Cores` |1|
+| `CPU limit` | Leave Blank
+| `CPU Units` | 1024
+| **Memory**
+| `Memory (MiB)` |1024|
+| `Swap (MiB)` |1024|
+| **Network**
+| `Name` | eth0
+| `Mac Address` | auto
+| `Bridge` | vmbr0
+| `VLAN Tag` | Leave Blank
+| `Rate limit (MN/s)` | Leave Default (unlimited)
+| `Firewall` | [x]
+| `IPv4` | [x] Static
+| `IPv4/CIDR` |192.168.1.20/24|
+| `Gateway (IPv4)` |192.168.1.5|
+| `IPv6` | Leave Blank
+| `IPv4/CIDR` | Leave Blank |
+| `Gateway (IPv6)` | Leave Blank |
+| **DNS**
+| `DNS domain` | Leave Default (use host settings)
+| `DNS servers` | Leave Default (use host settings)
+| **Confirm**
+| `Start after Created` | [x]
+
+And Click `Finish` to create your UniFi LXC.
+
+Or if you prefer you can simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following to achieve the same thing (note, you will need to create a password for UniFi LXC):
+```
+pct create 20 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 1 --hostname unifi --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,firewall=1,gw=192.168.1.5,ip=192.168.1.20/24,type=veth --ostype centos --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=1 --password
+```
