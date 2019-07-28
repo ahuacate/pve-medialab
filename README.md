@@ -191,8 +191,84 @@ systemctl start unifi.service
 ### 2.3 Move the UniFi Controller to your LXC Instance
 You can backup the current configuration and move it to a different computer.
 
-Take a backup of the existing controller using the UniFi WebGUI interface and go to `Settings` > `Maintenance` > `Backup` > `Download Backup`. This will create a `xxx.unf` file format which will saved at your chosen destination on your PC.
+Take a backup of the existing controller using the UniFi WebGUI interface and go to `Settings` > `Maintenance` > `Backup` > `Download Backup`. This will create a `xxx.unf` file format to be saved at your selected destination on your PC (i.e Downloads).
 
-Now on your Proxmox UniFi LXC, https://192.168.1.20:8443/ , you must restore the downloaded backup unf file to the new machine by going to `Settings` > `Maintenance` > `Restore` > `Choose File` and selecting the unf file saved on your local PC.
+Now on your Proxmox UniFi LXC, https://192.168.1.251:8443/ , you must restore the downloaded backup unf file to the new machine by going to `Settings` > `Maintenance` > `Restore` > `Choose File` and selecting the unf file saved on your local PC.
 
 But make sure when you are restoring the backup you Have closed the previous UniFi Controller server and software because you cannot manage the APs by two controller at a time.
+
+## 3.0 Jellyfin LXC - CentOS
+Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
+
+Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: and at the time of writing this recipe it seems like the best media solution.
+
+### 3.1 Create a CentOS7 LXC for Jellyfin
+Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
+| :---  | :---: |
+| **General**
+| `Node` | typhoon-01 |
+| `CT ID` |121|
+| `Hostname` |jellyfin|
+| `Unprivileged container` | ☑ |
+| `Resource Pool` | Leave Blank
+| `Password` | Enter your pasword
+| `Password` | Enter your pasword
+| `SSH Public key` | Add one if you want to
+| **Template**
+| `Storage` | local |
+| `Template` |centos-7-default_****_amd|
+| **Root Disk**
+| `Storage` |typhoon-share|
+| `Disk Size` |20 GiB|
+| **CPU**
+| `Cores` |1|
+| `CPU limit` | Leave Blank
+| `CPU Units` | 1024
+| **Memory**
+| `Memory (MiB)` |4096|
+| `Swap (MiB)` |1024|
+| **Network**
+| `Name` | eth0
+| `Mac Address` | auto
+| `Bridge` | vmbr0
+| `VLAN Tag` | 50
+| `Rate limit (MN/s)` | Leave Default (unlimited)
+| `Firewall` | [x]
+| `IPv4` | [x] Static
+| `IPv4/CIDR` |192.168.50.121/24|
+| `Gateway (IPv4)` |192.168.50.5|
+| `IPv6` | Leave Blank
+| `IPv4/CIDR` | Leave Blank |
+| `Gateway (IPv6)` | Leave Blank |
+| **DNS**
+| `DNS domain` | Leave Default (use host settings)
+| `DNS servers` | Leave Default (use host settings)
+| **Confirm**
+| `Start after Created` | [x]
+
+And Click `Finish` to create your JellyFin LXC.
+
+Or if you prefer you can simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following to achieve the same thing (note, you will need to create a password for Jellyfin LXC):
+```
+pct create 121 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
+wget https://repo.jellyfin.org/releases/server/centos/jellyfin-10.3.7-1.el7.x86_64.rpm
+wget https://repo.jellyfin.org/releases/server/centos/*.x86_64.rpm
+yum -y install jellyfin-10.3.1-1.el7.x86_64.rpm
+systemctl enable jellyfin
+sudo systemctl start jellyfin
+
+# Note: Doesnt work!
+JELLYFIN_VERSION=$(wget -qO -  https://repo.jellyfin.org/releases/server/centos/versions/LATEST.TXT https://download.virtualbox.org/virtualbox/LATEST.TXT)
+# cd /tmp
+# mkdir /tmp/vbox
+# wget http://download.virtualbox.org/virtualbox/$VBOX_VERSION/VBoxGuestAdditions_$VBOX_VERSION.iso
+# mount -o loop,ro VBoxGuestAdditions_$VBOX_VERSION.iso /tmp/vbox
+# sh /tmp/vbox/VBoxLinuxAdditions.run
+# umount /tmp/vbox
+# rm VBoxGuestAdditions_$VBOX_VERSION.iso
+# rm -R vbox
+# unset VBOX_VERSION
+
