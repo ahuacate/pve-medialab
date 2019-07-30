@@ -57,7 +57,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Bridge | `vmbr0`
 | VLAN Tag | Leave Blank
 | Rate limit (MN/s) | Leave Default (unlimited)
-| Firewall | `☑ `
+| Firewall | `☑`
 | IPv4 | `☑  Static`
 | IPv4/CIDR |`192.168.1.254/24`|
 | Gateway (IPv4) |`192.168.1.5`|
@@ -96,10 +96,10 @@ The PiHole installation package will download and the installation will commence
 | Select Protocols | Leave default, all selected | *And tab key to highlight <OK> and hit your ENTER key*
 | Static IP Address | Leave Default | *It should show IP Address: 192.168.1.254/24, and Gateway: 192.168.1.5. And tab key to highlight <Yes> and hit your ENTER key*
 | FYI: IP Conflict | Nothing to do here | *And tab key to highlight <OK> and hit your ENTER key*
-| Do you wish to install the web admin interface | ☑ On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
-| Do you wish to install the web server |  ☑ On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
-| Do you want to log queries? |  ☑ On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
-| Select a privacy mode for FTL |  ☑ 0 Show Everything  | *And tab key to highlight <OK> and hit your ENTER key*
+| Do you wish to install the web admin interface | `☑` On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
+| Do you wish to install the web server |  `☑` On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
+| Do you want to log queries? |  `☑` On (Recommended) | *And tab key to highlight <OK> and hit your ENTER key*
+| Select a privacy mode for FTL |  `☑` 0 Show Everything  | *And tab key to highlight <OK> and hit your ENTER key*
 | **And the installation script will commence ...**
 | Installation Complete | `<OK>` | *Just hit your ENTER key*
 
