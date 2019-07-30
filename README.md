@@ -33,7 +33,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Node | `typhoon-01` |
 | CT ID |`254`|
 | Hostname |`pihole`|
-| Unprivileged container | ☑ |
+| Unprivileged container | `☑` |
 | Resource Pool | Leave Blank
 | Password | Enter your pasword
 | Password | Enter your pasword
