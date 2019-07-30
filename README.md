@@ -18,7 +18,7 @@ Tasks to be performed are:
 - [ ] Install PiHole LXC
 - [ ] Install OpenVPN Gateway LXC
 
->  **About LXC Installations**
+>  **About LXC Installations:**
 I use CentosOS7 as my preferred linux distribution for VMs and LXC containers. Proxmox itself ships a set of basic templates and to download the prebuilt CentosOS7 LXC use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select the `centos-7-default` template for downloading.
 
 ## 1.0 PiHole LXC - CentOS7
@@ -246,11 +246,11 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | DNS domain | Leave Default (use host settings)
 | DNS servers | Leave Default (use host settings)
 | **Confirm**
-| Start after Created | `☑`
+| Start after Created | `[]`
 
 And Click `Finish` to create your JellyFin LXC.
 
-Or if you prefer you can simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following to achieve the same thing (note, you will need to create a password for Jellyfin LXC):
+Or if you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing (note, you will need to create a password for Jellyfin LXC):
 ```
 pct create 121 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
@@ -269,6 +269,8 @@ yum -y install ffmpeg ffmpeg-devel
 Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
 
 But first you must configure VAAPI for your host system. VAAPI is configured for typhoon-01 and tyhoon-02 only because the machine hardware supports video encoding.
+
+Your Jellyfin LXC **MUST BE** in the shutdown state.
 
 First verify that `render` device is present in `/dev/dri`, and note the permissions and group available to write to it, in this case `render`. Simply use Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following first line only:
 
@@ -332,11 +334,19 @@ vainfo: Supported profile and entrypoints
 
 ```
 
+### 3.4 Grant Jellyfin LXC Container access to the Proxmox host video device
+`lxc.cgroup.devices.allow: c 226:128 rwm` means allowing Jellyfin LXC Centos container to rwm (read/write/mount) the device (Proxmox host) which has the major number of 226 and minor number of 128.
 
-nano /etc/pve/lxc/121.conf
+Granting the permission alone is not enough if the device is not present in Jellyfins LXC container's /dev directory. The second part is just creating corresponding files in the container's dev.
 
+Your Jellyfin LXC **MUST BE** in the shutdown state.
+
+Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
+
+```
 echo -e "lxc.cgroup.devices.allow = c 226:128 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/121.conf
+```
 
 
 
