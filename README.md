@@ -211,7 +211,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Node | `typhoon-01` |
 | CT ID |`121`|
 | Hostname |`jellyfin`|
-| Unprivileged container | ☑ |
+| Unprivileged container | `☑` |
 | Resource Pool | Leave Blank
 | Password | Enter your pasword
 | Password | Enter your pasword
@@ -266,7 +266,7 @@ rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.
 yum -y install ffmpeg ffmpeg-devel
 
 ### 3.3 Configure and Install VAAPI
->> These instructions are Proxmox nodes typhoon-01 and typhoon-02. NOT for typhoon-03 or any Synology Virtual Machine installed node.
+> These instructions are Proxmox nodes typhoon-01 and typhoon-02 only. **NOT FOR TYPHOON-02** or any Synology Virtual Machine installed node.
 
 Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
 
