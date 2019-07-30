@@ -266,7 +266,7 @@ rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.
 yum -y install ffmpeg ffmpeg-devel
 
 ### 3.3 Configure and Install VAAPI
-> These instructions are Proxmox nodes typhoon-01 and typhoon-02 only. **NOT FOR TYPHOON-02** or any Synology Virtual Machine installed node.
+> These instructions are Proxmox nodes typhoon-01 and typhoon-02 only. **NOT FOR TYPHOON-03** or any Synology Virtual Machine installed node.
 
 Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
 
@@ -337,6 +337,8 @@ vainfo: Supported profile and entrypoints
 ```
 
 ### 3.4 Grant Jellyfin LXC Container access to the Proxmox host video device
+> These instructions are Proxmox nodes typhoon-01 and typhoon-02 only. **NOT FOR TYPHOON-03** or any Synology Virtual Machine installed node.
+
 We will use the command lxc.cgroup.devices.allow to declare the GPU device to our Jellyfin LXC container so it can use the hosts GPU.
 
 Here are will use `lxc.cgroup.devices.allow: c 226:128 rwm` means allowing Jellyfin LXC Centos container to rwm (read/write/mount) the GPU device (Proxmox host) which has the major number of 226 and minor number of 128.
