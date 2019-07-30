@@ -57,8 +57,8 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Bridge | `vmbr0`
 | VLAN Tag | Leave Blank
 | Rate limit (MN/s) | Leave Default (unlimited)
-| Firewall | ☑ 
-| IPv4 | ☑  Static
+| Firewall | `☑ `
+| IPv4 | `☑  Static`
 | IPv4/CIDR |`192.168.1.254/24`|
 | Gateway (IPv4) |`192.168.1.5`|
 | IPv6 | Leave Blank
@@ -68,7 +68,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | DNS domain | Leave Default (use host settings)
 | DNS servers | Leave Default (use host settings)
 | **Confirm**
-| Start after Created | ☑ 
+| Start after Created | `☑`
 
 And Click `Finish` to create your PiHole LXC.
 
@@ -153,8 +153,8 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Bridge | `vmbr0`
 | VLAN Tag | Leave Blank
 | Rate limit (MN/s) | Leave Default (unlimited)
-| Firewall | ☑ 
-| IPv4 | ☑  Static
+| Firewall | `☑`
+| IPv4 | `☑  Static`
 | IPv4/CIDR |`192.168.1.251/24`|
 | Gateway (IPv4) |`192.168.1.5`|
 | IPv6 | Leave Blank
@@ -164,7 +164,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | DNS domain | Leave Default (use host settings)
 | DNS servers | Leave Default (use host settings)
 | **Confirm**
-| Start after Created | ☑ 
+| Start after Created | `☑`
 
 And Click `Finish` to create your UniFi LXC.
 
@@ -235,8 +235,8 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Bridge | `vmbr0`
 | VLAN Tag | `50`
 | Rate limit (MN/s) | Leave Default (unlimited)
-| Firewall | ☑ 
-| IPv4 | ☑  Static
+| Firewall | `☑`
+| IPv4 | `☑  Static`
 | IPv4/CIDR |`192.168.50.121/24`|
 | Gateway (IPv4) |`192.168.50.5`|
 | IPv6 | Leave Blank
@@ -246,7 +246,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | DNS domain | Leave Default (use host settings)
 | DNS servers | Leave Default (use host settings)
 | **Confirm**
-| Start after Created | ☑ 
+| Start after Created | `☑`
 
 And Click `Finish` to create your JellyFin LXC.
 
