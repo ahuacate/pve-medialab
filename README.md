@@ -254,21 +254,89 @@ Or if you prefer you can simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and t
 ```
 pct create 121 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
-wget https://repo.jellyfin.org/releases/server/centos/jellyfin-10.3.7-1.el7.x86_64.rpm
-wget https://repo.jellyfin.org/releases/server/centos/*.x86_64.rpm
-yum -y install jellyfin-10.3.1-1.el7.x86_64.rpm
-systemctl enable jellyfin
-sudo systemctl start jellyfin
 
-# Note: Doesnt work!
-JELLYFIN_VERSION=$(wget -qO -  https://repo.jellyfin.org/releases/server/centos/versions/LATEST.TXT https://download.virtualbox.org/virtualbox/LATEST.TXT)
-# cd /tmp
-# mkdir /tmp/vbox
-# wget http://download.virtualbox.org/virtualbox/$VBOX_VERSION/VBoxGuestAdditions_$VBOX_VERSION.iso
-# mount -o loop,ro VBoxGuestAdditions_$VBOX_VERSION.iso /tmp/vbox
-# sh /tmp/vbox/VBoxLinuxAdditions.run
-# umount /tmp/vbox
-# rm VBoxGuestAdditions_$VBOX_VERSION.iso
-# rm -R vbox
-# unset VBOX_VERSION
+yum -y install https://repo.jellyfin.org/releases/server/centos/jellyfin-10.3.7-1.el7.x86_64.rpm
+systemctl enable jellyfin
+systemctl start jellyfin
+
+yum -y install wget
+yum -y install epel-release
+rpm -v --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
+rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
+yum -y install ffmpeg ffmpeg-devel
+
+### 3.3 Configure and Install VAAPI
+Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
+
+But first you must configure VAAPI for your host system. VAAPI is configured for typhoon-01 and tyhoon-02 only because the machine hardware supports video encoding.
+
+First verify that `render` device is present in `/dev/dri`, and note the permissions and group available to write to it, in this case `render`. Simply use Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following first line only:
+
+```
+ls -l /dev/dri
+
+# Results ...
+total 0
+crw-rw---- 1 root video 226,   0 Jul 26 14:24 card0
+crw-rw---- 1 root video 226, 128 Jul 26 14:24 renderD128
+```
+**Note:** On some releases, the group may be `video` instead of `render`.
+
+Now you want to install VAINFO on Proxmox nodes typhoon-01 and typhoon-02. Go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
+```
+apt install vainfo -y
+```
+
+To validate your installation go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type `vainfo` and the results should be similiar to whats shown below:
+```
+@typhoon-01:~# vainfo
+error: XDG_RUNTIME_DIR not set in the environment.
+error: can't connect to X server!
+libva info: VA-API version 0.39.4
+libva info: va_getDriverName() returns 0
+libva info: Trying to open /usr/lib/x86_64-linux-gnu/dri/i965_drv_video.so
+libva info: Found init function __vaDriverInit_0_39
+libva info: va_openDriver() returns 0
+vainfo: VA-API version: 0.39 (libva 1.7.3)
+vainfo: Driver version: Intel i965 driver for Intel(R) Kabylake - 1.7.3
+vainfo: Supported profile and entrypoints
+      VAProfileMPEG2Simple            : VAEntrypointVLD
+      VAProfileMPEG2Simple            : VAEntrypointEncSlice
+      VAProfileMPEG2Main              : VAEntrypointVLD
+      VAProfileMPEG2Main              : VAEntrypointEncSlice
+      VAProfileH264ConstrainedBaseline: VAEntrypointVLD
+      VAProfileH264ConstrainedBaseline: VAEntrypointEncSlice
+      VAProfileH264Main               : VAEntrypointVLD
+      VAProfileH264Main               : VAEntrypointEncSlice
+      VAProfileH264High               : VAEntrypointVLD
+      VAProfileH264High               : VAEntrypointEncSlice
+      VAProfileH264MultiviewHigh      : VAEntrypointVLD
+      VAProfileH264MultiviewHigh      : VAEntrypointEncSlice
+      VAProfileH264StereoHigh         : VAEntrypointVLD
+      VAProfileH264StereoHigh         : VAEntrypointEncSlice
+      VAProfileVC1Simple              : VAEntrypointVLD
+      VAProfileVC1Main                : VAEntrypointVLD
+      VAProfileVC1Advanced            : VAEntrypointVLD
+      VAProfileNone                   : VAEntrypointVideoProc
+      VAProfileJPEGBaseline           : VAEntrypointVLD
+      VAProfileJPEGBaseline           : VAEntrypointEncPicture
+      VAProfileVP8Version0_3          : VAEntrypointVLD
+      VAProfileVP8Version0_3          : VAEntrypointEncSlice
+      VAProfileHEVCMain               : VAEntrypointVLD
+      VAProfileHEVCMain               : VAEntrypointEncSlice
+      VAProfileHEVCMain10             : VAEntrypointVLD
+      VAProfileHEVCMain10             : VAEntrypointEncSlice
+      VAProfileVP9Profile0            : VAEntrypointVLD
+      VAProfileVP9Profile0            : VAEntrypointEncSlice
+      VAProfileVP9Profile2            : VAEntrypointVLD
+
+```
+
+
+nano /etc/pve/lxc/121.conf
+
+echo -e "lxc.cgroup.devices.allow = c 226:128 rwm
+lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/121.conf
+
+
 
