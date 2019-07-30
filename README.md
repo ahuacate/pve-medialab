@@ -339,13 +339,13 @@ vainfo: Supported profile and entrypoints
 ### 3.4 Grant Jellyfin LXC Container access to the Proxmox host video device
 > These instructions are Proxmox nodes typhoon-01 and typhoon-02 only. **NOT FOR TYPHOON-03** or any Synology Virtual Machine installed node.
 
-We will use the command lxc.cgroup.devices.allow to declare the GPU device to our Jellyfin LXC container so it can use the hosts GPU.
+We will use the `lxc.cgroup.devices.allow` command to declare your hardmetal GPU device to your Jellyfin LXC container so it can access your hosts GPU.
 
-Here are will use `lxc.cgroup.devices.allow: c 226:128 rwm` means allowing Jellyfin LXC Centos container to rwm (read/write/mount) the GPU device (Proxmox host) which has the major number of 226 and minor number of 128.
+The command `lxc.cgroup.devices.allow: c 226:128 rwm` means its allowing Jellyfin LXC container to rwm (read/write/mount) your GPU device (Proxmox host) which has the major number of 226 and minor number of 128.
 
-Granting the permission alone is not enough if the device is not present in Jellyfins LXC container's /dev directory. The second part is just creating corresponding files in the LXC container's dev folder.
+Granting the permission alone is not enough if the device is not present in Jellyfins LXC container's /dev directory. The second step is create corresponding mount points in the LXC container to your hosts /dev/dri/renderD128 folder.
 
-Your Jellyfin LXC **MUST BE** in the shutdown state.
+Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state.
 
 Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
 
