@@ -398,14 +398,26 @@ And Click `Finish`. Now login to username `storm`.
 ### 3.8 Jellyfin Configuration
 Certain tweaks are required to make Jellyfin work better.
 
-Use the Jellyfin web interface (192.168.1.121:8096) and go to the Configuration Dashboard, by clicking on the 4 square tiles in the top right of your screen,  `Server` > `Playback` > `Streaming Tab` and set the values as follows:
+Use the Jellyfin web interface (192.168.1.121:8096) and go to the Configuration Dashboard, by clicking on the 4 square tiles in the top right of your screen,  `Server` > `Select your Section` and set the values as follows, remembering to click `Save` at each section:
 
 | Server | Value | Notes
 | :---  | :---: | :---
 | **`Playback` > `Streaming`** 
-| Internet streaming bitrate limit (Mbps) | `10`
-| **Tell us about yourself**
-| Your First Name | `storm` |
+| Internet streaming bitrate limit (Mbps) | `10` | *Up to you what this value is. But I recommend no more than 30% of your WAN upload speed.*
+| **`Transcoding`**
+| Hardware acceleration | `Video Acceleration API (VA API)(experimental)` |
+| VA API Device | Leave as Default | *Should be /dev/dri/renderD128*
+| Enable hardware encoding | ☑
+| Transcoding thread count | `Auto`
+| FFmpeg path | Leave as Default | *Should be /usr/bin/ffmpeg*
+| Transcode path | Leave as Default | *Should be /mnt/transcode*
+| Audio boost when downmixing | `2`
+| H264 encoding preset | `Auto`
+| H264 encoding CRF | `23`
+| Allow subtitle extraction on the fly | ☑
+
+And click `Save`.
+
 
 
 
