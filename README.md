@@ -402,7 +402,7 @@ Use the Jellyfin web interface (192.168.1.121:8096) and go to the Configuration 
 
 | Server | Value | Notes
 | :---  | :---: | :---
-| **Playback > Streaming** 
+| **`Playback` > `Streaming`** 
 | Internet streaming bitrate limit (Mbps) | `10`
 | **Tell us about yourself**
 | Your First Name | `storm` |
