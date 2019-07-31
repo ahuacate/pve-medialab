@@ -211,7 +211,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Node | `typhoon-01` |
 | CT ID |`121`|
 | Hostname |`jellyfin`|
-| Unprivileged container | `☑` |
+| Unprivileged container | `☐` |
 | Resource Pool | Leave Blank
 | Password | Enter your pasword
 | Password | Enter your pasword
@@ -246,13 +246,18 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | DNS domain | Leave Default (use host settings)
 | DNS servers | Leave Default (use host settings)
 | **Confirm**
-| Start after Created | `[]`
+| Start after Created | `☐`
 
-And Click `Finish` to create your JellyFin LXC.
+And Click `Finish` to create your JellyFin LXC. The above will create the Jellyfin LXC without local Mount Points to the host.
 
-Or if you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing (note, you will need to create a password for Jellyfin LXC):
+Or if you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Jellyfin LXC):
+
 ```
-pct create 121 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+pct create 121 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
+```
+And without the Mount Points:
+```
+pct create 121 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
 yum -y install https://repo.jellyfin.org/releases/server/centos/jellyfin-10.3.7-1.el7.x86_64.rpm
@@ -266,13 +271,13 @@ rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.
 yum -y install ffmpeg ffmpeg-devel
 
 ### 3.3 Configure and Install VAAPI
-> These instructions are Proxmox nodes typhoon-01 and typhoon-02 only. **NOT FOR TYPHOON-03** or any Synology Virtual Machine installed node.
+> This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
 
 But first you must configure VAAPI for your host system. VAAPI is configured for typhoon-01 and tyhoon-02 only because the machine hardware supports video encoding.
 
-Your Jellyfin LXC **MUST BE** in the shutdown state.
+Your Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
 
 First verify that `render` device is present in `/dev/dri`, and note the permissions and group available to write to it, in this case `render`. Simply use Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following first line only:
 
@@ -337,15 +342,15 @@ vainfo: Supported profile and entrypoints
 ```
 
 ### 3.4 Grant Jellyfin LXC Container access to the Proxmox host video device
-> These instructions are Proxmox nodes typhoon-01 and typhoon-02 only. **NOT FOR TYPHOON-03** or any Synology Virtual Machine installed node.
+> This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
-We will use the `lxc.cgroup.devices.allow` command to declare your hardmetal GPU device to your Jellyfin LXC container so it can access your hosts GPU.
+Here we edit the LXC configuration file with the line `lxc.cgroup.devices.allow` to declare your hardmetal GPU device to your Jellyfin LXC container so it can access your hosts GPU.
 
 The command `lxc.cgroup.devices.allow: c 226:128 rwm` means its allowing Jellyfin LXC container to rwm (read/write/mount) your GPU device (Proxmox host) which has the major number of 226 and minor number of 128.
 
 Granting the permission alone is not enough if the device is not present in Jellyfins LXC container's /dev directory. The second step is create corresponding mount points in the LXC container to your hosts /dev/dri/renderD128 folder.
 
-Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state.
+Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
 
 Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
 
@@ -354,5 +359,10 @@ echo -e "lxc.cgroup.devices.allow = c 226:128 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/121.conf
 ```
 
-
+### 3.5 Setup Jellfin Mount Points
+pct set 121 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
+pct set 121 -mp1 /mnt/pve/cyclone-01-music,mp=/mnt/music
+pct set 121 -mp2 /mnt/pve/cyclone-01-photo,mp=/mnt/photo
+pct set 121 -mp3 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode
+pct set 121 -mp4 /mnt/pve/cyclone-01-video,mp=/mnt/video
 
