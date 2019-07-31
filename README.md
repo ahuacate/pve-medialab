@@ -401,7 +401,8 @@ Certain tweaks are required to make Jellyfin work better.
 Use the Jellyfin web interface (192.168.1.121:8096) and go to the Configuration Dashboard, by clicking on the 4 square tiles in the top right of your screen,  `Server` > `Playback` > `Streaming Tab` and set the values as follows:
 
 | Server | Value | Notes
-| :---  | :---: |
+| :---  | :---: | :---
+|Choose by Section
 | **Playback > Streaming** 
 | Internet streaming bitrate limit (Mbps) | `10`
 | **Tell us about yourself**
