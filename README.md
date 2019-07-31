@@ -185,7 +185,6 @@ yum install epel-release -y &&
 yum install http://dl.marmotte.net/rpms/redhat/el7/x86_64/unifi-controller-5.8.24-1.el7/unifi-controller-5.8.24-1.el7.x86_64.rpm -y &&
 systemctl enable unifi.service &&
 systemctl start unifi.service
-
 ```
 
 ### 2.3 Move the UniFi Controller to your LXC Instance
@@ -329,7 +328,6 @@ vainfo: Supported profile and entrypoints
       VAProfileVP9Profile0            : VAEntrypointVLD
       VAProfileVP9Profile0            : VAEntrypointEncSlice
       VAProfileVP9Profile2            : VAEntrypointVLD
-
 ```
 
 ### 3.3 Install Jellyfin
@@ -375,3 +373,6 @@ pct set 121 -mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo &&
 pct set 121 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
 pct set 121 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
+
+### 3.6 Start Jellyfin
+In your web browser type `http://192.168.50.121:8096` and configure Jellyfin.
