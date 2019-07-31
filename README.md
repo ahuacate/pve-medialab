@@ -377,3 +377,35 @@ pct set 121 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ### 3.6 Start Jellyfin and perform base configuration
 In your web browser type `http://192.168.50.121:8096` and configure Jellyfin. Here are my base settings:
 
+| Jellyfin Base Wizard | Value |
+| :---  | :---: |
+| Preferred display language | `English (United Kingdom)` |
+| **Tell us about yourself**
+| Your First Name | `storm` |
+| Password | Enter your password
+|Password (confirm) | Re-enter your password
+| **Setup your media libraries**
+||`Skip`
+| ** Preferred Metadata Language
+| Language | `English`
+| Country | `United Kingdom`
+| **Configure Remote Access**
+| Allow remote connections to this Jellyfin Server | ☑
+| Enable automatic port mapping | ☑
+
+And Click `Finish`. Now login to username `storm`.
+
+### 3.8 Jellyfin Configuration
+Certain tweaks are required to make Jellyfin work better.
+
+Use the Jellyfin web interface (192.168.1.121:8096) and go to the Configuration Dashboard, by clicking on the 4 square tiles in the top right of your screen,  `Server` > `Playback` > `Streaming Tab` and set the values as follows:
+
+| Server | Value | Notes
+| :---  | :---: |
+| **Playback > Streaming** 
+| Internet streaming bitrate limit (Mbps) | `10`
+| **Tell us about yourself**
+| Your First Name | `storm` |
+
+
+
