@@ -330,20 +330,7 @@ vainfo: Supported profile and entrypoints
       VAProfileVP9Profile2            : VAEntrypointVLD
 ```
 
-### 3.3 Install Jellyfin
-This is easy. Use the web interface go to Proxmox CLI use Proxmox CLI `typhoon-01` > `121 (jellyfin)` > `>_ Shell` and type the following:
-
-```
-yum -y install epel-release &&
-rpm -v --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro &&
-rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm &&
-yum -y install ffmpeg ffmpeg-devel &&
-yum -y install https://repo.jellyfin.org/releases/server/centos/jellyfin-10.3.7-1.el7.x86_64.rpm &&
-systemctl enable jellyfin &&
-systemctl start jellyfin
-```
-
-### 3.4 Grant Jellyfin LXC Container access to the Proxmox host video device
+### 3.3 Grant Jellyfin LXC Container access to the Proxmox host video device
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Here we edit the LXC configuration file with the line `lxc.cgroup.devices.allow` to declare your hardmetal GPU device to your Jellyfin LXC container so it can access your hosts GPU.
@@ -361,6 +348,19 @@ echo -e "lxc.cgroup.devices.allow = c 226:128 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/121.conf
 ```
 
+### 3.4 Install Jellyfin
+This is easy. Use the web interface go to Proxmox CLI use Proxmox CLI `typhoon-01` > `121 (jellyfin)` > `>_ Shell` and type the following:
+
+```
+yum -y install epel-release &&
+rpm -v --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro &&
+rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm &&
+yum -y install ffmpeg ffmpeg-devel &&
+yum -y install https://repo.jellyfin.org/releases/server/centos/jellyfin-10.3.7-1.el7.x86_64.rpm &&
+systemctl enable jellyfin &&
+systemctl start jellyfin
+```
+
 ### 3.5 Setup Jellfin Mount Points
 If you used **Script (B)** in Section 3.1 then you have no Moint Points.
 
@@ -374,5 +374,6 @@ pct set 121 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
 pct set 121 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
-### 3.6 Start Jellyfin
-In your web browser type `http://192.168.50.121:8096` and configure Jellyfin.
+### 3.6 Start Jellyfin and perform base configuration
+In your web browser type `http://192.168.50.121:8096` and configure Jellyfin. Here are my base settings:
+
