@@ -200,7 +200,7 @@ But make sure when you are restoring the backup you Have closed the previous Uni
 ## 3.0 Jellyfin LXC - CentOS
 Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
 
-Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: and at the time of writing this recipe it seems like the best media solution.
+Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: and at the time of writing this media server software seems like the best available solution (and is free).
 
 ### 3.1 Create a CentOS7 LXC for Jellyfin
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
@@ -248,29 +248,20 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | **Confirm**
 | Start after Created | `☐`
 
-And Click `Finish` to create your JellyFin LXC. The above will create the Jellyfin LXC without local Mount Points to the host.
+And Click `Finish` to create your JellyFin LXC. The above will create the Jellyfin LXC without any of the required local Mount Points to the host.
 
-Or if you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Jellyfin LXC):
+If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Jellyfin LXC):
 
+**Script (A):** Including LXC Mount Points
 ```
 pct create 121 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
-And without the Mount Points:
+**Script (B):** Excluding LXC Mount Points:
 ```
 pct create 121 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
-yum -y install https://repo.jellyfin.org/releases/server/centos/jellyfin-10.3.7-1.el7.x86_64.rpm
-systemctl enable jellyfin
-systemctl start jellyfin
-
-yum -y install wget
-yum -y install epel-release
-rpm -v --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
-rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
-yum -y install ffmpeg ffmpeg-devel
-
-### 3.3 Configure and Install VAAPI
+### 3.2 Configure and Install VAAPI
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
@@ -341,6 +332,19 @@ vainfo: Supported profile and entrypoints
 
 ```
 
+### 3.3 Install Jellyfin
+This is easy. Use the web interface go to Proxmox CLI use Proxmox CLI `typhoon-01` > `121 (jellyfin)` > `>_ Shell` and type the following:
+
+```
+yum -y install epel-release &&
+rpm -v --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro &&
+rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm &&
+yum -y install ffmpeg ffmpeg-devel &&
+yum -y install https://repo.jellyfin.org/releases/server/centos/jellyfin-10.3.7-1.el7.x86_64.rpm &&
+systemctl enable jellyfin &&
+systemctl start jellyfin
+```
+
 ### 3.4 Grant Jellyfin LXC Container access to the Proxmox host video device
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
@@ -352,7 +356,7 @@ Granting the permission alone is not enough if the device is not present in Jell
 
 Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
 
-Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
+Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
 echo -e "lxc.cgroup.devices.allow = c 226:128 rwm
@@ -360,9 +364,14 @@ lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,creat
 ```
 
 ### 3.5 Setup Jellfin Mount Points
-pct set 121 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
-pct set 121 -mp1 /mnt/pve/cyclone-01-music,mp=/mnt/music
-pct set 121 -mp2 /mnt/pve/cyclone-01-photo,mp=/mnt/photo
-pct set 121 -mp3 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode
-pct set 121 -mp4 /mnt/pve/cyclone-01-video,mp=/mnt/video
+If you used **Script (B)** in Section 3.1 then you have no Moint Points.
 
+Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
+```
+pct set 121 -mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music &&
+pct set 121 -mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo &&
+pct set 121 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
+pct set 121 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
+```
