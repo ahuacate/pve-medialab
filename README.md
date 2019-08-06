@@ -208,7 +208,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | :---  | :---: |
 | **General**
 | Node | `typhoon-01` |
-| CT ID |`121`|
+| CT ID |`111`|
 | Hostname |`jellyfin`|
 | Unprivileged container | `☐` |
 | Resource Pool | Leave Blank
@@ -253,11 +253,11 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 121 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
+pct create 111 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 **Script (B):** Excluding LXC Mount Points:
 ```
-pct create 121 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
+pct create 111 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.121/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
 ### 3.2 Configure and Install VAAPI
@@ -349,7 +349,7 @@ lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,creat
 ```
 
 ### 3.4 Install Jellyfin
-This is easy. Use the web interface go to Proxmox CLI use Proxmox CLI `typhoon-01` > `121 (jellyfin)` > `>_ Shell` and type the following:
+This is easy. Use the web interface go to Proxmox CLI use Proxmox CLI `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
 yum -y install epel-release &&
@@ -375,7 +375,7 @@ pct set 121 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
 ### 3.6 Start Jellyfin and perform base configuration
-In your web browser type `http://192.168.50.121:8096` and configure Jellyfin. Here are my base settings:
+In your web browser type `http://192.168.50.111:8096` and configure Jellyfin. Here are my base settings:
 
 | Jellyfin Base Wizard | Value |
 | :---  | :---: |
@@ -398,7 +398,7 @@ And Click `Finish`. Now login to username `storm`.
 ### 3.8 Jellyfin Configuration
 Certain tweaks are required to make Jellyfin work better.
 
-Use the Jellyfin web interface (192.168.1.121:8096) and go to the Configuration Dashboard, by clicking on the 4 square tiles in the top right of your screen,  `Server` > `Select your Section` and set the values as follows, remembering to click `Save` at each section:
+Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration Dashboard, by clicking on the 4 square tiles in the top right of your screen,  `Server` > `Select your Section` and set the values as follows, remembering to click `Save` at each section:
 
 | Server | Value | Notes
 | :---  | :---: | :---
