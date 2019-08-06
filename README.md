@@ -349,7 +349,9 @@ lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,creat
 ```
 
 ### 3.4 Install Jellyfin
-This is easy. Use the web interface go to Proxmox CLI use Proxmox CLI `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
+This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
 yum -y install epel-release &&
@@ -391,9 +393,9 @@ In your web browser type `http://192.168.50.111:8096` and configure Jellyfin. He
 | Country | `United Kingdom`
 | **Configure Remote Access**
 | Allow remote connections to this Jellyfin Server | ☑
-| Enable automatic port mapping | ☑
+| Enable automatic port mapping | ☐
 
-And Click `Finish`. Now login to username `storm`.
+And Click `Finish`. Now login with username `storm`.
 
 ### 3.8 Jellyfin Configuration
 Certain tweaks are required to make Jellyfin work better.
@@ -402,6 +404,27 @@ Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration
 
 | Server | Value | Notes
 | :---  | :---: | :---
+| **`General`**
+| Server name | `jellyfin-site1` | *`site1` refers to your the servers location i.e your home, beach house, office*
+| Other settings | Leave all as default
+| **`Users`**
+| See below section [here]
+| **`Library` > `Display`**
+| Display a folder view to show plain media folders | `☐` | *Uncheck*
+| Display specials within seasons they aired in | `☑` |  *Check*
+| Group movies into collections | `☑` |  *Check*
+| Enable external content in suggestions | `☐` | *Uncheck*
+| **`Library` > `Metadata`**
+| Language | `English`| *Or select your preference*
+| Country | `United Kingdom` | *Or select your preference*
+| **`Library` > `Nfo Settings`**
+| Save user watch data to nfo's for | `None`
+| Release date format | `yyyy-MM-dd`
+| Save image paths within nfo files | `☑`
+| Enable path substitution | `☑`
+| Copy extrafanart into extrathumbs | `☐`
+| **`Library` > `Advanced`**
+| Date added behaviour for new content | `Use date scanned into the library`
 | **`Playback` > `Streaming`** 
 | Internet streaming bitrate limit (Mbps) | `10` | *Up to you what this value is. But I recommend no more than 30% of your WAN upload speed.*
 | **`Transcoding`**
@@ -410,7 +433,7 @@ Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration
 | Enable hardware encoding | ☑
 | Transcoding thread count | `Auto`
 | FFmpeg path | Leave as Default | *Should be /usr/bin/ffmpeg*
-| Transcode path | Leave as Default | *Should be /mnt/transcode*
+| Transcode path | `/mnt/transcode` | *Should be /mnt/transcode*
 | Audio boost when downmixing | `2`
 | H264 encoding preset | `Auto`
 | H264 encoding CRF | `23`
@@ -418,6 +441,36 @@ Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration
 
 And click `Save`.
 
+| Devices | Value | Notes
+| :---  | :---: | :---
+| **`DLNA` > `Settings`**
+| Enable DLNA Play To | `☐` | *Uncheck. I dont use DLNA on any devices*
+| Enable DLNA debug logging | `☐` | *Uncheck*
+| Enable DLNA server | `☐` | *Uncheck*
+| Blast alive messages | `☐` | *Uncheck*
+
+And click `Save`.
+
+| Expert | Value | Notes
+| :---  | :---: | :---
+| **`Advanced` > `Hosting`**
+| LAN networks | `192.168.50.0/24,192.168.1.0/24,192.168.2.0/28` | 
+| Bind to local network address | Leave blank
+| Local http port number | `8096` 
+| Local https port number | `8920`
+| Allow remote connections to this Jellyfin Server | `☑` | *Check*
+| Remote IP address filter | Leave blank
+| Remote IP address filter mode | `Whitelist`
+| Public http port number | `8096`
+| Public https port number | `8920`
+| External domain | Leave blank
+| Custom ssl certificate path | Leave blank
+| Certificate password | Leave blank
+| Secure connection mode | `Handled by reverse proxy`
+| Enable automatic port mapping | `☐` | *Uncheck*
+| External | Leave blank
+
+And click `Save`.
 
 
 
