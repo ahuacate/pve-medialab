@@ -363,7 +363,7 @@ systemctl enable jellyfin &&
 systemctl start jellyfin
 ```
 
-### 3.5 Setup Jellfin Mount Points
+### 3.5 Setup Jellyfin Mount Points
 If you used **Script (B)** in Section 3.1 then you have no Moint Points.
 
 Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
@@ -430,14 +430,14 @@ Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration
 | **`Transcoding`**
 | Hardware acceleration | `Video Acceleration API (VA API)(experimental)` |
 | VA API Device | Leave as Default | *Should be /dev/dri/renderD128*
-| Enable hardware encoding | ☑
+| Enable hardware encoding | `☑`
 | Transcoding thread count | `Auto`
 | FFmpeg path | Leave as Default | *Should be /usr/bin/ffmpeg*
 | Transcode path | `/mnt/transcode` | *Should be /mnt/transcode*
 | Audio boost when downmixing | `2`
 | H264 encoding preset | `Auto`
 | H264 encoding CRF | `23`
-| Allow subtitle extraction on the fly | ☑
+| Allow subtitle extraction on the fly | `☑`
 
 And click `Save`.
 
@@ -472,5 +472,46 @@ And click `Save`.
 
 And click `Save`.
 
+### 3.9 Add media library to Jellyfin
+Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration Dashboard `Server` > `Library` > `Add Media Library` and set the values as follows:
 
+| `Library` > `Add Media Library` | Value | Notes
+| :---  | :---: | :---
+| **Movies**
+| Show advanced settings | `☑ Enabled` | 
+| Content type | `Movies`
+| Display name | `Movies`
+| **Folders**
+| LabelFolder | `/mnt/video/movies` | *Browse to the movies folder*
+| (Optional) Shared network folder | `nfs://192.168.1.10/volume1/video/movies`
+| ** Library Settings**
+| Preferred download language | `English` | *Or select your preference*
+| Country | `United Kingdom` | *Or select your preference*
+| Prefer embedded titles over filenames |
+| Enable real time monitoring |
+| Movie metadata downloaders |  `☑ TheMovieDb`
+| | `☐ The Open Movie Database`
+| Automatically refresh metadata from the internet | `Every 90 days`
+| Metadata savers | `☐ Nfo`
+| **Movie Image Fetchers > `Fetcher Settings`**
+| Primary | `☑`
+| Art | `☑`
+| Banner | `☑`
+| Disc | `☐`
+| Logo | `☐`
+| Thumb | `☑`
+| Maximum number of backdrops per item | `1`
+| Minimum backdrop download width | `1920`
+| **Movie Image**
+| TheMovieDb | `☑`
+| FanArt | `☑`
+| The Open Movie Database | `☐`
+| Screen Grabber | `☑`
+| Save artwork into media folders | `☑`
+| Download images in advance | `☑`
+| **Chapter Images**
+| Enable chapter image extraction | `☐`
+| Extract chapter images during the library scan | `☐`
+
+And click `Save`.
 
