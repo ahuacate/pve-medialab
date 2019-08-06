@@ -393,7 +393,7 @@ In your web browser type `http://192.168.50.111:8096` and configure Jellyfin. He
 | Country | `United Kingdom`
 | **Configure Remote Access**
 | Allow remote connections to this Jellyfin Server | ☑
-| Enable automatic port mapping | ☐
+| Enable automatic port mapping | `☐`
 
 And Click `Finish`. Now login with username `storm`.
 
