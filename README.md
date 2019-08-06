@@ -345,7 +345,7 @@ Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` >  `>_
 
 ```
 echo -e "lxc.cgroup.devices.allow = c 226:128 rwm
-lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/121.conf
+lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/111.conf
 ```
 
 ### 3.4 Install Jellyfin
