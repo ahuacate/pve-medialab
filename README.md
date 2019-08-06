@@ -515,3 +515,38 @@ Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration
 
 And click `Save`.
 
+### 3.9 Edit Jellyfin `Storm` User
+Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration Dashboard `Server` > `Users` > `storm` and set the values as follows:
+
+| `Server` > `Users` > `storm` > `Profile Tab` | Value | Notes
+| :---  | :---: | :---
+| Name | `storm`
+| Allow remote connections to this Jellyfin Server | `☑ Enabled` |
+| Allow this user to manage the server | `☑ Enabled`
+| **Feature Access**
+| Allow Live TV access | `☑ Enabled`
+| Allow Live TV recording management | `☑ Enabled`
+| **Media Playback**
+| Allow media playback | `☑ Enabled`
+| Allow audio playback that requires transcoding | `☑ Enabled`
+| Allow video playback that requires transcoding | `☑ Enabled`
+| Allow video playback that requires conversion without re-encoding | `☑ Enabled`
+| Internet streaming bitrate limit (Mbps) | Leave blank
+| **Allow Media Deletion From**
+| All libraries | `☑ Enabled`
+| **Remote Control**
+| Allow remote control of other users | `☑ Enabled`
+| Allow remote control of shared devices | `☑ Enabled`
+| **Download & Sync**
+| Allow media downloading and syncing | `☐`
+| Allow media downloading and syncing that requires transcoding | `☐`
+| Allow media conversion | `☐`
+| Allow social media sharing | `☐`
+| Disable this user | `☐`
+| Hide this user from login screens | `☑ Enabled`
+| Failed login attempts before user is locked out | `0`
+| **`Server` > `Users` > `storm` > `Password`**
+| New Password | Random 16 character password | *Random 16 character password ONLY i.e cA(8&KxjLHz8s4?A*
+| New password confirm | Random 16 character password
+
+
