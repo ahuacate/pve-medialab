@@ -379,7 +379,7 @@ pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
 ## 4.0 Jellyfin LXC - Ubuntu 16.04
->  This works. 
+>  This 100% works. 
 
 Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
 
@@ -394,7 +394,7 @@ wget  http://download.proxmox.com/images/system/ubuntu-16.04-standard_16.04.5-1_
 ```
 
 ### 4.2 Create a Ubuntu 16.04 LXC for Jellyfin - Ubuntu 16.04
-Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
 | :---  | :---: |
@@ -569,16 +569,19 @@ pct set 111 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
 pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
-## 5.0 Start Jellyfin and perform base configuration
-In your web browser type `http://192.168.50.111:8096` and configure Jellyfin. Here are my base settings:
+## 5.0 Setup Jellyfin and perform base configuration
+In your web browser type `http://192.168.50.111:8096` and configure Jellyfin. 
 
-| Jellyfin Base Wizard | Value |
-| :---  | :---: |
+### 5.1 Jellyfin base settings
+A configuration wizard will ask you to enter some basic details.
+
+| Jellyfin Base Wizard | Value | Notes
+| :---  | :---: | :---
 | Preferred display language | `English (United Kingdom)` |
 | **Tell us about yourself**
 | Your First Name | `storm` |
-| Password | Enter your password
-|Password (confirm) | Re-enter your password
+| Password |  Random 16 character password | *Random 16 character password ONLY i.e cA(8&KxjLHz8s4?A*
+|Password (confirm) |  Random 16 character password 
 | **Setup your media libraries**
 ||`Skip`
 | ** Preferred Metadata Language
@@ -590,7 +593,7 @@ In your web browser type `http://192.168.50.111:8096` and configure Jellyfin. He
 
 And Click `Finish`. Now login with username `storm`.
 
-### 3.8 Jellyfin Configuration
+### 5.2 Jellyfin Configuration
 Certain tweaks are required to make Jellyfin work better.
 
 Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration Dashboard, by clicking on the 4 square tiles in the top right of your screen,  `Server` > `Select your Section` and set the values as follows, remembering to click `Save` at each section:
@@ -625,7 +628,7 @@ Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration
 | VA API Device | Leave as Default | *Should be /dev/dri/renderD128*
 | Enable hardware encoding | `☑`
 | Transcoding thread count | `Auto`
-| FFmpeg path | Leave as Default | *Should be /usr/bin/ffmpeg*
+| FFmpeg path | Leave as Default | *Should be /usr/lib/jellyfin-ffmpeg/ffmpeg*
 | Transcode path | `/mnt/transcode` | *Should be /mnt/transcode*
 | Audio boost when downmixing | `2`
 | H264 encoding preset | `Auto`
@@ -665,24 +668,24 @@ And click `Save`.
 
 And click `Save`.
 
-### 3.9 Add media library to Jellyfin
+### 5.3 Add media library to Jellyfin
 Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration Dashboard `Server` > `Library` > `Add Media Library` and set the values as follows:
 
 | `Library` > `Add Media Library` | Value | Notes
 | :---  | :---: | :---
 | **Movies**
-| Show advanced settings | `☑ Enabled` | 
+| Show advanced settings | `Enable` | 
 | Content type | `Movies`
 | Display name | `Movies`
 | **Folders**
 | LabelFolder | `/mnt/video/movies` | *Browse to the movies folder*
 | (Optional) Shared network folder | `nfs://192.168.1.10/volume1/video/movies`
-| ** Library Settings**
+| **Library Settings**
 | Preferred download language | `English` | *Or select your preference*
 | Country | `United Kingdom` | *Or select your preference*
-| Prefer embedded titles over filenames |
-| Enable real time monitoring |
-| Movie metadata downloaders |  `☑ TheMovieDb`
+| Prefer embedded titles over filenames | `☐` 
+| Enable real time monitoring | `☑`
+| Movie metadata downloaders |  `☑`
 | | `☐ The Open Movie Database`
 | Automatically refresh metadata from the internet | `Every 90 days`
 | Metadata savers | `☐ Nfo`
@@ -708,7 +711,7 @@ Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration
 
 And click `Save`.
 
-### 3.9 Edit Jellyfin `Storm` User
+### 5.4 Edit Jellyfin `Storm` User
 Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration Dashboard `Server` > `Users` > `storm` and set the values as follows:
 
 | `Server` > `Users` > `storm` > `Profile Tab` | Value | Notes
@@ -734,12 +737,12 @@ Use the Jellyfin web interface (192.168.50.111:8096) and go to the Configuration
 | Allow media downloading and syncing | `☐`
 | Allow media downloading and syncing that requires transcoding | `☐`
 | Allow media conversion | `☐`
-| Allow social media sharing | `☐`
+| Allow social media sharing | `☐` | *Allways disable for all users*
 | Disable this user | `☐`
 | Hide this user from login screens | `☑ Enabled`
 | Failed login attempts before user is locked out | `0`
 | **`Server` > `Users` > `storm` > `Password`**
-| New Password | Random 16 character password | *Random 16 character password ONLY i.e cA(8&KxjLHz8s4?A*
+| New Password | Random 16 character password | * You probably set this on installation. If not, ise a Random 16 character password ONLY i.e cA(8&KxjLHz8s4?A*
 | New password confirm | Random 16 character password
 
 
