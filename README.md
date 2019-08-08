@@ -15,8 +15,10 @@ Other Prerequisites are:
 - [x] pfSense is fully configured on typhoon-01 including both OpenVPN Gateways VPNGATE-LOCAL and VPNGATE-WORLD.
 
 Tasks to be performed are:
-- [ ] Install PiHole LXC
-- [ ] Install OpenVPN Gateway LXC
+- [ ] 1.0 PiHole LXC - CentOS7
+- [ ] 2.0 UniFi Controller - CentOS7
+- [ ] 3.0 Jellyfin LXC - CentOS (*Not working*)
+- [ ] 4.0 Jellyfin LXC - Ubuntu 16.04
 
 >  **About LXC Installations:**
 I use CentosOS7 as my preferred linux distribution for VMs and LXC containers. Proxmox itself ships a set of basic templates and to download the prebuilt CentosOS7 LXC use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select the `centos-7-default` template for downloading.
@@ -197,7 +199,7 @@ Now on your Proxmox UniFi LXC, https://192.168.1.251:8443/ , you must restore th
 But make sure when you are restoring the backup you Have closed the previous UniFi Controller server and software because you cannot manage the APs by two controller at a time.
 
 ## 3.0 Jellyfin LXC - CentOS
->  I could'nt get Jellyfin working with a Proxmox CentOS7 LXC. The problems is with the VAAPI GPU Passthru. Also Jellyfin frontend WebGUI restart button function fails. So best use my Ubuntu LXC recipe [HERE]( Under development.
+>  **Under development.** I could'nt get Jellyfin working with a Proxmox CentOS7 LXC. The problems is with the VAAPI GPU Passthru. Also Jellyfin frontend WebGUI restart button function fails. So best use my Ubuntu LXC recipe [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#40-jellyfin-lxc---ubuntu-1604).
 
 Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
 
@@ -568,3 +570,6 @@ pct set 111 -mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo &&
 pct set 111 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
 pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
+
+### 4.6 Check your Jellyfin Installation
+In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page. 
