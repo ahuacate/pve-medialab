@@ -21,7 +21,8 @@ Tasks to be performed are:
 - [ ] 4.0 Jellyfin LXC - Ubuntu 16.04
 
 >  **About LXC Installations:**
-I use CentosOS7 as my preferred linux distribution for VMs and LXC containers. Proxmox itself ships a set of basic templates and to download the prebuilt CentosOS7 LXC use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select the `centos-7-default` template for downloading.
+CentosOS7 is my preferred linux distribution for VMs and LXC containers. Although, some applications like Jellyfin work best on Ubuntu.
+Proxmox itself ships a set of basic templates and to download a prebuilt distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select `centos-7-default` and `ubuntu-16.04-standard` templates for downloading.
 
 ## 1.0 PiHole LXC - CentOS7
 Here we are going install PiHole which is a internet tracker blocking application which acts as a DNS sinkhole. Basically its charter is to block advertisments, tracking domains, tracking cookies and all those personal data mining collection companies.
@@ -572,4 +573,68 @@ pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
 ### 4.6 Check your Jellyfin Installation
-In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page. 
+In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
+
+## 5.0 Sonarr LXC - CentOS
+Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
+
+Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: and at the time of writing this media server software seems like the best available solution (and is free).
+
+### 3.1 Create a CentOS7 LXC for Jellyfin
+Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
+| :---  | :---: |
+| **General**
+| Node | `typhoon-01` |
+| CT ID |`111`|
+| Hostname |`jellyfin`|
+| Unprivileged container | `☐` |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
+| **Template**
+| Storage | `local` |
+| Template |`centos-7-default_xxxx_amd`|
+| **Root Disk**
+| Storage |`typhoon-share`|
+| Disk Size |`20 GiB`|
+| **CPU**
+| Cores |`2`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
+| **Memory**
+| Memory (MiB) |`4096`|
+| Swap (MiB) |`256`|
+| **Network**
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | `50`
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | `☑`
+| IPv4 | `☑  Static`
+| IPv4/CIDR |`192.168.50.111/24`|
+| Gateway (IPv4) |`192.168.50.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
+| **DNS**
+| DNS domain | Leave Default (use host settings)
+| DNS servers | Leave Default (use host settings)
+| **Confirm**
+| Start after Created | `☐`
+
+And Click `Finish` to create your JellyFin LXC. The above will create the Jellyfin LXC without any of the required local Mount Points to the host.
+
+If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Jellyfin LXC):
+
+**Script (A):** Including LXC Mount Points
+```
+pct create 111 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
+```
+**Script (B):** Excluding LXC Mount Points:
+```
+pct create 111 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
