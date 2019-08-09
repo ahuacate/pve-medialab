@@ -575,37 +575,35 @@ pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ### 4.6 Check your Jellyfin Installation
 In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
 
-## 5.0 Sonarr LXC - CentOS
-Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
+## 5.0 Sonarr LXC - Ubuntu
+Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
-Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: and at the time of writing this media server software seems like the best available solution (and is free).
-
-### 3.1 Create a CentOS7 LXC for Jellyfin
+### 5.1 Create a Ubuntu LXC for Sonarr
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
 | :---  | :---: |
 | **General**
 | Node | `typhoon-01` |
-| CT ID |`111`|
-| Hostname |`jellyfin`|
-| Unprivileged container | `☐` |
+| CT ID |`112`|
+| Hostname |`sonarr`|
+| Unprivileged container | `☑` |
 | Resource Pool | Leave Blank
 | Password | Enter your pasword
 | Password | Enter your pasword
 | SSH Public key | Add one if you want to
 | **Template**
 | Storage | `local` |
-| Template |`centos-7-default_xxxx_amd`|
+| Template | `ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz` |
 | **Root Disk**
 | Storage |`typhoon-share`|
-| Disk Size |`20 GiB`|
+| Disk Size |`10 GiB`|
 | **CPU**
-| Cores |`2`|
+| Cores |`1`|
 | CPU limit | Leave Blank
 | CPU Units | `1024`
 | **Memory**
-| Memory (MiB) |`4096`|
+| Memory (MiB) |`2048`|
 | Swap (MiB) |`256`|
 | **Network**
 | Name | `eth0`
@@ -615,7 +613,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Rate limit (MN/s) | Leave Default (unlimited)
 | Firewall | `☑`
 | IPv4 | `☑  Static`
-| IPv4/CIDR |`192.168.50.111/24`|
+| IPv4/CIDR |`192.168.50.112/24`|
 | Gateway (IPv4) |`192.168.50.5`|
 | IPv6 | Leave Blank
 | IPv4/CIDR | Leave Blank |
@@ -626,15 +624,39 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | **Confirm**
 | Start after Created | `☐`
 
-And Click `Finish` to create your JellyFin LXC. The above will create the Jellyfin LXC without any of the required local Mount Points to the host.
+And Click `Finish` to create your Sonarr LXC. The above will create the Sonarr LXC without any of the required local Mount Points to the host.
 
-If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Jellyfin LXC):
+If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Sonarr LXC):
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 111 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
+pct create 112 local:vztmpl/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.112/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads
 ```
 **Script (B):** Excluding LXC Mount Points:
 ```
-pct create 111 local:vztmpl/centos-7-default_20171212_amd64.tar.xz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+pct create 112 local:vztmpl/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.112/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
+
+### 5.2 Setup Jellyfin Mount Points - Ubuntu 16.04
+If you used **Script (B)** in Section 5.1 then you have no Moint Points.
+
+Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
+```
+pct set 112 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
+pct set 112 -mp1 /typhoon-share/downloads,mp=/mnt/downloads
+```
+
+###
+
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
+sudo apt install apt-transport-https ca-certificates -y &&
+echo "deb https://download.mono-project.com/repo/ubuntu stable-xenial main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
+sudo apt update -y &&
+sudo apt install mono-devel -y &&
+wget https://mediaarea.net/repo/deb/repo-mediaarea_1.0-9_all.deb && dpkg -i repo-mediaarea_1.0-9_all.deb && apt-get update
+
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 2009837CBFFD68F45BC180471F4F90DE2A9B4BF8
+echo "deb https://apt.sonarr.tv/ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/sonarr.list
+sudo apt update
