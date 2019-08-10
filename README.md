@@ -22,7 +22,7 @@ Tasks to be performed are:
 
 >  **About LXC Installations:**
 CentosOS7 is my preferred linux distribution for VMs and LXC containers. Although, some applications like Jellyfin work best on Ubuntu.
-Proxmox itself ships a set of basic templates and to download a prebuilt distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select `centos-7-default` and `ubuntu-16.04-standard` templates for downloading.
+Proxmox itself ships a set of basic templates and to download a prebuilt distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `centos-7-default`, `ubuntu-16.04-standard` and `ubuntu-18.04-standard` templates.
 
 ## 1.0 PiHole LXC - CentOS7
 Here we are going install PiHole which is a internet tracker blocking application which acts as a DNS sinkhole. Basically its charter is to block advertisments, tracking domains, tracking cookies and all those personal data mining collection companies.
@@ -575,10 +575,10 @@ pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ### 4.6 Check your Jellyfin Installation
 In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
 
-## 5.0 Sonarr LXC - Ubuntu
+## 5.0 Sonarr LXC - Ubuntu 18.04
 Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
-### 5.1 Create a Ubuntu LXC for Sonarr
+### 5.1 Create a Ubuntu 18.04 LXC for Sonarr
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -630,14 +630,15 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 112 local:vztmpl/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.112/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads
-```
-**Script (B):** Excluding LXC Mount Points:
-```
-pct create 112 local:vztmpl/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.112/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.112/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 5.2 Setup Jellyfin Mount Points - Ubuntu 16.04
+**Script (B):** Excluding LXC Mount Points:
+```
+pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.112/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
+
+### 5.2 Setup Sonarr Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 5.1 then you have no Moint Points.
 
 Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
@@ -645,18 +646,28 @@ Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before p
 To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
 ```
 pct set 112 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
-pct set 112 -mp1 /typhoon-share/downloads,mp=/mnt/downloads
+pct set 112 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 112 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-###
+### 5.3 Install Sonarr
+Th following Sonarr installation recipe is from the official Sonarr website [HERE](https://sonarr.tv/#downloads-v3-linux-ubuntu). Please refer for the latest updates.
 
+During the installation, you will be asked which user and group Sonarr must run as. It's important to choose these correctly to avoid permission issues with your media files. I suggest you keep at least the group named `homelab` and username `storm` identical between your download client(s) and Sonarr. 
+
+First start your Sonarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `112 (sonarr)` > `>_ Shell` and type the following:
+
+```
+sudo apt-get update -y &&
+sudo apt install gnupg ca-certificates -y &&
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
-sudo apt install apt-transport-https ca-certificates -y &&
-echo "deb https://download.mono-project.com/repo/ubuntu stable-xenial main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
+echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
 sudo apt update -y &&
-sudo apt install mono-devel -y &&
-wget https://mediaarea.net/repo/deb/repo-mediaarea_1.0-9_all.deb && dpkg -i repo-mediaarea_1.0-9_all.deb && apt-get update
+wget https://mediaarea.net/repo/deb/repo-mediaarea_1.0-9_all.deb && dpkg -i repo-mediaarea_1.0-9_all.deb && apt-get update -y &&
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 2009837CBFFD68F45BC180471F4F90DE2A9B4BF8 &&
+echo "deb https://apt.sonarr.tv/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/sonarr.list &&
+sudo apt update -y &&
+sudo apt install sonarr -y
+```
 
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 2009837CBFFD68F45BC180471F4F90DE2A9B4BF8
-echo "deb https://apt.sonarr.tv/ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/sonarr.list
-sudo apt update
+Browse to http://192.168.50.112:8989 to start using Sonarr. 
