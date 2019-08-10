@@ -450,6 +450,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 ```
 pct create 111 local:vztmpl/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
+
 **Script (B):** Excluding LXC Mount Points:
 ```
 pct create 111 local:vztmpl/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
@@ -594,7 +595,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | SSH Public key | Add one if you want to
 | **Template**
 | Storage | `local` |
-| Template | `ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz` |
+| Template | `ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz` |
 | **Root Disk**
 | Storage |`typhoon-share`|
 | Disk Size |`10 GiB`|
@@ -641,7 +642,7 @@ pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 ### 5.2 Setup Sonarr Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 5.1 then you have no Moint Points.
 
-Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
+Please note your Proxmox Sonarr LXC **MUST BE** in the shutdown state before proceeding.
 
 To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
 ```
@@ -670,4 +671,128 @@ sudo apt update -y &&
 sudo apt install sonarr -y
 ```
 
-Browse to http://192.168.50.112:8989 to start using Sonarr. 
+Browse to http://192.168.50.112:8989 to start using Sonarr.
+
+## 6.0 Radarr LXC - Ubuntu 18.04
+Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
+
+### 6.1 Create a Ubuntu 18.04 LXC for Radarr
+Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
+| :---  | :---: |
+| **General**
+| Node | `typhoon-01` |
+| CT ID |`113`|
+| Hostname |`radarr`|
+| Unprivileged container | `☑` |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
+| **Template**
+| Storage | `local` |
+| Template | `ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz` |
+| **Root Disk**
+| Storage |`typhoon-share`|
+| Disk Size |`10 GiB`|
+| **CPU**
+| Cores |`1`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
+| **Memory**
+| Memory (MiB) |`2048`|
+| Swap (MiB) |`256`|
+| **Network**
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | `50`
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | `☑`
+| IPv4 | `☑  Static`
+| IPv4/CIDR |`192.168.50.113/24`|
+| Gateway (IPv4) |`192.168.50.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
+| **DNS**
+| DNS domain | Leave Default (use host settings)
+| DNS servers | Leave Default (use host settings)
+| **Confirm**
+| Start after Created | `☐`
+
+And Click `Finish` to create your Radarr LXC. The above will create the Radarr LXC without any of the required local Mount Points to the host.
+
+If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Radarr LXC):
+
+**Script (A):** Including LXC Mount Points
+```
+pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.113/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+```
+
+**Script (B):** Excluding LXC Mount Points:
+```
+pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.113/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
+
+### 5.2 Setup Radarr Mount Points - Ubuntu 18.04
+If you used **Script (B)** in Section 5.1 then you have no Moint Points.
+
+Please note your Proxmox Radarr LXC **MUST BE** in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
+```
+pct set 113 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
+pct set 113 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 113 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+```
+
+### 5.3 Install Radarr
+First start your Radarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `113 (radarr)` > `>_ Shell` and insert by cut & pasting the following:
+
+```
+sudo apt-get update -y &&
+sudo apt install gnupg ca-certificates -y &&
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
+echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
+sudo apt update -y &&
+sudo apt install mono-devel -y &&
+cd /opt &&
+curl -L -O $( curl -s https://api.github.com/repos/Radarr/Radarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
+tar -xvzf Radarr.develop.*.linux.tar.gz &&
+rm *.linux.tar.gz &&
+sudo chown -R root:root /opt/Radarr &&
+
+echo -e "[Unit]
+Description=Radarr Daemon
+After=syslog.target network.target
+
+[Service]
+# Change the user and group variables here.
+User=root
+Group=root
+
+Type=simple
+
+# Change the path to Radarr or mono here if it is in a different location for you.
+ExecStart=/usr/bin/mono --debug /opt/Radarr/Radarr.exe -nobrowser
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+# These lines optionally isolate (sandbox) Radarr from the rest of the system.
+# Make sure to add any paths it might use to the list below (space-separated).
+#ReadWritePaths=/opt/Radarr /path/to/movies/folder
+#ProtectSystem=strict
+#PrivateDevices=true
+#ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/radarr.service &&
+sudo systemctl enable radarr.service &&
+sudo systemctl start radarr.service &&
+sudo reboot
+```
+
+Browse to http://192.168.50.112:8989 to start using Sonarr.
