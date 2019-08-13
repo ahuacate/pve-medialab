@@ -18,7 +18,7 @@ Tasks to be performed are:
 - [ ] 1.0 PiHole LXC - CentOS7
 - [ ] 2.0 UniFi Controller - CentOS7
 - [ ] 3.0 Jellyfin LXC - CentOS (*Not working*)
-- [ ] 4.0 Jellyfin LXC - Ubuntu 16.04
+- [ ] 4.0 Jellyfin LXC - Ubuntu 18.04
 
 >  **About LXC Installations:**
 CentosOS7 is my preferred linux distribution for VMs and LXC containers. Although, some applications like Jellyfin work best on Ubuntu.
@@ -381,22 +381,22 @@ pct set 111 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
 pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
-## 4.0 Jellyfin LXC - Ubuntu 16.04
+## 4.0 Jellyfin LXC - Ubuntu 18.04
 >  This 100% works. 
 
 Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
 
 Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: and at the time of writing this media server software seems like the best available solution (and is free).
 
-### 4.1 Download the Ubuntu LXC template - Ubuntu 16.04
-First you need to add Ubuntu 16.04 LXC to Proxmox templates. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-16.04-standard` LXC and click `Download`.
+### 4.1 Download the Ubuntu LXC template - Ubuntu 18.04
+First you need to add Ubuntu 18.04 LXC to Proxmox templates. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
 
 Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 ```
-wget  http://download.proxmox.com/images/system/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz
+wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 4.2 Create a Ubuntu 16.04 LXC for Jellyfin - Ubuntu 16.04
+### 4.2 Create a Ubuntu 18.04 LXC for Jellyfin - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -412,7 +412,7 @@ Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the 
 | SSH Public key | Add one if you want to
 | **Template**
 | Storage | `local` |
-| Template |`ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz`|
+| Template |`ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz`|
 | **Root Disk**
 | Storage |`typhoon-share`|
 | Disk Size |`20 GiB`|
@@ -448,15 +448,15 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 111 local:vztmpl/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
+pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
 **Script (B):** Excluding LXC Mount Points:
 ```
-pct create 111 local:vztmpl/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 4.3 Configure and Install VAAPI - Ubuntu 16.04
+### 4.3 Configure and Install VAAPI - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
@@ -526,7 +526,7 @@ vainfo: Supported profile and entrypoints
       VAProfileVP9Profile2            : VAEntrypointVLD
 ```
 
-### 4.4 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 16.04
+### 4.4 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Here we edit the LXC configuration file with the line `lxc.cgroup.devices.allow` to declare your hardmetal GPU device to your Jellyfin LXC container so it can access your hosts GPU.
@@ -545,22 +545,23 @@ lxc.cgroup.devices.allow = c 226:0 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/111.conf
 ```
 
-### 4.5 Install Jellyfin - Ubuntu 16.04
+### 4.5 Install Jellyfin - Ubuntu 18.04
 This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
+sudo apt update -y &&
 sudo apt install apt-transport-https &&
+sudo apt install gnupg gnupg2 gnupg1 -y &&
 wget -O - https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | sudo apt-key add - &&
 echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/ubuntu $( lsb_release -c -s ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list &&
-sudo apt update &&
+sudo apt update -y &&
 sudo apt install jellyfin -y &&
-sudo systemctl enable jellyfin &&
 sudo systemctl restart jellyfin
 ```
 
-### 4.6 Setup Jellyfin Mount Points - Ubuntu 16.04
+### 4.6 Setup Jellyfin Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 4.2 then you have no Moint Points.
 
 Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
