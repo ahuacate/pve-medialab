@@ -479,7 +479,8 @@ crw-rw---- 1 root video 226, 128 Jul 26 14:24 renderD128
 
 Now you want to install VAINFO on Proxmox nodes typhoon-01 and typhoon-02. Go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
 ```
-apt install vainfo -y
+apt install vainfo -y &&
+chmod 666 /dev/dri/renderD128
 ```
 
 To validate your installation go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type `vainfo` and the results should be similiar to whats shown below:
