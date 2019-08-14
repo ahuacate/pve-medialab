@@ -348,12 +348,13 @@ vainfo: Supported profile and entrypoints
       VAProfileVP9Profile2            : VAEntrypointVLD
 ```
 ### 4.4 Create a rc.local
-For FFMPEG to work we must create a script to `chmod 666 /dev/dri/renderD128` everytime a Proxmox host boots. Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
+For FFMPEG to work we must create a script to `chmod 666 /dev/dri/renderD128` everytime the Proxmox host reboots. Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
 ```
 echo '#!/bin/sh -e
 /bin/chmod 666 /dev/dri/renderD128
 exit 0' > /etc/rc.local &&
-chmod +x /etc/rc.local
+chmod +x /etc/rc.local &&
+bash /etc/rc.local
 ```
 
 ### 4.5 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
