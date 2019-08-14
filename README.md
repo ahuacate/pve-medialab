@@ -479,7 +479,7 @@ crw-rw---- 1 root video 226, 128 Jul 26 14:24 renderD128
 
 Now you want to install VAINFO on Proxmox nodes typhoon-01 and typhoon-02. Go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
 ```
-apt install vainfo -y &&
+apt install vainfo -y
 chmod 666 /dev/dri/renderD128
 ```
 
@@ -526,8 +526,16 @@ vainfo: Supported profile and entrypoints
       VAProfileVP9Profile0            : VAEntrypointEncSlice
       VAProfileVP9Profile2            : VAEntrypointVLD
 ```
+### 4.4 Create a rc.local
+For FFMPEG to work we must create a script to `chmod 666 /dev/dri/renderD128` everytime a Proxmox host boots. Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
+```
+echo '#!/bin/sh -e
+/bin/chmod 666 /dev/dri/renderD128
+exit 0' > /etc/rc.local &&
+chmod +x /etc/rc.local
+```
 
-### 4.4 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
+### 4.5 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Here we edit the LXC configuration file with the line `lxc.cgroup.devices.allow` to declare your hardmetal GPU device to your Jellyfin LXC container so it can access your hosts GPU.
@@ -546,7 +554,7 @@ lxc.cgroup.devices.allow = c 226:0 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/111.conf
 ```
 
-### 4.5 Install Jellyfin - Ubuntu 18.04
+### 4.6 Install Jellyfin - Ubuntu 18.04
 This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
@@ -562,7 +570,7 @@ sudo apt install jellyfin -y &&
 sudo systemctl restart jellyfin
 ```
 
-### 4.6 Setup Jellyfin Mount Points - Ubuntu 18.04
+### 4.7 Setup Jellyfin Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 4.2 then you have no Moint Points.
 
 Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
@@ -575,7 +583,7 @@ pct set 111 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
 pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
-### 4.6 Check your Jellyfin Installation
+### 4.8 Check your Jellyfin Installation
 In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
 
 ## 5.0 Sonarr LXC - Ubuntu 18.04
