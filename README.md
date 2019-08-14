@@ -408,7 +408,7 @@ pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ### 4.8 Check your Jellyfin Installation
 In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
 
-## 5.0 NZBGET LXC - Ubuntu 18.04
+## 5.0 NZBget LXC - Ubuntu 18.04
 NZBGet is a binary downloader, which downloads files from Usenet based on information given in nzb-files.
 
 NZBGet is written in C++ and is known for its extraordinary performance and efficiency.
@@ -421,7 +421,7 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 5.2 Create a Ubuntu 18.04 LXC for NZBGET - Ubuntu 18.04
+### 5.2 Create a Ubuntu 18.04 LXC for NZBget - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -452,36 +452,36 @@ Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the 
 | Name | `eth0`
 | Mac Address | `auto`
 | Bridge | `vmbr0`
-| VLAN Tag | `50`
+| VLAN Tag | `30`
 | Rate limit (MN/s) | Leave Default (unlimited)
 | Firewall | `☑`
 | IPv4 | `☑  Static`
-| IPv4/CIDR |`192.168.50.111/24`|
-| Gateway (IPv4) |`192.168.50.5`|
+| IPv4/CIDR |`192.168.30.112/24`|
+| Gateway (IPv4) |`192.168.30.5`|
 | IPv6 | Leave Blank
 | IPv4/CIDR | Leave Blank |
 | Gateway (IPv6) | Leave Blank |
 | **DNS**
-| DNS domain | Leave Default (use host settings)
-| DNS servers | Leave Default (use host settings)
+| DNS domain | `192.168.30.5`
+| DNS servers | `192.168.30.5`
 | **Confirm**
 | Start after Created | `☐`
 
-And Click `Finish` to create your NZBGET LXC. The above will create the NZBGET LXC without any of the required local Mount Points to the host.
+And Click `Finish` to create your NZBget LXC. The above will create the NZBget LXC without any of the required local Mount Points to the host.
 
 If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Jellyfin LXC):
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.112/24,type=veth --ostype centos --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password --mp0 /typhoon-share/downloads,mp=/mnt/downloads
+pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password --mp0 /typhoon-share/downloads,mp=/mnt/downloads
 ```
 
 **Script (B):** Excluding LXC Mount Points:
 ```
-pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.112/24,type=veth --ostype centos --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
+pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
-### 5.3 Install NZBGET - Ubuntu 18.04
+### 5.3 Install NZBget - Ubuntu 18.04
 This is easy. First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
