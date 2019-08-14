@@ -430,7 +430,7 @@ Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the 
 | Node | `typhoon-01` |
 | CT ID |`112`|
 | Hostname |`nzbget`|
-| Unprivileged container | `☑` |
+| Unprivileged container | `☐` |
 | Resource Pool | Leave Blank
 | Password | Enter your pasword
 | Password | Enter your pasword
