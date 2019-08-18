@@ -773,15 +773,41 @@ First start your Sonarr LXC and login. Then go to the Proxmox web interface `typ
 sudo apt-get update -y &&
 sudo apt install gnupg ca-certificates -y &&
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
-echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
+sudo echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
 sudo apt update -y &&
-wget https://mediaarea.net/repo/deb/repo-mediaarea_1.0-9_all.deb && dpkg -i repo-mediaarea_1.0-9_all.deb && apt-get update -y &&
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 2009837CBFFD68F45BC180471F4F90DE2A9B4BF8 &&
-echo "deb https://apt.sonarr.tv/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/sonarr.list &&
+sudo apt install mono-devel -y &&
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0xA236C58F409091A18ACA53CBEBFF6B99D9B78493 &&
+echo "deb http://apt.sonarr.tv/ master main" | sudo tee /etc/apt/sources.list.d/sonarr.list &&
 sudo apt update -y &&
-sudo apt install sonarr -y
+sudo apt install nzbdrone -y
 ```
 
+### 8.4 Create Sonarr Service file - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
+```
+sudo echo -e "[Unit]
+Description=Sonarr Daemon
+After=network.target
+
+[Service]
+User=root
+Group=root
+
+Type=simple
+
+# Change the path to Radarr or mono here if it is in a different location for you.
+ExecStart=/usr/bin/mono --debug /opt/NzbDrone/NzbDrone.exe -nobrowser
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/sonarr.service &&
+sudo systemctl enable sonarr.service &&
+sudo systemctl start sonarr.service &&
+sudo reboot
+```
+### 8.5 Setup Sonarr
 Browse to http://192.168.50.115:8989 to start using Sonarr.
 
 ---
