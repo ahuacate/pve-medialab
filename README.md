@@ -24,8 +24,6 @@ Tasks to be performed are:
 CentosOS7 is my preferred linux distribution for VMs and LXC containers. Although, some applications like Jellyfin, Sonarr and Radarr seem easier to install and configure on Ubuntu 18.04.
 Proxmox itself ships a set of basic templates and to download a prebuilt distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `centos-7-default` and `ubuntu-18.04-standard` templates.
 
----
-
 ## 1.0 PiHole LXC - CentOS7
 Here we are going install PiHole which is a internet tracker blocking application which acts as a DNS sinkhole. Basically its charter is to block advertisments, tracking domains, tracking cookies and all those personal data mining collection companies.
 
@@ -120,6 +118,8 @@ You can now login to your PiHole server using your preferred web browser with th
 ### 1.4 Enable DNSSEC
 You can enable DNSSEC when using Cloudfare which support DNSSEC. Using the PiHole webadmin URL http://192.168.1.254/admin/index.php go to `Settings` > `DNS Tab` and enable `USE DNSSEC` under Advanced DNS Settings. Click `Save`.
 
+---
+
 ## 2.0 UniFi Controller - CentOS7
 Rather than buy a UniFi Cloud Key to securely run a instance of the UniFi Controller software you can use Proxmox LXC container to host your UniFi Controller software.
 
@@ -201,8 +201,12 @@ Now on your Proxmox UniFi LXC, https://192.168.1.251:8443/ , you must restore th
 
 But make sure when you are restoring the backup you Have closed the previous UniFi Controller server and software because you cannot manage the APs by two controller at a time.
 
+---
+
 ## 3.0 Jellyfin LXC - CentOS
 >  **Under development.** I could'nt get Jellyfin working with a Proxmox CentOS7 LXC. The problems is with the VAAPI GPU Passthru. Also Jellyfin frontend WebGUI restart button function fails. So best use my Ubuntu LXC recipe [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#40-jellyfin-lxc---ubuntu-1604).
+
+---
 
 ## 4.0 Jellyfin LXC - Ubuntu 18.04
 >  This 100% works. 
@@ -410,6 +414,8 @@ pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ### 4.8 Check your Jellyfin Installation
 In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
 
+---
+
 ## 5.0 NZBget LXC - Ubuntu 18.04
 NZBGet is a binary downloader, which downloads files from Usenet based on information given in nzb-files.
 
@@ -530,6 +536,8 @@ sudo systemctl start nzbget
 
 ### 5.6 Setup NZBget 
 Browse to http://192.168.50.112:6789 to start using NZBget. Your NZBget default login details are (login:nzbget, password:tegbzn6789). Instructions to setup NZBget are [HERE]
+
+---
 
 ## 6.0 Deluge LXC - Ubuntu 18.04
 Deluge is a lightweight, Free Software, cross-platform BitTorrent client.
@@ -661,8 +669,12 @@ sudo systemctl start nzbget
 ### 6.6 Setup NZBget 
 Browse to http://192.168.50.112:6789 to start using NZBget. Your NZBget default login details are (login:nzbget, password:tegbzn6789). Instructions to setup NZBget are [HERE]
 
+---
+
 ## 7.0 Flexget LXC - Ubuntu 18.04
 Under Development.
+
+---
 
 ## 8.0 Sonarr LXC - Ubuntu 18.04
 Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
@@ -761,10 +773,12 @@ sudo apt install sonarr -y
 
 Browse to http://192.168.50.115:8989 to start using Sonarr.
 
-## 6.0 Radarr LXC - Ubuntu 18.04
+---
+
+## 9.0 Radarr LXC - Ubuntu 18.04
 Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
-### 6.1 Create a Ubuntu 18.04 LXC for Radarr
+### 9.1 Create a Ubuntu 18.04 LXC for Radarr
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -824,7 +838,7 @@ pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.113/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 5.2 Setup Radarr Mount Points - Ubuntu 18.04
+### 9.2 Setup Radarr Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 5.1 then you have no Moint Points.
 
 Please note your Proxmox Radarr LXC **MUST BE** in the shutdown state before proceeding.
@@ -836,7 +850,7 @@ pct set 113 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 113 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 5.3 Install Radarr
+### 9.3 Install Radarr
 First start your Radarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `113 (radarr)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
