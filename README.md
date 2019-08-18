@@ -822,7 +822,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | :---  | :---: |
 | **General**
 | Node | `typhoon-01` |
-| CT ID |`113`|
+| CT ID |`116`|
 | Hostname |`radarr`|
 | Unprivileged container | `☑` |
 | Resource Pool | Leave Blank
@@ -850,7 +850,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Rate limit (MN/s) | Leave Default (unlimited)
 | Firewall | `☑`
 | IPv4 | `☑  Static`
-| IPv4/CIDR |`192.168.50.113/24`|
+| IPv4/CIDR |`192.168.50.116/24`|
 | Gateway (IPv4) |`192.168.50.5`|
 | IPv6 | Leave Blank
 | IPv4/CIDR | Leave Blank |
@@ -867,12 +867,12 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.113/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.116/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 **Script (B):** Excluding LXC Mount Points:
 ```
-pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.113/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.116/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
 ### 9.2 Setup Radarr Mount Points - Ubuntu 18.04
@@ -882,13 +882,13 @@ Please note your Proxmox Radarr LXC **MUST BE** in the shutdown state before pro
 
 To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
 ```
-pct set 113 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
-pct set 113 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
-pct set 113 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct set 116 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
+pct set 116 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 116 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 ### 9.3 Install Radarr
-First start your Radarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `113 (radarr)` > `>_ Shell` and insert by cut & pasting the following:
+First start your Radarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
 sudo apt-get update -y &&
@@ -901,8 +901,11 @@ cd /opt &&
 curl -L -O $( curl -s https://api.github.com/repos/Radarr/Radarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
 tar -xvzf Radarr.develop.*.linux.tar.gz &&
 rm *.linux.tar.gz &&
-sudo chown -R root:root /opt/Radarr &&
-
+sudo chown -R root:root /opt/Radarr
+```
+### 9.4 Create Radarr Service file - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
+```
 echo -e "[Unit]
 Description=Radarr Daemon
 After=syslog.target network.target
@@ -920,13 +923,6 @@ TimeoutStopSec=20
 KillMode=process
 Restart=on-failure
 
-# These lines optionally isolate (sandbox) Radarr from the rest of the system.
-# Make sure to add any paths it might use to the list below (space-separated).
-#ReadWritePaths=/opt/Radarr /path/to/movies/folder
-#ProtectSystem=strict
-#PrivateDevices=true
-#ProtectHome=true
-
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/radarr.service &&
 sudo systemctl enable radarr.service &&
@@ -934,4 +930,6 @@ sudo systemctl start radarr.service &&
 sudo reboot
 ```
 
-Browse to http://192.168.50.112:8989 to start using Sonarr.
+### 9.5 Setup Radarr
+Browse to http://192.168.50.116:7878 to start using Radarr.
+
