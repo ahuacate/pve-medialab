@@ -489,7 +489,18 @@ pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
-### 5.3 Install NZBget - Ubuntu 18.04
+### 5.3 Setup NZBget Mount Points - Ubuntu 18.04
+
+If you used Script (B) in Section 5.2 then you have no Moint Points.
+
+Please note your Proxmox NZBget LXC MUST BE in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+pct set 112 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
+```
+
+### 5.4 Install NZBget - Ubuntu 18.04
 This is easy. First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
@@ -501,7 +512,7 @@ sh /tmp/nzbget-latest-bin-linux.run --destdir /opt/nzbget &&
 rm /tmp/nzbget-latest-bin-linux.run
 ```
 
-### 5.4 Edit NZBget confifuration file - Ubuntu 18.04
+### 5.5 Edit NZBget confifuration file - Ubuntu 18.04
 The NZBGET configuration file needs to have its default download location changed to your ZFS typhoon-share downloads folder. NZBGET default variable on the nzbget.conf file is set to `MainDir=${AppDir}/downloads` which we need to change to `MainDir=/mnt/downloads/nzbget`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
@@ -510,7 +521,7 @@ Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Sh
 sed -i 's|MainDir=${AppDir}/downloads|MainDir=/mnt/downloads/nzbget|g' /opt/nzbget/nzbget.conf
 ```
 
-### 5.5 Create NZBget Service file - Ubuntu 18.04
+### 5.6 Create NZBget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -534,7 +545,7 @@ sudo systemctl enable nzbget &&
 sudo systemctl start nzbget
 ```
 
-### 5.6 Setup NZBget 
+### 5.7 Setup NZBget 
 Browse to http://192.168.50.112:6789 to start using NZBget. Your NZBget default login details are (login:nzbget, password:tegbzn6789). Instructions to setup NZBget are [HERE]
 
 ---
