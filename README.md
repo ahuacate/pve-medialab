@@ -896,11 +896,11 @@ sudo apt install gnupg ca-certificates -y &&
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
 echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
 sudo apt update -y &&
-sudo apt install mono-devel -y &&
+sudo apt install mono-devel curl -y &&
 cd /opt &&
-curl -L -O $( curl -s https://api.github.com/repos/Radarr/Radarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
-tar -xvzf Radarr.develop.*.linux.tar.gz &&
-rm *.linux.tar.gz &&
+sudo curl -L -O $( curl -s https://api.github.com/repos/Radarr/Radarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
+sudo tar -xvzf Radarr.develop.*.linux.tar.gz &&
+sudo rm *.linux.tar.gz &&
 sudo chown -R root:root /opt/Radarr
 ```
 ### 9.4 Create Radarr Service file - Ubuntu 18.04
