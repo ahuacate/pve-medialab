@@ -751,7 +751,7 @@ pct create 115 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 ```
 
 ### 8.2 Setup Sonarr Mount Points - Ubuntu 18.04
-If you used **Script (B)** in Section 5.1 then you have no Moint Points.
+If you used **Script (B)** in Section 8.1 then you have no Moint Points.
 
 Please note your Proxmox Sonarr LXC **MUST BE** in the shutdown state before proceeding.
 
@@ -877,7 +877,7 @@ pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 ```
 
 ### 9.2 Setup Radarr Mount Points - Ubuntu 18.04
-If you used **Script (B)** in Section 5.1 then you have no Moint Points.
+If you used **Script (B)** in Section 9.1 then you have no Moint Points.
 
 Please note your Proxmox Radarr LXC **MUST BE** in the shutdown state before proceeding.
 
@@ -933,4 +933,127 @@ sudo reboot
 
 ### 9.5 Setup Radarr
 Browse to http://192.168.50.116:7878 to start using Radarr.
+
+---
+
+## 10.0 Lidarr LXC - Ubuntu 18.04
+Lidarr is a music collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new tracks from your favorite artists and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
+
+### 10.1 Create a Ubuntu 18.04 LXC for Lidarr
+Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
+| :---  | :---: |
+| **General**
+| Node | `typhoon-01` |
+| CT ID |`117`|
+| Hostname |`lidarr`|
+| Unprivileged container | `☑` |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
+| **Template**
+| Storage | `local` |
+| Template | `ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz` |
+| **Root Disk**
+| Storage |`typhoon-share`|
+| Disk Size |`10 GiB`|
+| **CPU**
+| Cores |`1`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
+| **Memory**
+| Memory (MiB) |`2048`|
+| Swap (MiB) |`256`|
+| **Network**
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | `50`
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | `☑`
+| IPv4 | `☑  Static`
+| IPv4/CIDR |`192.168.50.117/24`|
+| Gateway (IPv4) |`192.168.50.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
+| **DNS**
+| DNS domain | Leave Default (use host settings)
+| DNS servers | Leave Default (use host settings)
+| **Confirm**
+| Start after Created | `☐`
+
+And Click `Finish` to create your Lidarr LXC. The above will create the Lidarr LXC without any of the required local Mount Points to the host.
+
+If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Lidarr LXC):
+
+**Script (A):** Including LXC Mount Points
+```
+pct create 117 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lidarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.117/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+```
+
+**Script (B):** Excluding LXC Mount Points:
+```
+pct create 117 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lidarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.117/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
+
+### 10.2 Setup Lidarr Mount Points - Ubuntu 18.04
+If you used **Script (B)** in Section 10.1 then you have no Moint Points.
+
+Please note your Proxmox Radarr LXC **MUST BE** in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
+```
+pct set 117 -mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music &&
+pct set 117 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 117 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+```
+
+### 9.3 Install Lidarr
+First start your Lidarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and insert by cut & pasting the following:
+
+```
+sudo apt-get update -y &&
+sudo apt install gnupg ca-certificates -y &&
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
+echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
+sudo apt update -y &&
+sudo apt install mono-devel curl -y &&
+cd /opt &&
+sudo curl -L -O $( curl -s https://api.github.com/repos/lidarr/Lidarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
+sudo tar -xvzf Lidarr.develop.*.linux.tar.gz &&
+sudo rm *.linux.tar.gz &&
+sudo chown -R root:root /opt/Lidarr
+```
+### 9.4 Create Lidarr Service file - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
+```
+echo -e "[Unit]
+Description=Lidarr Daemon
+After=network.target
+
+[Service]
+# Change the user and group variables here.
+User=root
+Group=root
+
+Type=simple
+
+# Change the path to Radarr or mono here if it is in a different location for you.
+ExecStart=/usr/bin/mono --debug /opt/Lidarr/Lidarr.exe -nobrowser
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/lidarr.service &&
+sudo systemctl enable lidarr.service &&
+sudo systemctl start lidarr.service &&
+sudo reboot
+```
+
+### 9.5 Setup Lidarr
+Browse to http://192.168.50.117:8686 to start using Lidarr.
 
