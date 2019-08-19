@@ -779,7 +779,8 @@ sudo apt install mono-devel -y &&
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0xA236C58F409091A18ACA53CBEBFF6B99D9B78493 &&
 echo "deb http://apt.sonarr.tv/ master main" | sudo tee /etc/apt/sources.list.d/sonarr.list &&
 sudo apt update -y &&
-sudo apt install nzbdrone -y
+sudo apt install nzbdrone -y &&
+sudo chown -R root:root /opt/NzbDrone
 ```
 
 ### 8.4 Create Sonarr Service file - Ubuntu 18.04
