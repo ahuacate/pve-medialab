@@ -1125,7 +1125,7 @@ pct create 118 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 ### 11.2 Setup Lazylibrarian Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 11.1 then you have no Moint Points.
 
-Please note your Proxmox Lazylibrarian LXC **MUST BE** in the shutdown state before proceeding.
+Please note your Proxmox Lazylibrarian (lazy) LXC **MUST BE** in the shutdown state before proceeding.
 
 To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
 ```
@@ -1135,7 +1135,7 @@ pct set 118 -mp2 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 118 -mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 10.3 Install Lazylibrarian
+### 11.3 Install Lazylibrarian
 First start your Lazylibrarian LXC and login. Then go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
@@ -1144,7 +1144,7 @@ sudo apt-get install git-core python3 -y
 cd /opt
 sudo git clone https://gitlab.com/LazyLibrarian/LazyLibrarian.git
 ```
-### 10.4 Create Lazylibrarian Service file - Ubuntu 18.04
+### 11.4 Create Lazylibrarian Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
 ```
 sudo echo -e "[Unit]
@@ -1165,6 +1165,6 @@ sudo systemctl restart lazy.service &&
 sudo reboot
 ```
 
-### 10.5 Setup Lazylibrarian
+### 11.5 Setup Lazylibrarian
 Browse to http://192.168.50.118:5299 to start using Lazylibrarian (aka lazy).
 
