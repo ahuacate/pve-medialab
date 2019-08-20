@@ -1139,9 +1139,9 @@ pct set 118 -mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 First start your Lazylibrarian LXC and login. Then go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
-sudo apt-get update -y
-sudo apt-get install git-core python3 -y
-cd /opt
+sudo apt-get update -y &&
+sudo apt-get install git-core python3 -y &&
+cd /opt &&
 sudo git clone https://gitlab.com/LazyLibrarian/LazyLibrarian.git
 ```
 ### 11.4 Create Lazylibrarian Service file - Ubuntu 18.04
