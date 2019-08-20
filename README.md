@@ -1011,7 +1011,7 @@ pct set 117 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 117 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 9.3 Install Lidarr
+### 10.3 Install Lidarr
 First start your Lidarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
@@ -1027,7 +1027,7 @@ sudo tar -xvzf Lidarr.develop.*.linux.tar.gz &&
 sudo rm *.linux.tar.gz &&
 sudo chown -R root:root /opt/Lidarr
 ```
-### 9.4 Create Lidarr Service file - Ubuntu 18.04
+### 10.4 Create Lidarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -1054,6 +1054,117 @@ sudo systemctl start lidarr.service &&
 sudo reboot
 ```
 
-### 9.5 Setup Lidarr
+### 10.5 Setup Lidarr
 Browse to http://192.168.50.117:8686 to start using Lidarr.
+
+---
+
+## 11.0 Lazylibrarian LXC - Ubuntu 18.04
+LazyLibrarian is a program available for Linux that is used to follow authors and grab metadata for all your digital reading needs. It uses a combination of Goodreads Librarything and optionally GoogleBooks as sources for author info and book info. It’s nice to be able to have all of our book in digital form since books are extremely heavy and take up a lot of space, which we are already lacking in the bus.
+
+### 11.1 Create a Ubuntu 18.04 LXC for Lazylibrarian
+Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
+| :---  | :---: |
+| **General**
+| Node | `typhoon-01` |
+| CT ID |`1178`|
+| Hostname |`lazy`|
+| Unprivileged container | `☑` |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
+| **Template**
+| Storage | `local` |
+| Template | `ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz` |
+| **Root Disk**
+| Storage |`typhoon-share`|
+| Disk Size |`10 GiB`|
+| **CPU**
+| Cores |`1`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
+| **Memory**
+| Memory (MiB) |`1024`|
+| Swap (MiB) |`256`|
+| **Network**
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | `50`
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | `☑`
+| IPv4 | `☑  Static`
+| IPv4/CIDR |`192.168.50.118/24`|
+| Gateway (IPv4) |`192.168.50.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
+| **DNS**
+| DNS domain | Leave Default (use host settings)
+| DNS servers | Leave Default (use host settings)
+| **Confirm**
+| Start after Created | `☐`
+
+And Click `Finish` to create your Lazylibrarian LXC. The above will create the Lazylibrarian LXC without any of the required local Mount Points to the host.
+
+If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Lazylibrarian LXC):
+
+**Script (A):** Including LXC Mount Points
+```
+pct create 118 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lazy --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.118/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp1 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp2 /typhoon-share/downloads,mp=/mnt/downloads --mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+```
+
+**Script (B):** Excluding LXC Mount Points:
+```
+pct create 118 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lazy --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.118/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
+
+### 11.2 Setup Lazylibrarian Mount Points - Ubuntu 18.04
+If you used **Script (B)** in Section 11.1 then you have no Moint Points.
+
+Please note your Proxmox Lazylibrarian LXC **MUST BE** in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
+```
+pct set 118 -mp0 /mnt/pve/cyclone-01-audio,mp=/mnt/audio &&
+pct set 118 -mp1 /mnt/pve/cyclone-01-books,mp=/mnt/books
+pct set 118 -mp2 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 118 -mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+```
+
+### 10.3 Install Lazylibrarian
+First start your Lazylibrarian LXC and login. Then go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and insert by cut & pasting the following:
+
+```
+sudo apt-get update -y
+sudo apt-get install git-core python3 -y
+cd /opt
+sudo git clone https://gitlab.com/LazyLibrarian/LazyLibrarian.git
+```
+### 10.4 Create Lazylibrarian Service file - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
+```
+sudo echo -e "[Unit]
+Description=LazyLibrarian
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/LazyLibrarian/LazyLibrarian.py --daemon --config /opt/LazyLibrarian/lazylibrarian.ini --datadir /opt/LazyLibrarian/.lazylibrarian --nolaunch --quiet
+GuessMainPID=no
+Type=forking
+User=root
+Group=root
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/lazy.service &&
+sudo systemctl enable lazy.service
+sudo systemctl restart lazy.service &&
+sudo reboot
+```
+
+### 10.5 Setup Lazylibrarian
+Browse to http://192.168.50.118:5299 to start using Lazylibrarian (aka lazy).
 
