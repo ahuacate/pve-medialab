@@ -21,7 +21,7 @@ Tasks to be performed are:
 - [ ] 4.0 Jellyfin LXC - Ubuntu 18.04
 
 >  **About LXC Installations:**
-CentosOS7 is my preferred linux distribution for VMs and LXC containers. Although, some applications like Jellyfin, Sonarr and Radarr seem easier to install and configure on Ubuntu 18.04.
+CentosOS7 is my preferred linux distribution but for media apps its easier to use Ubuntu 18.04 for your LXC containers. Jellyfin, Sonarr and Radarr and alike seem easier to install and configure on Ubuntu 18.04.
 Proxmox itself ships a set of basic templates and to download a prebuilt distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `centos-7-default` and `ubuntu-18.04-standard` templates.
 
 ## 1.0 PiHole LXC - CentOS7
@@ -550,8 +550,8 @@ Browse to http://192.168.50.112:6789 to start using NZBget. Your NZBget default 
 
 ---
 
-## 6.0 Deluge LXC - Ubuntu 18.04
-Deluge is a lightweight, Free Software, cross-platform BitTorrent client.
+## 6.0 Deluge & Jacket LXC - Ubuntu 18.04
+Deluge is a lightweight, Free Software, cross-platform BitTorrent client. I also install Jacket one the same LXC container.
 
 ### 6.1 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
@@ -561,7 +561,7 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 6.2 Create a Ubuntu 18.04 LXC for Deluge - Ubuntu 18.04
+### 6.2 Create a Ubuntu 18.04 LXC for Deluge & Jacket - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -621,44 +621,49 @@ pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
-### 6.3 Install Deluge - Ubuntu 18.04
+### 6.3 Setup Deluge & Jacket Mount Points - Ubuntu 18.04
+
+If you used Script (B) in Section 6.2 then you have no Moint Points.
+
+Please note your Proxmox Deluge LXC MUST BE in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+pct set 113 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
+```
+
+### 6.4 Install Deluge - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-sudo mkdir /mnt/downloads/deluge /mnt/downloads/nzbget/nzb /mnt/downloads/nzbget/queue /mnt/downloads/nzbget/tmp /mnt/downloads/nzbget/intermediate /mnt/downloads/nzbget/completed &&
-
+sudo mkdir /mnt/downloads/deluge  &&
 sudo apt-get update &&
 sudo apt install software-properties-common -y &&
 sudo add-apt-repository ppa:deluge-team/stable -y &&
 sudo apt-get update &&
-sudo apt-get install deluged deluge-web deluge-webui -y
+sudo apt-get install deluged deluge-webui -y
 ```
+At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
+
 Then create the deluge user and group so that deluge can run as an unprivileged user, which will increase your server’s security.
 ```
 sudo adduser --system --group deluge
 ```
 The --system flag means we are creating a system user instead of normal user. A system user doesn’t have password and can’t login, which is what you would want for Deluge. A home directory /home/deluge/ will be created for this user. You may want to add your user account to the deluge group with the following command so that the user account has access to the files downloaded by Deluge BitTorrent. Files are downloaded to /home/deluge/Downloads by default. Note that you need to re-login for the groups change to take effect.
+
 ```
 sudo gpasswd -a root deluge
-```
-### 6.4 Edit NZBget confifuration file - Ubuntu 18.04
-The NZBGET configuration file needs to have its default download location changed to your ZFS typhoon-share downloads folder. NZBGET default variable on the nzbget.conf file is set to `MainDir=${AppDir}/downloads` which we need to change to `MainDir=/mnt/downloads/nzbget`.
-
-Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
-
-```
-sed -i 's|MainDir=${AppDir}/downloads|MainDir=/mnt/downloads/nzbget|g' /opt/nzbget/nzbget.conf
 ```
 
 ### 6.5 Create Deluge Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
-Description=Deluge Daemon
+Description=Deluge Client Daemon
 Documentation=https://dev.deluge-torrent.org/
-After=network.target
+After=network-online.target
 
 [Service]
 User=deluge
@@ -666,19 +671,44 @@ Group=deluge
 Type=simple
 Umask=007
 ExecStart=/usr/bin/deluged -d
-ExecStop=/opt/nzbget/nzbget -Q
-ExecReload=/opt/nzbget/nzbget -O
 KillMode=process
 Restart=on-failure
 
+# Configures the time to wait before service is stopped forcefully.
+TimeoutStopSec=300
+
 [Install]
-WantedBy=multi-user.target" > /etc/systemd/system/nzbget.service &&
-sudo systemctl enable nzbget &&
-sudo systemctl start nzbget
+WantedBy=multi-user.target" > /etc/systemd/system/deluge.service &&
+sudo systemctl enable deluge &&
+sudo systemctl start deluge
 ```
 
-### 6.6 Setup NZBget 
-Browse to http://192.168.50.112:6789 to start using NZBget. Your NZBget default login details are (login:nzbget, password:tegbzn6789). Instructions to setup NZBget are [HERE]
+### 6.6 Create Deluge WebGUI Service file - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+```
+echo -e "[Unit]
+Description=Deluge Bittorrent Client Web Interface
+Documentation=https://dev.deluge-torrent.org/
+After=network-online.target
+
+[Service]
+User=deluge
+Group=deluge
+
+Type=simple
+Umask=027
+ExecStart=/usr/bin/deluge-web -d
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/deluge-web.service &&
+sudo systemctl enable deluge-web &&
+sudo systemctl restart deluge-web
+```
+
+### 6.6 Setup Deluge 
+Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default login details are (login:nzbget, password:tegbzn6789). Instructions to setup Deluge are [HERE]
+
 
 ---
 
