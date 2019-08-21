@@ -203,19 +203,14 @@ But make sure when you are restoring the backup you Have closed the previous Uni
 
 ---
 
-## 3.0 Jellyfin LXC - CentOS
->  **Under development.** I could'nt get Jellyfin working with a Proxmox CentOS7 LXC. The problems is with the VAAPI GPU Passthru. Also Jellyfin frontend WebGUI restart button function fails. So best use my Ubuntu LXC recipe [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#40-jellyfin-lxc---ubuntu-1604).
-
----
-
-## 4.0 Jellyfin LXC - Ubuntu 18.04
+## 3.0 Jellyfin LXC - Ubuntu 18.04
 >  This 100% works. 
 
 Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
 
 Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: and at the time of writing this media server software seems like the best available solution (and is free).
 
-### 4.1 Download the Ubuntu LXC template - Ubuntu 18.04
+### 3.1 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
 
 Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
@@ -223,7 +218,7 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 4.2 Create a Ubuntu 18.04 LXC for Jellyfin - Ubuntu 18.04
+### 3.2 Create a Ubuntu 18.04 LXC for Jellyfin - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -283,7 +278,7 @@ pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 4.3 Configure and Install VAAPI - Ubuntu 18.04
+### 3.3 Configure and Install VAAPI - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
@@ -353,7 +348,7 @@ vainfo: Supported profile and entrypoints
       VAProfileVP9Profile0            : VAEntrypointEncSlice
       VAProfileVP9Profile2            : VAEntrypointVLD
 ```
-### 4.4 Create a rc.local
+### 3.4 Create a rc.local
 For FFMPEG to work we must create a script to `chmod 666 /dev/dri/renderD128` everytime the Proxmox host reboots. Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
 ```
 echo '#!/bin/sh -e
@@ -363,7 +358,7 @@ chmod +x /etc/rc.local &&
 bash /etc/rc.local
 ```
 
-### 4.5 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
+### 3.5 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Here we edit the LXC configuration file with the line `lxc.cgroup.devices.allow` to declare your hardmetal GPU device to your Jellyfin LXC container so it can access your hosts GPU.
@@ -382,7 +377,7 @@ lxc.cgroup.devices.allow = c 226:0 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/111.conf
 ```
 
-### 4.6 Install Jellyfin - Ubuntu 18.04
+### 3.6 Install Jellyfin - Ubuntu 18.04
 This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
@@ -398,8 +393,8 @@ sudo apt install jellyfin -y &&
 sudo systemctl restart jellyfin
 ```
 
-### 4.7 Setup Jellyfin Mount Points - Ubuntu 18.04
-If you used **Script (B)** in Section 4.2 then you have no Moint Points.
+### 3.7 Setup Jellyfin Mount Points - Ubuntu 18.04
+If you used **Script (B)** in Section 3.2 then you have no Moint Points.
 
 Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
 
@@ -411,17 +406,17 @@ pct set 111 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
 pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
-### 4.8 Check your Jellyfin Installation
+### 3.8 Check your Jellyfin Installation
 In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
 
 ---
 
-## 5.0 NZBget LXC - Ubuntu 18.04
+## 4.0 NZBget LXC - Ubuntu 18.04
 NZBGet is a binary downloader, which downloads files from Usenet based on information given in nzb-files.
 
 NZBGet is written in C++ and is known for its extraordinary performance and efficiency.
 
-### 5.1 Download the Ubuntu LXC template - Ubuntu 18.04
+### 4.1 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
 
 Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
@@ -429,7 +424,7 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 5.2 Create a Ubuntu 18.04 LXC for NZBget - Ubuntu 18.04
+### 4.2 Create a Ubuntu 18.04 LXC for NZBget - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -489,9 +484,9 @@ pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
-### 5.3 Setup NZBget Mount Points - Ubuntu 18.04
+### 4.3 Setup NZBget Mount Points - Ubuntu 18.04
 
-If you used Script (B) in Section 5.2 then you have no Moint Points.
+If you used Script (B) in Section 4.2 then you have no Moint Points.
 
 Please note your Proxmox NZBget LXC MUST BE in the shutdown state before proceeding.
 
@@ -500,7 +495,7 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 pct set 112 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
 ```
 
-### 5.4 Install NZBget - Ubuntu 18.04
+### 4.4 Install NZBget - Ubuntu 18.04
 This is easy. First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
@@ -512,7 +507,7 @@ sh /tmp/nzbget-latest-bin-linux.run --destdir /opt/nzbget &&
 rm /tmp/nzbget-latest-bin-linux.run
 ```
 
-### 5.5 Edit NZBget confifuration file - Ubuntu 18.04
+### 4.5 Edit NZBget confifuration file - Ubuntu 18.04
 The NZBGET configuration file needs to have its default download location changed to your ZFS typhoon-share downloads folder. NZBGET default variable on the nzbget.conf file is set to `MainDir=${AppDir}/downloads` which we need to change to `MainDir=/mnt/downloads/nzbget`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
@@ -521,7 +516,7 @@ Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Sh
 sed -i 's|MainDir=${AppDir}/downloads|MainDir=/mnt/downloads/nzbget|g' /opt/nzbget/nzbget.conf
 ```
 
-### 5.6 Create NZBget Service file - Ubuntu 18.04
+### 4.6 Create NZBget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -545,15 +540,15 @@ sudo systemctl enable nzbget &&
 sudo systemctl start nzbget
 ```
 
-### 5.7 Setup NZBget 
+### 4.7 Setup NZBget 
 Browse to http://192.168.50.112:6789 to start using NZBget. Your NZBget default login details are (login:nzbget, password:tegbzn6789). Instructions to setup NZBget are [HERE]
 
 ---
 
-## 6.0 Deluge & Jacket LXC - Ubuntu 18.04
-Deluge is a lightweight, Free Software, cross-platform BitTorrent client. I also install Jacket one the same LXC container.
+## 5.0 Deluge LXC - Ubuntu 18.04
+Deluge is a lightweight, Free Software, cross-platform BitTorrent client. I also install Jacket in this LXC container.
 
-### 6.1 Download the Ubuntu LXC template - Ubuntu 18.04
+### 5.1 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
 
 Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
@@ -561,7 +556,7 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 6.2 Create a Ubuntu 18.04 LXC for Deluge & Jacket - Ubuntu 18.04
+### 5.2 Create a Ubuntu 18.04 LXC for Deluge - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -621,9 +616,9 @@ pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password
 ```
 
-### 6.3 Setup Deluge & Jacket Mount Points - Ubuntu 18.04
+### 5.3 Setup Deluge & Jacket Mount Points - Ubuntu 18.04
 
-If you used Script (B) in Section 6.2 then you have no Moint Points.
+If you used Script (B) in Section 5.2 then you have no Moint Points.
 
 Please note your Proxmox Deluge LXC MUST BE in the shutdown state before proceeding.
 
@@ -632,7 +627,7 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 pct set 113 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
 ```
 
-### 6.4 Install Deluge - Ubuntu 18.04
+### 5.4 Install Deluge - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
@@ -657,7 +652,7 @@ The --system flag means we are creating a system user instead of normal user. A 
 sudo gpasswd -a root deluge
 ```
 
-### 6.5 Create Deluge Service file - Ubuntu 18.04
+### 5.5 Create Deluge Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -683,7 +678,96 @@ sudo systemctl enable deluge &&
 sudo systemctl start deluge
 ```
 
-### 6.6 Create Deluge WebGUI Service file - Ubuntu 18.04
+### 5.6 Create Deluge WebGUI Service file - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+```
+echo -e "[Unit]
+Description=Deluge Bittorrent Client Web Interface
+Documentation=https://dev.deluge-torrent.org/
+After=network-online.target deluge.service
+Wants=deluge.service
+
+
+[Service]
+User=deluge
+Group=deluge
+
+Type=simple
+Umask=027
+ExecStart=/usr/bin/deluge-web -d
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/deluge-web.service &&
+sudo systemctl enable deluge-web &&
+sudo systemctl restart deluge-web
+```
+
+### 5.6 Setup Deluge 
+Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default login details are password:deluge. Instructions to setup Deluge are [HERE]
+
+---
+
+## 6.0 Jacket LXC - Ubuntu 18.04
+Jackett works as a proxy server: it translates queries from apps (Sonarr, Radarr, Lidarr etc) into tracker-site-specific http queries, parses the html response, then sends results back to the requesting software. This allows for getting recent uploads (like RSS) and performing searches. Jackett is a single repository of maintained indexer scraping & translation logic - removing the burden from other apps.
+
+This is installed on the Deluge LXC container.
+
+### 6.1 Install Jacket - Ubuntu 18.04
+This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+
+```
+sudo mkdir /mnt/downloads/deluge  &&
+sudo apt-get update &&
+sudo apt install software-properties-common -y &&
+
+sudo mkdir /opt/jacket &&
+jackettver=$(wget -q https://github.com/Jackett/Jackett/releases/latest -O - | grep -E \/tag\/ | awk -F "[><]" '{print $3}') &&
+sudo wget -q https://github.com/Jackett/Jackett/releases/download/$jackettver/Jackett.Binaries.Mono.tar.gz &&
+wget -q https://github.com/Jackett/Jackett/releases/latest/Jackett.Binaries.Mono.tar.gz
+tar zxvf /opt/jacket/Jackett.Binaries.Mono.tar.gz
+```
+At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
+
+Then create the deluge user and group so that deluge can run as an unprivileged user, which will increase your server’s security.
+```
+sudo adduser --system --group deluge
+```
+The --system flag means we are creating a system user instead of normal user. A system user doesn’t have password and can’t login, which is what you would want for Deluge. A home directory /home/deluge/ will be created for this user. You may want to add your user account to the deluge group with the following command so that the user account has access to the files downloaded by Deluge BitTorrent. Files are downloaded to /home/deluge/Downloads by default. Note that you need to re-login for the groups change to take effect.
+
+```
+sudo gpasswd -a root deluge
+```
+
+### 5.5 Create Deluge Service file - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+```
+echo -e "[Unit]
+Description=Deluge Client Daemon
+Documentation=https://dev.deluge-torrent.org/
+After=network-online.target
+
+[Service]
+User=deluge
+Group=deluge
+Type=simple
+Umask=007
+ExecStart=/usr/bin/deluged -d
+KillMode=process
+Restart=on-failure
+
+# Configures the time to wait before service is stopped forcefully.
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/deluge.service &&
+sudo systemctl enable deluge &&
+sudo systemctl start deluge
+```
+
+### 5.6 Create Deluge WebGUI Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -706,9 +790,8 @@ sudo systemctl enable deluge-web &&
 sudo systemctl restart deluge-web
 ```
 
-### 6.6 Setup Deluge 
-Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default login details are (login:nzbget, password:tegbzn6789). Instructions to setup Deluge are [HERE]
-
+### 5.6 Setup Deluge 
+Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default login details are password:deluge. Instructions to setup Deluge are [HERE]
 
 ---
 
