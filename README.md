@@ -723,7 +723,7 @@ sudo apt install curl &&
 cd /opt &&
 sudo curl -L -O $( curl -s https://api.github.com/repos/Jackett/Jackett/releases | grep Jackett.Binaries.LinuxAMDx64.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
 tar zxvf /opt/Jackett.Binaries.LinuxAMDx64.tar.gz &&
-sudo rm /opt/Jackett.Binaries.LinuxAMDx64.tar.gz &&
+sudo rm /opt/Jackett.Binaries.LinuxAMDx64.tar.gz
 ```
 
 ### 6.2 Create Jackett Service file - Ubuntu 18.04
