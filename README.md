@@ -708,90 +708,50 @@ Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default 
 
 ---
 
-## 6.0 Jacket LXC - Ubuntu 18.04
+## 6.0 Jackett LXC - Ubuntu 18.04
 Jackett works as a proxy server: it translates queries from apps (Sonarr, Radarr, Lidarr etc) into tracker-site-specific http queries, parses the html response, then sends results back to the requesting software. This allows for getting recent uploads (like RSS) and performing searches. Jackett is a single repository of maintained indexer scraping & translation logic - removing the burden from other apps.
 
 This is installed on the Deluge LXC container.
 
-### 6.1 Install Jacket - Ubuntu 18.04
+### 6.1 Install Jackett - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-sudo mkdir /mnt/downloads/deluge  &&
-sudo apt-get update &&
-sudo apt install software-properties-common -y &&
-
-sudo mkdir /opt/jacket &&
-jackettver=$(wget -q https://github.com/Jackett/Jackett/releases/latest -O - | grep -E \/tag\/ | awk -F "[><]" '{print $3}') &&
-sudo wget -q https://github.com/Jackett/Jackett/releases/download/$jackettver/Jackett.Binaries.Mono.tar.gz &&
-wget -q https://github.com/Jackett/Jackett/releases/latest/Jackett.Binaries.Mono.tar.gz
-tar zxvf /opt/jacket/Jackett.Binaries.Mono.tar.gz
-```
-At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
-
-Then create the deluge user and group so that deluge can run as an unprivileged user, which will increase your server’s security.
-```
-sudo adduser --system --group deluge
-```
-The --system flag means we are creating a system user instead of normal user. A system user doesn’t have password and can’t login, which is what you would want for Deluge. A home directory /home/deluge/ will be created for this user. You may want to add your user account to the deluge group with the following command so that the user account has access to the files downloaded by Deluge BitTorrent. Files are downloaded to /home/deluge/Downloads by default. Note that you need to re-login for the groups change to take effect.
-
-```
-sudo gpasswd -a root deluge
+sudo apt install curl &&
+cd /opt &&
+sudo curl -L -O $( curl -s https://api.github.com/repos/Jackett/Jackett/releases | grep Jackett.Binaries.LinuxAMDx64.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
+tar zxvf /opt/Jackett.Binaries.LinuxAMDx64.tar.gz &&
+sudo rm /opt/Jackett.Binaries.LinuxAMDx64.tar.gz &&
 ```
 
-### 5.5 Create Deluge Service file - Ubuntu 18.04
+### 6.2 Create Jackett Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
-Description=Deluge Client Daemon
-Documentation=https://dev.deluge-torrent.org/
-After=network-online.target
+Description=Jackett Daemon
+After=network.target
 
 [Service]
-User=deluge
-Group=deluge
+SyslogIdentifier=jackett
+Restart=always
+RestartSec=5
 Type=simple
-Umask=007
-ExecStart=/usr/bin/deluged -d
-KillMode=process
-Restart=on-failure
-
-# Configures the time to wait before service is stopped forcefully.
-TimeoutStopSec=300
+User=root
+Group=root
+WorkingDirectory=/opt/Jackett
+ExecStart=/opt/Jackett/jackett --NoRestart
+TimeoutStopSec=20
 
 [Install]
-WantedBy=multi-user.target" > /etc/systemd/system/deluge.service &&
-sudo systemctl enable deluge &&
-sudo systemctl start deluge
+WantedBy=multi-user.target" > /etc/systemd/system/jackett.service &&
+sudo systemctl enable jackett &&
+sudo systemctl start jackett
 ```
 
-### 5.6 Create Deluge WebGUI Service file - Ubuntu 18.04
-Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
-```
-echo -e "[Unit]
-Description=Deluge Bittorrent Client Web Interface
-Documentation=https://dev.deluge-torrent.org/
-After=network-online.target
-
-[Service]
-User=deluge
-Group=deluge
-
-Type=simple
-Umask=027
-ExecStart=/usr/bin/deluge-web -d
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target" > /etc/systemd/system/deluge-web.service &&
-sudo systemctl enable deluge-web &&
-sudo systemctl restart deluge-web
-```
-
-### 5.6 Setup Deluge 
-Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default login details are password:deluge. Instructions to setup Deluge are [HERE]
+### 6.3 Setup Jackett 
+Browse to http://192.168.30.113:9117 to start using Jackett.
 
 ---
 
