@@ -633,7 +633,8 @@ This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to 
 Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-sudo mkdir /mnt/downloads/deluge  &&
+mkdir -m777 -p {/mnt/downloads/deluge/incomplete,/mnt/downloads/deluge/complete}  &&
+sudo chown -R root:root /mnt/downloads/deluge/incomplete /mnt/downloads/deluge/complete &&
 sudo apt-get update &&
 sudo apt install software-properties-common -y &&
 sudo add-apt-repository ppa:deluge-team/stable -y &&
@@ -649,7 +650,8 @@ sudo adduser --system --group deluge
 The --system flag means we are creating a system user instead of normal user. A system user doesn’t have password and can’t login, which is what you would want for Deluge. A home directory /home/deluge/ will be created for this user. You may want to add your user account to the deluge group with the following command so that the user account has access to the files downloaded by Deluge BitTorrent. Files are downloaded to /home/deluge/Downloads by default. Note that you need to re-login for the groups change to take effect.
 
 ```
-sudo gpasswd -a root deluge
+sudo gpasswd -a root deluge &&
+sudo gpasswd -a deluge root
 ```
 
 ### 5.5 Create Deluge Service file - Ubuntu 18.04
