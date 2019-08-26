@@ -1217,8 +1217,15 @@ First start your Lazylibrarian LXC and login. Then go to the Proxmox web interfa
 ```
 sudo apt-get update -y &&
 sudo apt-get install git-core python3 -y &&
+sudo apt install python3-pip -y &&
+sudo apt-get install libffi-dev -y &&
+pip3 install pyopenssl -y &&
+pip3 install urllib3 -y &&
 cd /opt &&
-sudo git clone https://gitlab.com/LazyLibrarian/LazyLibrarian.git
+sudo git clone https://gitlab.com/LazyLibrarian/LazyLibrarian.git &&
+groupadd --system homelab -g 1005 &&
+adduser --system --uid 1005 --gid 1005 storm &&
+sudo chown -R storm:homelab /opt/LazyLibrarian
 ```
 ### 11.4 Create Lazylibrarian Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
@@ -1230,8 +1237,8 @@ Description=LazyLibrarian
 ExecStart=/usr/bin/python3 /opt/LazyLibrarian/LazyLibrarian.py --daemon --config /opt/LazyLibrarian/lazylibrarian.ini --datadir /opt/LazyLibrarian/.lazylibrarian --nolaunch --quiet
 GuessMainPID=no
 Type=forking
-User=root
-Group=root
+User=storm
+Group=homelab
 Restart=on-failure
 
 [Install]
