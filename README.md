@@ -721,6 +721,7 @@ This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to 
 Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
+sudo apt install python-urllib3 python3-openssl -y &&
 sudo apt install curl -y &&
 cd /opt &&
 sudo curl -L -O $( curl -s https://api.github.com/repos/Jackett/Jackett/releases | grep Jackett.Binaries.LinuxAMDx64.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
