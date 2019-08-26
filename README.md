@@ -556,7 +556,13 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 5.2 Create a Ubuntu 18.04 LXC for Deluge - Ubuntu 18.04
+### 5.2 Create Deluge download folders on your Proxmox host
+To create the Deluge download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+mkdir -m777 -p {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,/typhoon-share/downloads/deluge/autoadd}
+```
+
+### 5.3 Create a Ubuntu 18.04 LXC for Deluge - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -616,7 +622,7 @@ pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 5.3 Setup Deluge & Jacket Mount Points - Ubuntu 18.04
+### 5.4 Setup Deluge & Jacket Mount Points - Ubuntu 18.04
 
 If you used Script (B) in Section 5.2 then you have no Moint Points.
 
@@ -627,15 +633,15 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 pct set 113 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
 ```
 
-### 5.4 Install Deluge - Ubuntu 18.04
+### 5.5 Install Deluge - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-mkdir -m777 -p {/mnt/downloads/deluge/incomplete,/mnt/downloads/deluge/complete}  &&
-sudo chown -R root:root /mnt/downloads/deluge/incomplete /mnt/downloads/deluge/complete &&
 sudo apt-get update &&
+groupadd --system homelab -g 1005 &&
+adduser --system --uid 1005 --gid 1005 storm &&
 sudo apt install software-properties-common -y &&
 sudo add-apt-repository ppa:deluge-team/stable -y &&
 sudo apt-get update &&
@@ -643,18 +649,7 @@ sudo apt-get install deluged deluge-webui -y
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-Then create the deluge user and group so that deluge can run as an unprivileged user, which will increase your server’s security.
-```
-sudo adduser --system --group deluge
-```
-The --system flag means we are creating a system user instead of normal user. A system user doesn’t have password and can’t login, which is what you would want for Deluge. A home directory /home/deluge/ will be created for this user. You may want to add your user account to the deluge group with the following command so that the user account has access to the files downloaded by Deluge BitTorrent. Files are downloaded to /home/deluge/Downloads by default. Note that you need to re-login for the groups change to take effect.
-
-```
-sudo gpasswd -a root deluge &&
-sudo gpasswd -a deluge root
-```
-
-### 5.5 Create Deluge Service file - Ubuntu 18.04
+### 5.6 Create Deluge Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -663,8 +658,8 @@ Documentation=https://dev.deluge-torrent.org/
 After=network-online.target
 
 [Service]
-User=deluge
-Group=deluge
+User=storm
+Group=homelab
 Type=simple
 Umask=007
 ExecStart=/usr/bin/deluged -d
@@ -680,7 +675,7 @@ sudo systemctl enable deluge &&
 sudo systemctl start deluge
 ```
 
-### 5.6 Create Deluge WebGUI Service file - Ubuntu 18.04
+### 5.7 Create Deluge WebGUI Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -691,8 +686,8 @@ Wants=deluge.service
 
 
 [Service]
-User=deluge
-Group=deluge
+User=storm
+Group=homelab
 
 Type=simple
 Umask=027
@@ -741,8 +736,8 @@ SyslogIdentifier=jackett
 Restart=always
 RestartSec=5
 Type=simple
-User=deluge
-Group=deluge
+User=storm
+Group=homelab
 WorkingDirectory=/opt/Jackett
 ExecStart=/opt/Jackett/jackett --NoRestart
 TimeoutStopSec=20
