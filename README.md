@@ -20,9 +20,20 @@ Tasks to be performed are:
 - [ ] 3.0 Jellyfin LXC - CentOS (*Not working*)
 - [ ] 4.0 Jellyfin LXC - Ubuntu 18.04
 
->  **About LXC Installations:**
-CentosOS7 is my preferred linux distribution but for media apps its easier to use Ubuntu 18.04 for your LXC containers. Jellyfin, Sonarr and Radarr and alike seem easier to install and configure on Ubuntu 18.04.
+## About LXC Installations
+CentosOS7 is my preferred linux distribution but for media apps Ubuntu 18.04 is best for your LXC containers. Jellyfin, Sonarr and Radarr and family of Apps seem easier to install and configure with Ubuntu 18.04.
 Proxmox itself ships a set of basic templates and to download a prebuilt distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `centos-7-default` and `ubuntu-18.04-standard` templates.
+
+I create a new user and group with a known UID & GID in every LXC which requires read/write access to data to my Proxmox shared ZFS pool. This user and group with matching UID & GID also exists on each Proxmox node. This overcomes file permissions issues between LXC's (i.e. NZBget and Deluge download data to be post processed by management client Apps like Sonarr or Radarr). So if you havent already done so you can simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+```
+groupadd --system homelab -g 1005 &&
+adduser --system --no-create-home --uid 1005 --gid 1005 storm
+```
+Note the above CLI is for Proxmox nodes only as no user home is created. On each LXC container the same user is created but a user home is created as shown below:
+```
+groupadd --system homelab -g 1005 &&
+adduser --system --uid 1005 --gid 1005 storm
+```
 
 ## 1.0 PiHole LXC - CentOS7
 Here we are going install PiHole which is a internet tracker blocking application which acts as a DNS sinkhole. Basically its charter is to block advertisments, tracking domains, tracking cookies and all those personal data mining collection companies.
