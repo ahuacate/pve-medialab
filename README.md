@@ -21,7 +21,7 @@ Tasks to be performed are:
 - [ ] 4.0 Jellyfin LXC - Ubuntu 18.04
 
 ## About LXC Installations
-CentosOS7 is my preferred linux distribution but for media apps Ubuntu 18.04 seems to be the best OS. Jellyfin, Sonarr and Radarr and its family of Apps seem to run best when installed on Ubuntu 18.04.
+CentosOS7 is my preferred linux distribution but for media software Ubuntu seems to be the most supported linux distribution. I have used Ubuntu 18.04 for all media LXC's.
 
 Proxmox itself ships with a set of basic templates and to download a prebuilt OS distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `centos-7-default` and `ubuntu-18.04-standard` templates.
 
@@ -35,7 +35,7 @@ The fix is to change the UID and GID mapping.
 So in our case we want make uid 1005 and gid 1005 accessible to unprivileged LXC containers used for media (NZBGet,Deluge, Sonarr etc). This is achieved in three parts during the course of creating new media LXC's.
 
 ### 1.1 Unprivileged container mapping
-To change the container mapping we change the container UID and GID in the file `/etc/pve/lxc/container-id.conf` after you create the new container. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+To change a container mapping we change the container UID and GID in the file `/etc/pve/lxc/container-id.conf` after you create a new container. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 ```
 echo -e "lxc.idmap: u 0 100000 1005
 lxc.idmap: g 0 100000 1005
@@ -44,9 +44,9 @@ lxc.idmap: g 1005 1005 1
 lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/container-id.conf
 ```
-### 1.2 Allow host root to use the new uids
+### 1.2 Allow a LXC to perform mapping on the Proxmox host
 Next we have to allow LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
-We need to **add** the line `root:1005:1` to the file `/etc/subuid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
+To achieve this we need to **add** the line `root:1005:1` to the file `/etc/subuid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
 ```
 echo -e "root:1005:1" >> /etc/subuid
 ```
@@ -54,8 +54,13 @@ Then we need to also **add** the line `root:1005:1` to the file `/etc/subuid`. S
 ```
 echo -e "root:1005:1" >> /etc/subgid
 ```
+Note, we **add** these lines not replace any default lines. My /etc/subuid and /etc/subgid both look identical:
+```
+root:100000:65536
+root:1005:1
+```
 
-### 1.3 Create a newuser `media` in the LXC
+### 1.3 Create a newuser `media` in the new LXC
 We need to create a newuser in all LXC's which which require access to shared data (ZFS share typhoon-share/downloads). After logging into the LXC container type the following:
 
 ```
@@ -455,6 +460,9 @@ NZBGet is a binary downloader, which downloads files from Usenet based on inform
 
 NZBGet is written in C++ and is known for its extraordinary performance and efficiency.
 
+Prerequisites are:
+- [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](
+
 ### 5.1 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
 
@@ -532,6 +540,18 @@ Please note your Proxmox NZBget LXC MUST BE in the shutdown state before proceed
 To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 pct set 112 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
+```
+
+### 5.4 Unprivileged container mapping
+To change the NZBGet container mapping we change the container UID and GID in the file `/etc/pve/lxc/112.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+
+```
+echo -e "lxc.idmap: u 0 100000 1005
+lxc.idmap: g 0 100000 1005
+lxc.idmap: u 1005 1005 1
+lxc.idmap: g 1005 1005 1
+lxc.idmap: u 1006 101006 64530
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/112.conf
 ```
 
 ### 5.4 Create NZBGet download folders on your Proxmox host
