@@ -46,7 +46,7 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/container-id.conf
 ```
 ### 1.2 Allow a LXC to perform mapping on the Proxmox host
 Next we have to allow LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
-To achieve this we need to **add** the line `root:1005:1` to the file `/etc/subuid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
+To achieve this we need to **add** the line `root:1005:1` to the files `/etc/subuid` and `/etc/subgid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
 ```
 echo -e "root:1005:1" >> /etc/subuid
 ```
