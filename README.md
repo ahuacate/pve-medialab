@@ -461,7 +461,7 @@ NZBGet is a binary downloader, which downloads files from Usenet based on inform
 NZBGet is written in C++ and is known for its extraordinary performance and efficiency.
 
 Prerequisites are:
-- [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](
+- [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
 
 ### 5.1 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
@@ -542,7 +542,7 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 pct set 112 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
 ```
 
-### 5.4 Unprivileged container mapping
+### 5.4 Unprivileged container mapping - Ubuntu 18.04
 To change the NZBGet container mapping we change the container UID and GID in the file `/etc/pve/lxc/112.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
@@ -554,39 +554,46 @@ lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/112.conf
 ```
 
-### 5.4 Create NZBGet download folders on your Proxmox host
+### 5.5 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 mkdir 1005:1005 -p {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music}
 ```
 
-### 5.5 Install NZBget - Ubuntu 18.04
+### 5.6 Create new "media" user - Ubuntu 18.04
+First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
+```
+groupadd -g 1005 media &&
+useradd -u 1005 -g media -M media
+```
+
+### 5.7 Install NZBget - Ubuntu 18.04
 This is easy. First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 
 ```
-groupadd --system homelab -g 1005 &&
-adduser --system --uid 1005 --gid 1005 storm &&
-sudo adduser storm root
-sudo mkdir /opt/nzbget &&
 wget https://nzbget.net/download/nzbget-latest-bin-linux.run -P /tmp &&
 sh /tmp/nzbget-latest-bin-linux.run --destdir /opt/nzbget &&
 rm /tmp/nzbget-latest-bin-linux.run &&
-sudo chown -R storm:homelab /opt/nzbget
+sudo chown -R media:media /opt/nzbget
 ```
 
-### 5.6 Edit NZBget configuration file - Ubuntu 18.04
+### 5.8 Edit NZBget configuration file - Ubuntu 18.04
 The NZBGET configuration file needs to have its default download location changed to your ZFS typhoon-share downloads folder. NZBGET default variable on the nzbget.conf file is set to `MainDir=${AppDir}/downloads` which we need to change to `MainDir=/mnt/downloads/nzbget`.
+We also need to change the NZBGet Daemon to run under `media` not `root`.
 
-Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
+Using the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 
 ```
 sed -i 's|MainDir=${AppDir}/downloads|MainDir=/mnt/downloads/nzbget|g' /opt/nzbget/nzbget.conf &&
-sed -i "/DaemonUsername=/c\DaemonUsername=storm" /opt/nzbget/nzbget.conf
+sed -i "/DaemonUsername=/c\DaemonUsername=media" /opt/nzbget/nzbget.conf &&
+sudo chmod 755 /opt/nzbget/nzbget.conf
 ```
 
-### 5.7 Create NZBget Service file - Ubuntu 18.04
+### 5.9 Create NZBget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
