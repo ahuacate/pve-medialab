@@ -21,20 +21,46 @@ Tasks to be performed are:
 - [ ] 4.0 Jellyfin LXC - Ubuntu 18.04
 
 ## About LXC Installations
-CentosOS7 is my preferred linux distribution but for media apps Ubuntu 18.04 is best for your LXC containers. Jellyfin, Sonarr and Radarr and family of Apps seem easier to install and configure with Ubuntu 18.04.
-Proxmox itself ships a set of basic templates and to download a prebuilt distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `centos-7-default` and `ubuntu-18.04-standard` templates.
+CentosOS7 is my preferred linux distribution but for media apps Ubuntu 18.04 seems to be the best OS. Jellyfin, Sonarr and Radarr and its family of Apps seem to run best when installed on Ubuntu 18.04.
 
-With unprivileged LXC containers you will have issues with UIDs (user id) and GIDs (group id) permissions with bind mounted shared data on your Proxmox ZFS pool share. All of the UIDs and GIDs are mapped to a different number range than on the host machine, usually root (uid 0) became uid 100000, 1 will be 100001 and so on. This means that most security issues (container escape, resource abuse, …) in those containers will affect a random unprivileged user, even if the container itself would do it as root user, and so would be a generic kernel security bug rather than an LXC issue.
+Proxmox itself ships with a set of basic templates and to download a prebuilt OS distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `centos-7-default` and `ubuntu-18.04-standard` templates.
 
-However you will soon realise that every file and directory will be mapped to "nobody" (uid 65534). This isn't acceptable with shared data.  In this case you want to access the directory with the same - unprivileged - uid as it's using on other machines. You need to change the mapping or as I have done create a new user on both the host and guest with matching UID's and GID's on every Proxmox node. This overcomes file permissions issues between LXC's (i.e. NZBget and Deluge download data to be post processed by management client Apps like Sonarr or Radarr). So if you havent already done so you can simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+## 1.0 Unprivileged LXC Containers and file permissions
+With unprivileged LXC containers you will have issues with UIDs (user id) and GIDs (group id) permissions with bind mounted shared data. All of the UIDs and GIDs are mapped to a different number range than on the host machine, usually root (uid 0) became uid 100000, 1 will be 100001 and so on.
+
+However you will soon realise that every file and directory will be mapped to "nobody" (uid 65534). This isn't acceptable for host mounted shared data resources. For shared data you want to access the directory with the same - unprivileged - uid as it's using on other LXC machines.
+
+The fix is to change the UID and GID mapping.
+
+So our case we want make uid 1005 and gid 1005 accessible to unprivileged LXC containers used for media (NZBGet,Deluge, Sonarr etc). This is achieved in three parts during the course of xreating new media LXC's.
+
+### 1.1 Unprivileged container mapping
+To change the container mapping we change the container UID and GID in the file `/etc/pve/lxc/container-id.conf` after you create the new container. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 ```
-groupadd --system homelab -g 1005 &&
-adduser --system --no-create-home --uid 1005 --gid 1005 storm
+echo -e "lxc.idmap: u 0 100000 1005
+lxc.idmap: g 0 100000 1005
+lxc.idmap: u 1005 1005 1
+lxc.idmap: g 1005 1005 1
+lxc.idmap: u 1006 101006 64530
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/container-id.conf
 ```
-Note the above CLI is for Proxmox nodes only as no user home is created. On each LXC container the same user is created but a user home is created as shown below:
+### 1.2 Allow host root to use the new uids
+Next we have to allow LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
+We need to **add** the line `root:1005:1` to the file `/etc/subuid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (Note: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03):
 ```
-groupadd --system homelab -g 1005 &&
-adduser --system --uid 1005 --gid 1005 storm
+echo -e "root:1005:1" >> /etc/subuid
+```
+Then we need to also **add** the line `root:1005:1` to the file `/etc/subuid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+```
+echo -e "root:1005:1" >> /etc/subgid
+```
+
+### 1.3 Create a newuser media in the LXC
+We need to create a newuser in all LXC's used for media which needs to access shared data. After logging into the LXC container type the following:
+
+```
+groupadd -g 1005 media &&
+useradd -u 1005 -g media -M media
 ```
 
 ## 1.0 PiHole LXC - CentOS7
@@ -538,8 +564,8 @@ The NZBGET configuration file needs to have its default download location change
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 
 ```
-sed -i 's|MainDir=${AppDir}/downloads|MainDir=/mnt/downloads/nzbget|g' /opt/nzbget/nzbget.conf
-sudo chown -R storm:homelab /opt/nzbget/nzbget.conf
+sed -i 's|MainDir=${AppDir}/downloads|MainDir=/mnt/downloads/nzbget|g' /opt/nzbget/nzbget.conf &&
+sed -i "/DaemonUsername=/c\DaemonUsername=storm" /opt/nzbget/nzbget.conf
 ```
 
 ### 4.7 Create NZBget Service file - Ubuntu 18.04
@@ -551,8 +577,8 @@ Documentation=http://nzbget.net/Documentation
 After=network.target
 
 [Service]
-User=root
-Group=root
+User=media
+Group=media
 Type=forking
 ExecStart=/opt/nzbget/nzbget -D
 ExecStop=/opt/nzbget/nzbget -Q
