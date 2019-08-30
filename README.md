@@ -733,9 +733,13 @@ First start LXC 113 (deluge) with the Proxmox web interface go to typhoon-01 > 1
 Then with the Proxmox web interface go to typhoon-01 > 113 (deluge) > >_ Shell and type the following:
 
 ```
-groupadd --system media -g 1005 &&
-adduser --system --uid 1005 --gid 1005 media
+#groupadd --system media -g 1005 &&
+#adduser --system --uid 1005 --gid 1005 media
+
+groupadd -g 1005 media &&
+useradd -u 1005 -g media -m media
 ```
+Note, this time we create a home folder for the user media - as required by Deluge.
 
 ### 6.7 Install Deluge - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
@@ -838,8 +842,8 @@ SyslogIdentifier=jackett
 Restart=always
 RestartSec=5
 Type=simple
-User=storm
-Group=homelab
+User=media
+Group=media
 WorkingDirectory=/opt/Jackett
 ExecStart=/opt/Jackett/jackett --NoRestart
 TimeoutStopSec=20
