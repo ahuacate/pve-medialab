@@ -32,7 +32,7 @@ However you will soon realise that every file and directory will be mapped to "n
 
 The fix is to change the UID and GID mapping.
 
-So in our case we want make uid 1005 and gid 1005 accessible to unprivileged LXC containers used for media (NZBGet,Deluge, Sonarr etc). This is achieved in three parts during the course of creating new media LXC's.
+So in our build we will create a new user/group called `media` and make uid 1005 and gid 1005 accessible to unprivileged LXC containers used by user/group media (i.e NZBGet, Deluge, Sonarr, Radarr, LazyLibrarian, Flexget). This is achieved in three parts during the course of creating your new media LXC's.
 
 ### 1.1 Unprivileged container mapping
 To change a container mapping we change the container UID and GID in the file `/etc/pve/lxc/container-id.conf` after you create a new container. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
@@ -627,6 +627,9 @@ Browse to http://192.168.30.112:6789 to start using NZBget. Your NZBget default 
 ## 6.0 Deluge LXC - Ubuntu 18.04
 Deluge is a lightweight, Free Software, cross-platform BitTorrent client. I also install Jacket in this LXC container.
 
+Prerequisites are:
+- [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
+
 ### 6.1 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
 
@@ -635,13 +638,7 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 6.2 Create Deluge download folders on your Proxmox host
-To create the Deluge download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
-```
-mkdir -m777 -p {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,/typhoon-share/downloads/deluge/autoadd}
-```
-
-### 6.3 Create a Ubuntu 18.04 LXC for Deluge - Ubuntu 18.04
+### 6.2 Create a Ubuntu 18.04 LXC for Deluge - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -701,7 +698,7 @@ pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 6.4 Setup Deluge & Jacket Mount Points - Ubuntu 18.04
+### 6.3 Setup Deluge & Jacket Mount Points - Ubuntu 18.04
 
 If you used Script (B) in Section 5.2 then you have no Moint Points.
 
@@ -712,15 +709,41 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 pct set 113 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
 ```
 
-### 6.5 Install Deluge - Ubuntu 18.04
+### 6.4 Unprivileged container mapping - Ubuntu 18.04
+To change the Deluge container mapping we change the container UID and GID in the file /etc/pve/lxc/113.conf. Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:
+```
+echo -e "lxc.idmap: u 0 100000 1005
+lxc.idmap: g 0 100000 1005
+lxc.idmap: u 1005 1005 1
+lxc.idmap: g 1005 1005 1
+lxc.idmap: u 1006 101006 64530
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/113.conf
+```
+
+### 6.5 Create Deluge download folders on your ZFS typhoon-share - Ubuntu 18.04
+To create the Deluge download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,typhoon-share/downloads/deluge/complete/movies,typhoon-share/downloads/deluge/complete/series,typhoon-share/downloads/deluge/complete/music,/typhoon-share/downloads/deluge/autoadd}
+```
+
+### 6.6 Create new "media" user - Ubuntu 18.04
+
+First start LXC 113 (deluge) with the Proxmox web interface go to typhoon-01 > 113 (deluge) > START.
+
+Then with the Proxmox web interface go to typhoon-01 > 113 (deluge) > >_ Shell and type the following:
+
+```
+groupadd --system media -g 1005 &&
+adduser --system --uid 1005 --gid 1005 media
+```
+
+### 6.7 Install Deluge - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
 sudo apt-get update &&
-groupadd --system homelab -g 1005 &&
-adduser --system --uid 1005 --gid 1005 storm &&
 sudo apt install software-properties-common -y &&
 sudo add-apt-repository ppa:deluge-team/stable -y &&
 sudo apt-get update &&
@@ -728,7 +751,7 @@ sudo apt-get install deluged deluge-webui -y
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-### 6.6 Create Deluge Service file - Ubuntu 18.04
+### 6.8 Create Deluge Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -737,8 +760,8 @@ Documentation=https://dev.deluge-torrent.org/
 After=network-online.target
 
 [Service]
-User=storm
-Group=homelab
+User=media
+Group=media
 Type=simple
 Umask=007
 ExecStart=/usr/bin/deluged -d
@@ -754,7 +777,7 @@ sudo systemctl enable deluge &&
 sudo systemctl start deluge
 ```
 
-### 6.7 Create Deluge WebGUI Service file - Ubuntu 18.04
+### 6.9 Create Deluge WebGUI Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -765,8 +788,8 @@ Wants=deluge.service
 
 
 [Service]
-User=storm
-Group=homelab
+User=media
+Group=media
 
 Type=simple
 Umask=027
