@@ -1312,7 +1312,29 @@ pct set 118 -mp2 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 118 -mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 12.3 Install Lazylibrarian
+### 12.4 Unprivileged container mapping - Ubuntu 18.04
+To change the LazyLibrarian container mapping we change the container UID and GID in the file `/etc/pve/lxc/118.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+
+```
+echo -e "lxc.idmap: u 0 100000 1005
+lxc.idmap: g 0 100000 1005
+lxc.idmap: u 1005 1005 1
+lxc.idmap: g 1005 1005 1
+lxc.idmap: u 1006 101006 64530
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/118.conf
+```
+
+### 12.5 Create new "media" user - Ubuntu 18.04
+
+First start LXC 112 (lazy) with the Proxmox web interface go to typhoon-01 > 118 (lazy) > START.
+
+Then with the Proxmox web interface go to typhoon-01 > 118 (lazy) > >_ Shell and type the following:
+```
+groupadd -g 1005 media &&
+useradd -u 1005 -g media -M media
+```
+
+### 12.6 Install Lazylibrarian
 First start your Lazylibrarian LXC and login. Then go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
@@ -1320,13 +1342,11 @@ sudo apt-get update -y &&
 sudo apt-get install git-core python3 -y &&
 sudo apt install python3-pip -y &&
 sudo apt-get install libffi-dev -y &&
-pip3 install pyopenssl -y &&
-pip3 install urllib3 -y &&
+pip3 install pyopenssl &&
+pip3 install urllib3 &&
 cd /opt &&
 sudo git clone https://gitlab.com/LazyLibrarian/LazyLibrarian.git &&
-groupadd --system homelab -g 1005 &&
-adduser --system --uid 1005 --gid 1005 storm &&
-sudo chown -R storm:homelab /opt/LazyLibrarian
+sudo chown -R 1005:1005 /opt/LazyLibrarian
 ```
 ### 12.4 Create Lazylibrarian Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
@@ -1338,13 +1358,13 @@ Description=LazyLibrarian
 ExecStart=/usr/bin/python3 /opt/LazyLibrarian/LazyLibrarian.py --daemon --config /opt/LazyLibrarian/lazylibrarian.ini --datadir /opt/LazyLibrarian/.lazylibrarian --nolaunch --quiet
 GuessMainPID=no
 Type=forking
-User=storm
-Group=homelab
+User=media
+Group=media
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/lazy.service &&
-sudo systemctl enable lazy.service
+sudo systemctl enable lazy.service &&
 sudo systemctl restart lazy.service &&
 sudo reboot
 ```
