@@ -559,13 +559,10 @@ First start LXC 113 (deluge) with the Proxmox web interface go to typhoon-01 > 1
 Then with the Proxmox web interface go to typhoon-01 > 113 (deluge) > >_ Shell and type the following:
 
 ```
-#groupadd --system media -g 1005 &&
-#adduser --system --uid 1005 --gid 1005 media
-
 groupadd -g 1005 media &&
 useradd -u 1005 -g media -m media
 ```
-Note, this time we create a home folder for the user media - as required by Deluge.
+Note: This time we create a home folder for user media - required by Deluge.
 
 ### 4.7 Install Deluge - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
@@ -693,6 +690,9 @@ Under Development.
 ## 7.0 Sonarr LXC - Ubuntu 18.04
 Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
+Prerequisites are:
+- [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
+
 ### 7.1 Create a Ubuntu 18.04 LXC for Sonarr
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
@@ -765,10 +765,32 @@ pct set 115 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 115 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 7.3 Install Sonarr
+### 7.3 Unprivileged container mapping - Ubuntu 18.04
+To change the Sonarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/115.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+
+```
+echo -e "lxc.idmap: u 0 100000 1005
+lxc.idmap: g 0 100000 1005
+lxc.idmap: u 1005 1005 1
+lxc.idmap: g 1005 1005 1
+lxc.idmap: u 1006 101006 64530
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/115.conf
+```
+
+### 7.4 Create new "media" user - Ubuntu 18.04
+First start LXC 115 (sonarr) with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
+```
+groupadd -g 1005 media &&
+useradd -u 1005 -g media -m media
+```
+Note: This time we create a home folder for user media - required by Sonarr.
+
+### 7.5 Install Sonarr
 Th following Sonarr installation recipe is from the official Sonarr website [HERE](https://sonarr.tv/#downloads-v3-linux-ubuntu). Please refer for the latest updates.
 
-During the installation, you will be asked which user and group Sonarr must run as. It's important to choose these correctly to avoid permission issues with your media files. I suggest you keep at least the group named `homelab` and username `storm` identical between your download client(s) and Sonarr. 
+During the installation, you will be asked which user and group Sonarr must run as. It's important to choose these correctly to avoid permission issues with your media files. I suggest you keep the group named `media` and username `media` identical between your download client(s) and Sonarr. 
 
 First start your Sonarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 
@@ -783,7 +805,7 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0xA236C58F409091A1
 echo "deb http://apt.sonarr.tv/ master main" | sudo tee /etc/apt/sources.list.d/sonarr.list &&
 sudo apt update -y &&
 sudo apt install nzbdrone -y &&
-sudo chown -R root:root /opt/NzbDrone
+sudo chown -R media:media /opt/NzbDrone
 ```
 
 ### 7.4 Create Sonarr Service file - Ubuntu 18.04
@@ -794,8 +816,8 @@ Description=Sonarr Daemon
 After=network.target
 
 [Service]
-User=root
-Group=root
+User=media
+Group=media
 
 Type=simple
 
@@ -811,6 +833,7 @@ sudo systemctl enable sonarr.service &&
 sudo systemctl start sonarr.service &&
 sudo reboot
 ```
+
 ### 7.5 Setup Sonarr
 Browse to http://192.168.50.115:8989 to start using Sonarr.
 
