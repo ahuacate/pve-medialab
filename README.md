@@ -20,7 +20,7 @@ Tasks to be performed are:
 - [ ] 3.0 Jellyfin LXC - CentOS (*Not working*)
 - [ ] 4.0 Jellyfin LXC - Ubuntu 18.04
 
-## About LXC Installations
+## About LXC Media Installations
 CentosOS7 is my preferred linux distribution but for media software Ubuntu seems to be the most supported linux distribution. I have used Ubuntu 18.04 for all media LXC's.
 
 Proxmox itself ships with a set of basic templates and to download a prebuilt OS distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `centos-7-default` and `ubuntu-18.04-standard` templates.
