@@ -61,11 +61,17 @@ root:1005:1
 ```
 
 ### 1.3 Create a newuser `media` in a LXC
-We need to create a newuser in all LXC's which which require access to shared data (ZFS share typhoon-share/downloads). After logging into the LXC container type the following:
+We need to create a newuser in all LXC's which require access to shared data (ZFS share typhoon-share/downloads). After logging into the LXC container type the following:
 
+(A) To create a user without a Home folder
 ```
 groupadd -g 1005 media &&
 useradd -u 1005 -g media -M media
+```
+(B) To create a user with a Home folder
+```
+groupadd -g 1005 media &&
+useradd -u 1005 -g media -m media
 ```
 
 ## 2.0 Jellyfin LXC - Ubuntu 18.04
