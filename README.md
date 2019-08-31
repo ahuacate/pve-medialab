@@ -75,7 +75,6 @@ useradd -u 1005 -g media -m media
 ```
 
 ## 2.0 Jellyfin LXC - Ubuntu 18.04
->  This 100% works. 
 
 Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
 
