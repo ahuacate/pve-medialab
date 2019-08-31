@@ -60,7 +60,7 @@ root:100000:65536
 root:1005:1
 ```
 
-### 1.3 Create a newuser `media` in the new LXC
+### 1.3 Create a newuser `media` in a LXC
 We need to create a newuser in all LXC's which which require access to shared data (ZFS share typhoon-share/downloads). After logging into the LXC container type the following:
 
 ```
