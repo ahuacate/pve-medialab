@@ -1,4 +1,4 @@
-# Proxmox-LXCMedia
+# Proxmox-LXC-Media
 The following is for creating our Media family of LXC containers.
 
 Network Prerequisites are:
