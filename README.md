@@ -683,7 +683,165 @@ Browse to http://192.168.30.113:9117 to start using Jackett.
 ---
 
 ## 6.0 Flexget LXC - Ubuntu 18.04
-Under Development.
+FlexGet is a multipurpose automation tool for all of your media. Support for torrents, nzbs, podcasts, comics, TV, movies, RSS, HTML, CSV, and more.
+
+Prerequisites are:
+- [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
+
+### 6.1 Create a Ubuntu 18.04 LXC for Flexget
+Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
+| :---  | :---: |
+| **General**
+| Node | `typhoon-01` |
+| CT ID |`115`|
+| Hostname |`flexget`|
+| Unprivileged container | `☑` |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
+| **Template**
+| Storage | `local` |
+| Template | `ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz` |
+| **Root Disk**
+| Storage |`typhoon-share`|
+| Disk Size |`10 GiB`|
+| **CPU**
+| Cores |`1`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
+| **Memory**
+| Memory (MiB) |`2048`|
+| Swap (MiB) |`256`|
+| **Network**
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | `50`
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | `☑`
+| IPv4 | `☑  Static`
+| IPv4/CIDR |`192.168.50.114/24`|
+| Gateway (IPv4) |`192.168.50.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
+| **DNS**
+| DNS domain | Leave Default (use host settings)
+| DNS servers | Leave Default (use host settings)
+| **Confirm**
+| Start after Created | `☐`
+
+And Click `Finish` to create your Flexget LXC. The above will create the Flexget LXC without any of the required local Mount Points to the host.
+
+If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Flexget LXC):
+
+**Script (A):** Including LXC Mount Points
+```
+pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+```
+
+**Script (B):** Excluding LXC Mount Points:
+```
+pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
+
+
+### 6.2 Setup Flexget Mount Points - Ubuntu 18.04
+
+If you used Script (B) in Section 4.2 then you have no Moint Points.
+
+Please note your Proxmox Flexget LXC MUST BE in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+pct set 114 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
+pct set 114 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 114 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+```
+
+### 6.4 Unprivileged container mapping - Ubuntu 18.04
+To change the Flexget container mapping we change the container UID and GID in the file `/etc/pve/lxc/114.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+
+```
+echo -e "lxc.idmap: u 0 100000 1005
+lxc.idmap: g 0 100000 1005
+lxc.idmap: u 1005 1005 1
+lxc.idmap: g 1005 1005 1
+lxc.idmap: u 1006 101006 64530
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/114.conf
+```
+
+### 6.5 Create Flexget download folders on your ZFS typhoon-share - Ubuntu 18.04
+To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+mkdir 1005:1005 -p {?????}
+```
+
+### 6.6 Create new "media" user - Ubuntu 18.04
+First start LXC 114 (nzbget) with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+```
+groupadd -g 1005 media &&
+useradd -u 1005 -g media -m media
+```
+
+
+### 6.7 Install Flexget - Ubuntu 18.04
+This is easy. First start LXC 114 (flexget) with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+
+```
+sudo apt-get update -y &&
+sudo apt-get install git-core python3 -y &&
+sudo apt install python3-pip -y &&
+sudo apt-get install libffi-dev -y &&
+sudo apt-get install python3-venv &&
+python3 -m venv /home/media/flexget/ &&
+cd /home/media/flexget/ &&
+bin/pip install flexget &&
+#sudo chown -R media:media /opt/nzbget
+
+sudo apt-get update -y &&
+sudo apt-get install git-core python3 -y &&
+sudo apt install python3-pip -y &&
+pip3 install --upgrade setuptools &&
+pip3 install pyopenssl ndg-httpsclient pyasn1 &&
+pip3 install flexget &&
+sudo mkdir /home/media/.flexget; sudo chown -R media:media /home/media/.flexget; sudo chmod -R 777 /home/media/.flexget &&
+echo "" > config.yml; sudo chmod 777 config.yml
+```
+### 6.8 Create Flexget Service file - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+```
+echo -e "[Unit]
+Description=Flexget Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=media
+Group=media
+UMask=000
+WorkingDirectory=/home/media/flexget
+ExecStart=/usr/local/bin/flexget daemon start
+ExecStop=/usr/local/bin/flexget daemon stop
+ExecReload=/usr/local/bin/flexget daemon reload
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/flexget.service &&
+sudo systemctl enable flexget &&
+sudo systemctl start flexget &&
+sudo systemctl status flexget
+```
+
+To upgrade FlexGet, just run:
+
+sudo pip install --upgrade flexget
 
 ---
 
