@@ -808,7 +808,7 @@ sudo apt install nzbdrone -y &&
 sudo chown -R media:media /opt/NzbDrone
 ```
 
-### 7.4 Create Sonarr Service file - Ubuntu 18.04
+### 7.6 Create Sonarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 ```
 sudo echo -e "[Unit]
@@ -834,13 +834,16 @@ sudo systemctl start sonarr.service &&
 sudo reboot
 ```
 
-### 7.5 Setup Sonarr
+### 7.7 Setup Sonarr
 Browse to http://192.168.50.115:8989 to start using Sonarr.
 
 ---
 
 ## 8.0 Radarr LXC - Ubuntu 18.04
 Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
+
+Prerequisites are:
+- [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
 
 ### 8.1 Create a Ubuntu 18.04 LXC for Radarr
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
@@ -914,7 +917,29 @@ pct set 116 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 116 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 8.3 Install Radarr
+### 8.4 Unprivileged container mapping - Ubuntu 18.04
+To change the Radarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/116.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+
+```
+echo -e "lxc.idmap: u 0 100000 1005
+lxc.idmap: g 0 100000 1005
+lxc.idmap: u 1005 1005 1
+lxc.idmap: g 1005 1005 1
+lxc.idmap: u 1006 101006 64530
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/116.conf
+```
+
+### 8.5 Create new "media" user - Ubuntu 18.04
+First start LXC 116 (radarr) with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
+```
+groupadd -g 1005 media &&
+useradd -u 1005 -g media -m media
+```
+Note: This time we create a home folder for user media - required by Radarr.
+
+### 8.6 Install Radarr
 First start your Radarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
@@ -928,9 +953,9 @@ cd /opt &&
 sudo curl -L -O $( curl -s https://api.github.com/repos/Radarr/Radarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
 sudo tar -xvzf Radarr.develop.*.linux.tar.gz &&
 sudo rm *.linux.tar.gz &&
-sudo chown -R root:root /opt/Radarr
+sudo chown -R media:media /opt/Radarr
 ```
-### 8.4 Create Radarr Service file - Ubuntu 18.04
+### 8.7 Create Radarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -939,8 +964,8 @@ After=syslog.target network.target
 
 [Service]
 # Change the user and group variables here.
-User=root
-Group=root
+User=media
+Group=media
 
 Type=simple
 
@@ -957,7 +982,7 @@ sudo systemctl start radarr.service &&
 sudo reboot
 ```
 
-### 8.5 Setup Radarr
+### 8.8 Setup Radarr
 Browse to http://192.168.50.116:7878 to start using Radarr.
 
 ---
