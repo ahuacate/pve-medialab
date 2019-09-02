@@ -777,7 +777,7 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/114.conf
 ### 6.5 Create Flexget download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir 1005:1005 -p {?????}
+mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies,/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/staging/series,/mnt/pve/cyclone-01-video/documentary/staging/movies}
 ```
 
 ### 6.6 Create new "media" user - Ubuntu 18.04
@@ -807,6 +807,7 @@ bin/pip install flexget &&
 #sudo chown -R media:media /opt/nzbget
 
 sudo apt-get update -y &&
+export LC_ALL="en_US.UTF8" &&
 sudo apt-get install git-core python3 -y &&
 sudo apt install python3-pip -y &&
 pip3 install --upgrade setuptools &&
@@ -827,7 +828,7 @@ Type=simple
 User=media
 Group=media
 UMask=000
-WorkingDirectory=/home/media/flexget
+WorkingDirectory=/home/media/.flexget
 ExecStart=/usr/local/bin/flexget daemon start
 ExecStop=/usr/local/bin/flexget daemon stop
 ExecReload=/usr/local/bin/flexget daemon reload
