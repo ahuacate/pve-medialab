@@ -25,7 +25,7 @@ CentosOS7 is my preferred linux distribution but for media software Ubuntu seems
 
 Proxmox itself ships with a set of basic templates and to download a prebuilt OS distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `centos-7-default` and `ubuntu-18.04-standard` templates.
 
-## 1.0 Unprivileged LXC Containers and file permissions
+## 1.00 Unprivileged LXC Containers and file permissions
 With unprivileged LXC containers you will have issues with UIDs (user id) and GIDs (group id) permissions with bind mounted shared data. All of the UIDs and GIDs are mapped to a different number range than on the host machine, usually root (uid 0) became uid 100000, 1 will be 100001 and so on.
 
 However you will soon realise that every file and directory will be mapped to "nobody" (uid 65534). This isn't acceptable for host mounted shared data resources. For shared data you want to access the directory with the same - unprivileged - uid as it's using on other LXC machines.
@@ -34,7 +34,7 @@ The fix is to change the UID and GID mapping.
 
 So in our build we will create a new user/group called `media` and make uid 1005 and gid 1005 accessible to unprivileged LXC containers used by user/group media (i.e NZBGet, Deluge, Sonarr, Radarr, LazyLibrarian, Flexget). This is achieved in three parts during the course of creating your new media LXC's.
 
-### 1.1 Unprivileged container mapping
+### 1.01 Unprivileged container mapping
 To change a container mapping we change the container UID and GID in the file `/etc/pve/lxc/container-id.conf` after you create a new container. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 ```
 echo -e "lxc.idmap: u 0 100000 1005
@@ -44,7 +44,7 @@ lxc.idmap: g 1005 1005 1
 lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/container-id.conf
 ```
-### 1.2 Allow a LXC to perform mapping on the Proxmox host
+### 1.02 Allow a LXC to perform mapping on the Proxmox host
 Next we have to allow LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
 To achieve this we need to **add** the line `root:1005:1` to the files `/etc/subuid` and `/etc/subgid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
 ```
@@ -60,7 +60,7 @@ root:100000:65536
 root:1005:1
 ```
 
-### 1.3 Create a newuser `media` in a LXC
+### 1.03 Create a newuser `media` in a LXC
 We need to create a newuser in all LXC's which require access to shared data (ZFS share typhoon-share/downloads). After logging into the LXC container type the following:
 
 (A) To create a user without a Home folder
@@ -74,13 +74,13 @@ groupadd -g 1005 media &&
 useradd -u 1005 -g media -m media
 ```
 
-## 2.0 Jellyfin LXC - Ubuntu 18.04
+## 2.00 Jellyfin LXC - Ubuntu 18.04
 
 Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
 
 Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: and at the time of writing this media server software seems like the best available solution (and is free).
 
-### 2.1 Download the Ubuntu LXC template - Ubuntu 18.04
+### 2.01 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
 
 Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
@@ -88,7 +88,7 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 2.2 Create a Ubuntu 18.04 LXC for Jellyfin - Ubuntu 18.04
+### 2.02 Create a Ubuntu 18.04 LXC for Jellyfin - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -148,7 +148,7 @@ pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 2.3 Configure and Install VAAPI - Ubuntu 18.04
+### 2.03 Configure and Install VAAPI - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
@@ -218,7 +218,7 @@ vainfo: Supported profile and entrypoints
       VAProfileVP9Profile0            : VAEntrypointEncSlice
       VAProfileVP9Profile2            : VAEntrypointVLD
 ```
-### 2.4 Create a rc.local
+### 2.04 Create a rc.local
 For FFMPEG to work we must create a script to `chmod 666 /dev/dri/renderD128` everytime the Proxmox host reboots. Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
 ```
 echo '#!/bin/sh -e
@@ -228,7 +228,7 @@ chmod +x /etc/rc.local &&
 bash /etc/rc.local
 ```
 
-### 2.5 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
+### 2.05 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Here we edit the LXC configuration file with the line `lxc.cgroup.devices.allow` to declare your hardmetal GPU device to your Jellyfin LXC container so it can access your hosts GPU.
@@ -247,7 +247,7 @@ lxc.cgroup.devices.allow = c 226:0 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/111.conf
 ```
 
-### 2.6 Install Jellyfin - Ubuntu 18.04
+### 2.06 Install Jellyfin - Ubuntu 18.04
 This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
@@ -263,7 +263,7 @@ sudo apt install jellyfin -y &&
 sudo systemctl restart jellyfin
 ```
 
-### 2.7 Setup Jellyfin Mount Points - Ubuntu 18.04
+### 2.07 Setup Jellyfin Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 3.2 then you have no Moint Points.
 
 Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
@@ -276,12 +276,12 @@ pct set 111 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
 pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
-### 2.8 Check your Jellyfin Installation
+### 2.08 Check your Jellyfin Installation
 In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
 
 ---
 
-## 3.0 NZBget LXC - Ubuntu 18.04
+## 3.00 NZBget LXC - Ubuntu 18.04
 NZBGet is a binary downloader, which downloads files from Usenet based on information given in nzb-files.
 
 NZBGet is written in C++ and is known for its extraordinary performance and efficiency.
@@ -289,7 +289,7 @@ NZBGet is written in C++ and is known for its extraordinary performance and effi
 Prerequisites are:
 - [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
 
-### 3.1 Download the Ubuntu LXC template - Ubuntu 18.04
+### 3.01 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
 
 Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
@@ -297,7 +297,7 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 3.2 Create a Ubuntu 18.04 LXC for NZBget - Ubuntu 18.04
+### 3.02 Create a Ubuntu 18.04 LXC for NZBget - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -357,7 +357,7 @@ pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 3.3 Setup NZBget Mount Points - Ubuntu 18.04
+### 3.03 Setup NZBget Mount Points - Ubuntu 18.04
 
 If you used Script (B) in Section 4.2 then you have no Moint Points.
 
@@ -368,7 +368,7 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 pct set 112 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
 ```
 
-### 3.4 Unprivileged container mapping - Ubuntu 18.04
+### 3.04 Unprivileged container mapping - Ubuntu 18.04
 To change the NZBGet container mapping we change the container UID and GID in the file `/etc/pve/lxc/112.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
@@ -380,13 +380,13 @@ lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/112.conf
 ```
 
-### 3.5 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04
+### 3.05 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 mkdir 1005:1005 -p {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music}
 ```
 
-### 3.6 Create new "media" user - Ubuntu 18.04
+### 3.06 Create new "media" user - Ubuntu 18.04
 First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
@@ -395,7 +395,7 @@ groupadd -g 1005 media &&
 useradd -u 1005 -g media -M media
 ```
 
-### 3.7 Install NZBget - Ubuntu 18.04
+### 3.07 Install NZBget - Ubuntu 18.04
 This is easy. First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
@@ -407,7 +407,7 @@ rm /tmp/nzbget-latest-bin-linux.run &&
 sudo chown -R media:media /opt/nzbget
 ```
 
-### 3.8 Edit NZBget configuration file - Ubuntu 18.04
+### 3.08 Edit NZBget configuration file - Ubuntu 18.04
 The NZBGET configuration file needs to have its default download location changed to your ZFS typhoon-share downloads folder. NZBGET default variable on the nzbget.conf file is set to `MainDir=${AppDir}/downloads` which we need to change to `MainDir=/mnt/downloads/nzbget`.
 We also need to change the NZBGet Daemon to run under `media` not `root`.
 
@@ -419,7 +419,7 @@ sed -i "/DaemonUsername=/c\DaemonUsername=media" /opt/nzbget/nzbget.conf &&
 sudo chmod 755 /opt/nzbget/nzbget.conf
 ```
 
-### 3.9 Create NZBget Service file - Ubuntu 18.04
+### 3.09 Create NZBget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -445,18 +445,18 @@ sudo systemctl status nzbget
 
 ```
 
-### 3.8 Setup NZBget 
+### 3.10 Setup NZBget 
 Browse to http://192.168.30.112:6789 to start using NZBget. Your NZBget default login details are (login:nzbget, password:tegbzn6789). Instructions to setup NZBget are [HERE]
 
 ---
 
-## 4.0 Deluge LXC - Ubuntu 18.04
+## 4.00 Deluge LXC - Ubuntu 18.04
 Deluge is a lightweight, Free Software, cross-platform BitTorrent client. I also install Jacket in this LXC container.
 
 Prerequisites are:
 - [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
 
-### 4.1 Download the Ubuntu LXC template - Ubuntu 18.04
+### 4.01 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
 
 Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
@@ -464,7 +464,7 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 4.2 Create a Ubuntu 18.04 LXC for Deluge - Ubuntu 18.04
+### 4.02 Create a Ubuntu 18.04 LXC for Deluge - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -524,7 +524,7 @@ pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 4.3 Setup Deluge & Jacket Mount Points - Ubuntu 18.04
+### 4.03 Setup Deluge & Jacket Mount Points - Ubuntu 18.04
 
 If you used Script (B) in Section 5.2 then you have no Moint Points.
 
@@ -535,7 +535,7 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 pct set 113 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
 ```
 
-### 4.4 Unprivileged container mapping - Ubuntu 18.04
+### 4.04 Unprivileged container mapping - Ubuntu 18.04
 To change the Deluge container mapping we change the container UID and GID in the file /etc/pve/lxc/113.conf. Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:
 ```
 echo -e "lxc.idmap: u 0 100000 1005
@@ -546,13 +546,13 @@ lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/113.conf
 ```
 
-### 4.5 Create Deluge download folders on your ZFS typhoon-share - Ubuntu 18.04
+### 4.05 Create Deluge download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the Deluge download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,typhoon-share/downloads/deluge/complete/movies,typhoon-share/downloads/deluge/complete/series,typhoon-share/downloads/deluge/complete/music,/typhoon-share/downloads/deluge/autoadd}
 ```
 
-### 4.6 Create new "media" user - Ubuntu 18.04
+### 4.06 Create new "media" user - Ubuntu 18.04
 
 First start LXC 113 (deluge) with the Proxmox web interface go to typhoon-01 > 113 (deluge) > START.
 
@@ -564,7 +564,7 @@ useradd -u 1005 -g media -m media
 ```
 Note: This time we create a home folder for user media - required by Deluge.
 
-### 4.7 Install Deluge - Ubuntu 18.04
+### 4.07 Install Deluge - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
@@ -578,7 +578,7 @@ sudo apt-get install deluged deluge-webui -y
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-### 4.8 Create Deluge Service file - Ubuntu 18.04
+### 4.08 Create Deluge Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -604,7 +604,7 @@ sudo systemctl enable deluge &&
 sudo systemctl start deluge
 ```
 
-### 4.9 Create Deluge WebGUI Service file - Ubuntu 18.04
+### 4.09 Create Deluge WebGUI Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -629,17 +629,17 @@ sudo systemctl enable deluge-web &&
 sudo systemctl restart deluge-web
 ```
 
-### 4.6 Setup Deluge 
+### 4.10 Setup Deluge 
 Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default login details are password:deluge. Instructions to setup Deluge are [HERE]
 
 ---
 
-## 5.0 Jackett LXC - Ubuntu 18.04
+## 5.00 Jackett LXC - Ubuntu 18.04
 Jackett works as a proxy server: it translates queries from apps (Sonarr, Radarr, Lidarr etc) into tracker-site-specific http queries, parses the html response, then sends results back to the requesting software. This allows for getting recent uploads (like RSS) and performing searches. Jackett is a single repository of maintained indexer scraping & translation logic - removing the burden from other apps.
 
 This is installed on the Deluge LXC container.
 
-### 5.1 Install Jackett - Ubuntu 18.04
+### 5.01 Install Jackett - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
@@ -653,7 +653,7 @@ tar zxvf /opt/Jackett.Binaries.LinuxAMDx64.tar.gz &&
 sudo rm /opt/Jackett.Binaries.LinuxAMDx64.tar.gz
 ```
 
-### 5.2 Create Jackett Service file - Ubuntu 18.04
+### 5.02 Create Jackett Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -677,18 +677,18 @@ sudo systemctl enable jackett &&
 sudo systemctl start jackett
 ```
 
-### 5.3 Setup Jackett 
+### 5.03 Setup Jackett 
 Browse to http://192.168.30.113:9117 to start using Jackett.
 
 ---
 
-## 6.0 Flexget LXC - Ubuntu 18.04
+## 6.00 Flexget LXC - Ubuntu 18.04
 FlexGet is a multipurpose automation tool for all of your media. Support for torrents, nzbs, podcasts, comics, TV, movies, RSS, HTML, CSV, and more.
 
 Prerequisites are:
 - [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
 
-### 6.1 Create a Ubuntu 18.04 LXC for Flexget
+### 6.01 Create a Ubuntu 18.04 LXC for Flexget
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -749,7 +749,7 @@ pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 ```
 
 
-### 6.2 Setup Flexget Mount Points - Ubuntu 18.04
+### 6.02 Setup Flexget Mount Points - Ubuntu 18.04
 
 If you used Script (B) in Section 4.2 then you have no Moint Points.
 
@@ -762,7 +762,7 @@ pct set 114 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 114 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 6.4 Unprivileged container mapping - Ubuntu 18.04
+### 6.03 Unprivileged container mapping - Ubuntu 18.04
 To change the Flexget container mapping we change the container UID and GID in the file `/etc/pve/lxc/114.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
@@ -774,13 +774,19 @@ lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/114.conf
 ```
 
-### 6.5 Create Flexget download folders on your ZFS typhoon-share - Ubuntu 18.04
-To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+### 6.04 Create Flexget download folders on your ZFS typhoon-share - Ubuntu 18.04
+To create Flexget download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies,/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/staging/series,/mnt/pve/cyclone-01-video/documentary/staging/movies}
+mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies}
 ```
 
-### 6.6 Create new "media" user - Ubuntu 18.04
+### 6.05 Create Flexget content folders on your NAS
+To create Flexget content folders on your NAS use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+mkdir -p {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/staging/series,/mnt/pve/cyclone-01-video/documentary/staging/movies}
+```
+
+### 6.06 Create new "media" user - Ubuntu 18.04
 First start LXC 114 (nzbget) with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
@@ -789,11 +795,14 @@ groupadd -g 1005 media &&
 useradd -u 1005 -g media -m media
 ```
 
+### 6.07 Create Flexget `Home` Folder
+With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+```
+sudo mkdir /home/media/.flexget; sudo chown -R media:media /home/media/.flexget; sudo chmod -R 777 /home/media/.flexget
+```
 
-### 6.7 Install Flexget - Ubuntu 18.04
-This is easy. First start LXC 114 (flexget) with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `START`.
-
-Then with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+### 6.08 Install Flexget - Ubuntu 18.04
+With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 
 ```
 sudo apt-get update -y &&
@@ -805,11 +814,10 @@ pip3 install pyopenssl ndg-httpsclient pyasn1 &&
 pip3 install -U rarfile &&
 pip3 install -U cloudscraper &&
 pip3 install deluge-client &&
-pip3 install flexget &&
-sudo mkdir /home/media/.flexget; sudo chown -R media:media /home/media/.flexget; sudo chmod -R 777 /home/media/.flexget
+pip3 install flexget
 ```
 
-Now we need libtorrent. Until I figure out which libtorrent package & dependencies are required a workaround is to install Deluge (bot not starting/running Deluge - no services). So with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+Now we need libtorrent for our config.yml to work. Until I figure out which libtorrent package & dependencies are required the workaround is to install Deluge (but, not starting/running Deluge - no services). So with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 sudo apt-get update &&
 sudo apt install software-properties-common -y &&
@@ -817,8 +825,7 @@ sudo add-apt-repository ppa:deluge-team/stable -y &&
 sudo apt-get update &&
 sudo apt-get install deluged deluge-webui -y
 ```
-
-### 6.8 Create Flexget Service file - Ubuntu 18.04
+### 6.09 Create Flexget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -841,9 +848,8 @@ sudo systemctl enable flexget &&
 sudo systemctl start flexget
 ```
 
-To upgrade FlexGet, just run:
-
-sudo pip install --upgrade flexget
+### 6.10 Setup Flexget 
+Instructions to setup Flexget are [HERE](https://github.com/ahuacate/flexget#flexget-build) .
 
 ---
 
