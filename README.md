@@ -140,12 +140,27 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
+pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp4 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp5 /mnt/pve/cyclone-01-books,mp=/mnt/books
 ```
 
 **Script (B):** Excluding LXC Mount Points:
 ```
 pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
+
+### 2.03 Setup Jellyfin Mount Points - Ubuntu 18.04
+If you used **Script (B)** in Section 2.02 then you have no Moint Points.
+
+Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
+```
+pct set 111 -mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music &&
+pct set 111 -mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo &&
+pct set 111 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
+pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
+pct set 111 -mp4 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
+pct set 111 -mp5 /mnt/pve/cyclone-01-books,mp=/mnt/books
 ```
 
 ### 2.03 Configure and Install VAAPI - Ubuntu 18.04
@@ -261,19 +276,6 @@ echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/ubuntu
 sudo apt update -y &&
 sudo apt install jellyfin -y &&
 sudo systemctl restart jellyfin
-```
-
-### 2.07 Setup Jellyfin Mount Points - Ubuntu 18.04
-If you used **Script (B)** in Section 3.2 then you have no Moint Points.
-
-Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
-
-To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
-```
-pct set 111 -mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music &&
-pct set 111 -mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo &&
-pct set 111 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
-pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
 ### 2.08 Check your Jellyfin Installation
@@ -626,10 +628,19 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/deluge-web.service &&
 sudo systemctl enable deluge-web &&
-sudo systemctl restart deluge-web
+sudo systemctl start deluge-web
+```
+### 4.10 Add Flexget, LazyLibrarian user access to the Deluge Daemon
+Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+
+```
+sudo systemctl stop deluge &&
+echo -e "flexget:9c67cf728b8c079c2e0065ee11cb3a9a6771420a:10
+lazylibrarian:9c67cf728b8c079c2e0065ee11cb3a9a6771421a:10" >> /home/media/.config/deluge/auth &&
+sudo systemctl start deluge
 ```
 
-### 4.10 Setup Deluge 
+### 4.11 Setup Deluge 
 Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default login details are password:deluge. Instructions to setup Deluge are [HERE]
 
 ---
@@ -729,8 +740,8 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | IPv4/CIDR | Leave Blank |
 | Gateway (IPv6) | Leave Blank |
 | **DNS**
-| DNS domain | Leave Default (use host settings)
-| DNS servers | Leave Default (use host settings)
+| DNS domain | `192.168.30.5`
+| DNS servers | `192.168.30.5`
 | **Confirm**
 | Start after Created | `☐`
 
@@ -740,7 +751,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -760,6 +771,7 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 pct set 114 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
 pct set 114 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 114 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct set 114 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 ```
 
 ### 6.03 Unprivileged container mapping - Ubuntu 18.04
@@ -816,8 +828,10 @@ pip3 install -U cloudscraper &&
 pip3 install deluge-client &&
 pip3 install flexget
 ```
+At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
 Now we need libtorrent for our config.yml to work. Until I figure out which libtorrent package & dependencies are required the workaround is to install Deluge (but, not starting/running Deluge - no services). So with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+
 ```
 sudo apt-get update &&
 sudo apt install software-properties-common -y &&
@@ -825,6 +839,7 @@ sudo add-apt-repository ppa:deluge-team/stable -y &&
 sudo apt-get update &&
 sudo apt-get install deluged deluge-webui -y
 ```
+
 ### 6.09 Create Flexget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
