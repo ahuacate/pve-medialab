@@ -518,7 +518,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /typhoon-share/downloads,mp=/mnt/downloads
+pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /typhoon-share/downloads,mp=/mnt/downloads --mp1 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -535,6 +535,7 @@ Please note your Proxmox Deluge LXC MUST BE in the shutdown state before proceed
 To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 pct set 113 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
+pct set 113 -mp1 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
 ### 4.04 Unprivileged container mapping - Ubuntu 18.04
