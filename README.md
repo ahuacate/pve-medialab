@@ -723,8 +723,8 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | Rate limit (MN/s) | Leave Default (unlimited)
 | Firewall | `☑`
 | IPv4 | `☑  Static`
-| IPv4/CIDR |`192.168.50.114/24`|
-| Gateway (IPv4) |`192.168.50.5`|
+| IPv4/CIDR |`192.168.30.114/24`|
+| Gateway (IPv4) |`192.168.30.5`|
 | IPv6 | Leave Blank
 | IPv4/CIDR | Leave Blank |
 | Gateway (IPv6) | Leave Blank |
@@ -740,12 +740,12 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 **Script (B):** Excluding LXC Mount Points:
 ```
-pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
 
@@ -797,25 +797,27 @@ Then with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ S
 
 ```
 sudo apt-get update -y &&
-sudo apt-get install git-core python3 -y &&
-sudo apt install python3-pip -y &&
-sudo apt-get install libffi-dev -y &&
-sudo apt-get install python3-venv &&
-python3 -m venv /home/media/flexget/ &&
-cd /home/media/flexget/ &&
-bin/pip install flexget &&
-#sudo chown -R media:media /opt/nzbget
-
-sudo apt-get update -y &&
 export LC_ALL="en_US.UTF8" &&
 sudo apt-get install git-core python3 -y &&
-sudo apt install python3-pip -y &&
+sudo apt-get install python3-pip -y &&
 pip3 install --upgrade setuptools &&
 pip3 install pyopenssl ndg-httpsclient pyasn1 &&
+pip3 install -U rarfile &&
+pip3 install -U cloudscraper &&
+pip3 install deluge-client &&
 pip3 install flexget &&
-sudo mkdir /home/media/.flexget; sudo chown -R media:media /home/media/.flexget; sudo chmod -R 777 /home/media/.flexget &&
-echo "" > config.yml; sudo chmod 777 config.yml
+sudo mkdir /home/media/.flexget; sudo chown -R media:media /home/media/.flexget; sudo chmod -R 777 /home/media/.flexget
 ```
+
+Now we need libtorrent. Until I figure out which libtorrent package & dependencies are required a workaround is to install Deluge (bot not starting/running Deluge - no services). So with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+```
+sudo apt-get update &&
+sudo apt install software-properties-common -y &&
+sudo add-apt-repository ppa:deluge-team/stable -y &&
+sudo apt-get update &&
+sudo apt-get install deluged deluge-webui -y
+```
+
 ### 6.8 Create Flexget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
@@ -836,8 +838,7 @@ ExecReload=/usr/local/bin/flexget daemon reload
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/flexget.service &&
 sudo systemctl enable flexget &&
-sudo systemctl start flexget &&
-sudo systemctl status flexget
+sudo systemctl start flexget
 ```
 
 To upgrade FlexGet, just run:
