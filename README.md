@@ -656,8 +656,18 @@ bash -xu <<< "$(curl -fsSL https://raw.githubusercontent.com/filebot/plugins/mas
 With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 
 ```
-filebot -script fn:amc --log-file "/home/media/.filebot/amc.log" --def clean=y --output "/tmp" --action copy --conflict override -non-strict --def artwork=n "ut_dir=$TR_TORRENT_DIR/$TR_TORRENT_NAME" "ut_kind=multi" "ut_title=$TR_TORRENT_NAME" --def "seriesFormat=/mnt/video/documentary/series/{n}/{'S'+s.pad(2)}/{n.replaceAll(/[!?.]+$/).space('.')}.{'s'+s.pad(2)}e{e.pad(2)}.{vf}.{source}.{vc}.{ac}" "movieFormat=/mnt/video/documentary/movies/{n.upperInitial().replaceAll(/[!?.]+$/).space('.')}.{y}.{vf}.{source}.{vc}.{ac}" --def reportError=y > /home/media/.filebot/output.txt 2>&1" >> /home/media/.config/deluge/filebot-postprocess.sh &&
-sudo chmod +x /home/media/.config/deluge/filebot-postprocess.sh
+echo -e "#!/bin/sh -xu
+
+# Input Parameters
+ARG_PATH="$3/$2"
+ARG_NAME="$2"
+ARG_LABEL="N/A"
+
+# Configuration
+CONFIG_OUTPUT="$HOME/media/" 
+
+filebot -script fn:amc --log-file "/home/media/.filebot/amc.log" --def clean=y --output "/mnt/video/documentary/series" --action copy --conflict override -non-strict --def artwork=n "ut_dir=/mnt/downloads/deluge/complete/flexget/series" "ut_kind=multi" "ut_title=$TR_TORRENT_NAME" --def "seriesFormat=/mnt/video/documentary/series/{n}/{'S'+s.pad(2)}/{n.replaceAll(/[!?.]+$/).space('.')}.{'s'+s.pad(2)}e{e.pad(2)}.{vf}.{source}.{vc}.{ac}" --def reportError=y > /home/media/.filebot/output.txt 2>&1" >> /home/media/.config/deluge/deluge-postprocess.sh &&
+sudo chmod +rx /home/media/.config/deluge/deluge-postprocess.sh
 ```
 
 ### 4.11 Setup Deluge 
