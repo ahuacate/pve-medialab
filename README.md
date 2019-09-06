@@ -640,6 +640,24 @@ echo -e "flexget:9c67cf728b8c079c2e0065ee11cb3a9a6771420a:10
 lazylibrarian:9c67cf728b8c079c2e0065ee11cb3a9a6771421a:10" >> /home/media/.config/deluge/auth &&
 sudo systemctl start deluge
 ```
+### 4.11 Create FilBot `Home` Folder - Ubuntu 18.04
+With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+```
+sudo mkdir /home/media/.filebot; sudo chown -R media:media /home/media/.filebot; sudo chmod -R 777 /home/media/.filebot
+```
+
+### 4.12 Install FileBot - Ubuntu 18.04
+With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+```
+apt install curl -y &&
+bash -xu <<< "$(curl -fsSL https://raw.githubusercontent.com/filebot/plugins/master/installer/deb.sh)"
+```
+### 4.12 Create the FileBot post process script for Flexget - Ubuntu 18.04
+With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+
+```
+filebot -script fn:amc --log-file "/home/media/.filebot/amc.log" --def clean=y --output "/tmp" --action copy --conflict override -non-strict --def artwork=n "ut_dir=$TR_TORRENT_DIR/$TR_TORRENT_NAME" "ut_kind=multi" "ut_title=$TR_TORRENT_NAME" --def "seriesFormat=/mnt/video/documentary/series/{n}/{'S'+s.pad(2)}/{n.replaceAll(/[!?.]+$/).space('.')}.{'s'+s.pad(2)}e{e.pad(2)}.{vf}.{source}.{vc}.{ac}" "movieFormat=/mnt/video/documentary/movies/{n.upperInitial().replaceAll(/[!?.]+$/).space('.')}.{y}.{vf}.{source}.{vc}.{ac}" --def reportError=y > /home/media/.filebot/output.txt 2>&1" >> /home/media/.config/deluge/filebot-postprocess.sh
+```
 
 ### 4.11 Setup Deluge 
 Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default login details are password:deluge. Instructions to setup Deluge are [HERE]
@@ -695,7 +713,9 @@ Browse to http://192.168.30.113:9117 to start using Jackett.
 ---
 
 ## 6.00 Flexget LXC - Ubuntu 18.04
-FlexGet is a multipurpose automation tool for all of your media. Support for torrents, nzbs, podcasts, comics, TV, movies, RSS, HTML, CSV, and more.
+FlexGet is a multipurpose automation tool for all of your media. Support for torrents, nzbs, podcasts, comics, TV, movies, RSS, HTML, CSV, and more. I use FileBot to download problematic series like documentaries, 60 Minutes and BBC Panorama.
+
+Filebot is also installed on the Deluge LXC to do the lookup and renaming of files into their relevant folders for Jellyfin. Filebot is much better at resolving/guessing poorly named content. Best to use the fully paid licensed version of this software - it's worth it.
 
 Prerequisites are:
 - [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
@@ -808,7 +828,7 @@ groupadd -g 1005 media &&
 useradd -u 1005 -g media -m media
 ```
 
-### 6.07 Create Flexget `Home` Folder
+### 6.07 Create Flexget `Home` Folder - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 sudo mkdir /home/media/.flexget; sudo chown -R media:media /home/media/.flexget; sudo chmod -R 777 /home/media/.flexget
