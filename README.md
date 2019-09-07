@@ -640,35 +640,6 @@ echo -e "flexget:9c67cf728b8c079c2e0065ee11cb3a9a6771420a:10
 lazylibrarian:9c67cf728b8c079c2e0065ee11cb3a9a6771421a:10" >> /home/media/.config/deluge/auth &&
 sudo systemctl start deluge
 ```
-### 4.11 Create FilBot `Home` Folder - Ubuntu 18.04
-With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
-```
-sudo mkdir /home/media/.filebot; sudo chown -R media:media /home/media/.filebot; sudo chmod -R 777 /home/media/.filebot
-```
-
-### 4.12 Install FileBot - Ubuntu 18.04
-With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
-```
-apt install curl -y &&
-bash -xu <<< "$(curl -fsSL https://raw.githubusercontent.com/filebot/plugins/master/installer/deb.sh)"
-```
-### 4.12 Create the FileBot post process script for Flexget - Ubuntu 18.04
-With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
-
-```
-echo -e "#!/bin/sh -xu
-
-# Input Parameters
-ARG_PATH="$3/$2"
-ARG_NAME="$2"
-ARG_LABEL="N/A"
-
-# Configuration
-CONFIG_OUTPUT="$HOME/media/" 
-
-filebot -script fn:amc --log-file "/home/media/.filebot/amc.log" --def clean=y --output "/mnt/video/documentary/series" --action copy --conflict override -non-strict --def artwork=n "ut_dir=/mnt/downloads/deluge/complete/flexget/series" "ut_kind=multi" "ut_title=$TR_TORRENT_NAME" --def "seriesFormat=/mnt/video/documentary/series/{n}/{'S'+s.pad(2)}/{n.replaceAll(/[!?.]+$/).space('.')}.{'s'+s.pad(2)}e{e.pad(2)}.{vf}.{source}.{vc}.{ac}" --def reportError=y > /home/media/.filebot/output.txt 2>&1" > /home/media/.config/deluge/deluge-postprocess.sh &&
-sudo chmod +rx /home/media/.config/deluge/deluge-postprocess.sh
-```
 
 ### 4.11 Setup Deluge 
 Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default login details are password:deluge. Instructions to setup Deluge are [HERE]
@@ -724,9 +695,7 @@ Browse to http://192.168.30.113:9117 to start using Jackett.
 ---
 
 ## 6.00 Flexget LXC - Ubuntu 18.04
-FlexGet is a multipurpose automation tool for all of your media. Support for torrents, nzbs, podcasts, comics, TV, movies, RSS, HTML, CSV, and more. I use FileBot to download problematic series like documentaries, 60 Minutes and BBC Panorama.
-
-Filebot is also installed on the Deluge LXC to do the lookup and renaming of files into their relevant folders for Jellyfin. Filebot is much better at resolving/guessing poorly named content. Best to use the fully paid licensed version of this software - it's worth it.
+FlexGet is a multipurpose automation tool for all of your media. Support for torrents, nzbs, podcasts, comics, TV, movies, RSS, HTML, CSV, and more. Filebot is used to rename all Flexget downloaded media.
 
 Prerequisites are:
 - [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
@@ -827,7 +796,7 @@ mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typ
 ### 6.05 Create Flexget content folders on your NAS
 To create Flexget content folders on your NAS use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir -p {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/staging/series,/mnt/pve/cyclone-01-video/documentary/staging/movies}
+mkdir -p {/mnt/pve/cyclone-01-video/flexget/series,/mnt/pve/cyclone-01-video/flexget/movies}
 ```
 
 ### 6.06 Create new "media" user - Ubuntu 18.04
@@ -884,7 +853,7 @@ Type=simple
 User=media
 Group=media
 UMask=000
-WorkingDirectory=/home/media/.flexget
+WorkingDirectory=/home/media/.config/flexget
 ExecStart=/usr/local/bin/flexget daemon start
 ExecStop=/usr/local/bin/flexget daemon stop
 ExecReload=/usr/local/bin/flexget daemon reload
@@ -897,6 +866,74 @@ sudo systemctl start flexget
 
 ### 6.10 Setup Flexget 
 Instructions to setup Flexget are [HERE](https://github.com/ahuacate/flexget#flexget-build) .
+
+---
+
+## 7.00 Filebot LXC - Ubuntu 18.04
+FileBot is a tool for organizing and renaming your Movies, TV Shows and Anime as well as fetching subtitles and artwork. It is the naming resolver for all Flexget downloaded media.
+
+Filebot seems much better at resolving/guessing media which doesn't adhere to the TheTVdB or IMdB named convention. Its the best renaming solution for series like 60 Minutes and general documentaries.
+
+Best to use the fully paid licensed version of this software - it's worth it.
+
+Filebot is installed on the Deluge LXC container.
+
+### 7.11 Create FileBot `Home` Folder - Ubuntu 18.04
+Filebot is installed on the Deluge LXC container. So using the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+
+```
+sudo mkdir /home/media/.config/filebot; sudo chown -R media:media /home/media/.config/filebot; sudo chmod -R 777 /home/media/.config/filebot
+```
+
+### 7.12 Configuring host machine locales - Ubuntu 18.04
+The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+
+```
+echo -e "LANG=en_US.UTF-8" > /etc/default/locale &&
+sudo locale-gen
+```
+
+### 7.13 Install FileBot - Ubuntu 18.04
+With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+
+```
+apt install curl -y &&
+bash -xu <<< "$(curl -fsSL https://raw.githubusercontent.com/filebot/plugins/master/installer/deb.sh)"
+```
+
+To check your FileBot installation is without errors type the following:
+```
+filebot -script fn:sysinfo
+
+### Results ....
+FileBot 4.8.5 (r6224)
+JNA Native: 5.2.0
+MediaInfo: 17.12
+p7zip: p7zip Version 16.02 (locale=en_US.UTF-8,Utf16=on,HugeFiles=on,64 bits,4 CPUs Intel(R) Core(TM) i5-7300U CPU @ 2.60GHz (806E9),ASM,AES-NI)
+unrar: UNRAR 5.50 freeware
+Chromaprint: fpcalc version 1.4.3
+Extended Attributes: OK
+Unicode Filesystem: OK
+Script Bundle: 2019-05-15 (r565)
+Groovy: 2.5.6
+JRE: OpenJDK Runtime Environment 11.0.4
+JVM: 64-bit OpenJDK 64-Bit Server VM
+CPU/MEM: 2 Core / 3 GB Max Memory / 19 MB Used Memory
+OS: Linux (amd64)
+HW: Linux deluge 4.15.18-12-pve #1 SMP PVE 4.15.18-35 (Wed, 13 Mar 2019 08:24:42 +0100) x86_64 x86_64 x86_64 GNU/Linux
+DATA: /root/.filebot
+Package: DEB
+License: FileBot License P9265941 (Valid-Until: 2020-09-13)
+Done ヾ(＠⌒ー⌒＠)ノ
+```
+If you receive the following error, read on: `Unicode Filesystem` - **Unicode Filesystem: java.nio.file.InvalidPathException: Malformed input or input contains unmappable characters: /root/.filebot/龍飛鳳舞**. First check you've completed Step 7.12. Finally if the unicode error persists after performing Step 7.12 then manually set your machine locale to `en_US.UTF-8 UTF-8` using the command:
+```
+sudo dpkg-reconfigure locales
+```
+This should resolve the unicode error issue.
+
+### 6.10 Setup FileBot 
+Instructions to setup FileBot are [HERE](https://github.com/ahuacate/flexget#flexget-build) .
 
 ---
 
