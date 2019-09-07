@@ -947,7 +947,7 @@ You will recieve your License Key via email and the activation instructions are 
 ```
 nano /home/media/.config/filebot/FileBot_License.psm
 ```
-Note: It's `CTRL O` (thats a capital letter O, not numerical 0) to save and `CTRL X` to exit nano.
+Note: After pasting your key into the termail, it's `CTRL O` (thats a capital letter O, not numerical 0) to save the file and `CTRL X` to exit nano.
 
 Then type in the CLI:
 ```
