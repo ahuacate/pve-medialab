@@ -940,10 +940,10 @@ sudo dpkg-reconfigure locales
 ```
 This should resolve the unicode error issue.
 
-### 6.10 Register FileBot
+### 6.10 Register and Activate FileBot
 Go get yourself a license key for FileBot from [HERE](https://www.filebot.net/). You need it and its afforadable.
 
-You will recieve your License Key via email. Copy your FileBot_License_PXXXXXXX.psm License Key file to /home/media/.config/filebot. Or use nano and paste your key data into the new file. With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+You will recieve your License Key via email and the activation instructions are available [HERE](https://www.filebot.net/forums/viewtopic.php?f=8&t=6121). Copy your FileBot_License_PXXXXXXX.psm License Key file to /home/media/.config/filebot. Or use nano and paste your key data into the new file. With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 nano /home/media/.config/filebot/FileBot_License.psm
 ```
@@ -954,7 +954,7 @@ Then type in the CLI:
 filebot --license /home/media/.config/filebot/*.psm
 ```
 
-### 6.10 Setup FileBot 
+### 6.11 Setup FileBot 
 Instructions to setup FileBot are [HERE](https://github.com/ahuacate/flexget#flexget-build). 
 
 ---
