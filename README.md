@@ -808,13 +808,21 @@ groupadd -g 1005 media &&
 useradd -u 1005 -g media -m media
 ```
 
-### 6.07 Create Flexget `Home` Folder - Ubuntu 18.04
-With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+### 6.07 Configuring Flexget machine locales - Ubuntu 18.04
+The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+
 ```
-sudo mkdir /home/media/.flexget; sudo chown -R media:media /home/media/.flexget; sudo chmod -R 777 /home/media/.flexget
+echo -e "LANG=en_US.UTF-8" > /etc/default/locale &&
+sudo locale-gen
 ```
 
-### 6.08 Install Flexget - Ubuntu 18.04
+### 6.08 Create Flexget `Home` Folder - Ubuntu 18.04
+With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+```
+sudo mkdir /home/media/flexget; sudo chown -R media:media /home/media/flexget; sudo chmod -R 777 /home/media/flexget
+```
+
+### 6.09 Install Flexget - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 
 ```
@@ -841,7 +849,7 @@ sudo apt-get update &&
 sudo apt-get install deluged deluge-webui -y
 ```
 
-### 6.09 Create Flexget Service file - Ubuntu 18.04
+### 6.10 Create Flexget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -853,7 +861,7 @@ Type=simple
 User=media
 Group=media
 UMask=000
-WorkingDirectory=/home/media/.config/flexget
+WorkingDirectory=/home/media/flexget
 ExecStart=/usr/local/bin/flexget daemon start
 ExecStop=/usr/local/bin/flexget daemon stop
 ExecReload=/usr/local/bin/flexget daemon reload
@@ -864,7 +872,7 @@ sudo systemctl enable flexget &&
 sudo systemctl start flexget
 ```
 
-### 6.10 Setup Flexget 
+### 6.11 Setup Flexget 
 Instructions to setup Flexget are [HERE](https://github.com/ahuacate/flexget#flexget-build) .
 
 ---
