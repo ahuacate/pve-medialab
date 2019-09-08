@@ -790,13 +790,13 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/114.conf
 ### 6.04 Create Flexget download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create Flexget download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies}
+mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies,/typhoon-share/downloads/deluge/complete/flexget/podcasts}
 ```
 
 ### 6.05 Create Flexget content folders on your NAS
 To create Flexget content folders on your NAS use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir -p {/mnt/pve/cyclone-01-video/flexget/series,/mnt/pve/cyclone-01-video/flexget/movies}
+mkdir -p {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies}
 ```
 
 ### 6.06 Create new "media" user - Ubuntu 18.04
