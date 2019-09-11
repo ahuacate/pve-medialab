@@ -877,7 +877,7 @@ Instructions to setup Flexget are [HERE](https://github.com/ahuacate/flexget#fle
 
 ---
 
-## 7.00 Filebot LXC - Ubuntu 18.04
+## 7.00 FileBot Installation on Deluge LXC - Ubuntu 18.04
 FileBot is a tool for organizing and renaming your Movies, TV Shows and Anime as well as fetching subtitles and artwork. It is the naming resolver for all Flexget downloaded media.
 
 Filebot seems much better at resolving/guessing media which doesn't adhere to the TheTVdB or IMdB named convention. Its the best renaming solution for series like 60 Minutes and general documentaries.
