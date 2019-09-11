@@ -577,11 +577,85 @@ sudo apt-get update &&
 sudo apt install software-properties-common -y &&
 sudo add-apt-repository ppa:deluge-team/stable -y &&
 sudo apt-get update &&
-sudo apt-get install deluged deluge-webui -y
+sudo apt-get install deluged deluge-webui deluge-console -y
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-### 4.08 Create Deluge Service file - Ubuntu 18.04
+### 4.08 Configuring Deluge - Ubuntu 18.04
+Here we are going to do as much configuring of Deluge preferences by script as possible. Unfortunately some work needs to done later using the UI interface.
+Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+```
+systemctl daemon-reload &&
+su -c 'deluged' media &&
+sleep 5 &&
+pkill -9 deluged &&
+wget --content-disposition https://forum.deluge-torrent.org/download/file.php?id=6306 -P /home/media/.config/deluge/plugins/ &&
+wget  https://raw.githubusercontent.com/ahuacate/deluge/master/deluge-postprocess.sh -P /home/media/.config/deluge &&
+chmod +rx /home/media/.config/deluge/deluge-postprocess.sh &&
+chown 1005:1005 /home/media/.config/deluge/deluge-postprocess.sh &&
+echo -e "flexget:9c67cf728b8c079c2e0065ee11cb3a9a6771420a:10
+lazylibrarian:9c67cf728b8c079c2e0065ee11cb3a9a6771421a:10" >> /home/media/.config/deluge/auth &&
+echo -e '{
+    "file": 1,
+    "format": 1
+}{
+    "labels": {
+        "flexget-series": {
+            "apply_max": false,
+            "apply_move_completed": false,
+            "apply_queue": false,
+            "auto_add": false,
+            "auto_add_trackers": [],
+            "is_auto_managed": false,
+            "max_connections": -1,
+            "max_download_speed": -1,
+            "max_upload_slots": -1,
+            "max_upload_speed": -1,
+            "move_completed": false,
+            "move_completed_path": "",
+            "prioritize_first_last": false,
+            "remove_at_ratio": false,
+            "stop_at_ratio": false,
+            "stop_ratio": 2.0
+        },
+        "lazy": {
+            "apply_max": false,
+            "apply_move_completed": true,
+            "apply_queue": false,
+            "auto_add": false,
+            "auto_add_trackers": [],
+            "is_auto_managed": false,
+            "max_connections": -1,
+            "max_download_speed": -1,
+            "max_upload_slots": -1,
+            "max_upload_speed": -1,
+            "move_completed": true,
+            "move_completed_path": "/mnt/downloads/deluge/complete/lazy",
+            "prioritize_first_last": false,
+            "remove_at_ratio": false,
+            "stop_at_ratio": false,
+            "stop_ratio": 2.0
+        }
+    },
+    "torrent_labels": {
+    }
+}' >> /home/media/.config/deluge/label.conf &&
+echo -e '{
+    "file": 1,
+    "format": 1
+}{
+    "commands": [
+        [
+            "1",
+            "complete",
+            "/home/media/.config/deluge/deluge-postprocess.sh"
+        ]
+    ]
+}' >> /home/media/.config/deluge/execute.conf &&
+chown media:media {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/plugins/*.egg}
+```
+
+### 4.09 Create Deluge Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -607,7 +681,23 @@ sudo systemctl enable deluge &&
 sudo systemctl start deluge
 ```
 
-### 4.09 Create Deluge WebGUI Service file - Ubuntu 18.04
+### 4.10 Final Configuring of Deluge - Ubuntu 18.04
+Here we are going to use the deluge-console commands to configure Deluge Preferences.
+
+Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+```
+su -c 'deluge-console "config -s allow_remote True"' media &&
+su -c 'deluge-console "config -s max_active_downloading 10"' media &&
+su -c 'deluge-console "config -s max_active_limit 8"' media &&
+su -c 'deluge-console "config -s max_active_seeding 5"' media &&
+su -c 'deluge-console "config -s max_connections_global 200"' media &&
+su -c 'deluge-console "config -s remove_seed_at_ratio true"' media &&
+su -c 'deluge-console "config -s stop_seed_at_ratio true"' media &&
+su -c 'deluge-console "config -s stop_seed_ratio 1.5"' media &&
+sudo systemctl restart deluge
+````
+
+### 4.11 Create Deluge WebGUI Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -631,18 +721,9 @@ WantedBy=multi-user.target" > /etc/systemd/system/deluge-web.service &&
 sudo systemctl enable deluge-web &&
 sudo systemctl start deluge-web
 ```
-### 4.10 Add Flexget, LazyLibrarian user access to the Deluge Daemon
-Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
-```
-sudo systemctl stop deluge &&
-echo -e "flexget:9c67cf728b8c079c2e0065ee11cb3a9a6771420a:10
-lazylibrarian:9c67cf728b8c079c2e0065ee11cb3a9a6771421a:10" >> /home/media/.config/deluge/auth &&
-sudo systemctl start deluge
-```
-
-### 4.11 Setup Deluge 
-Browse to http://192.168.30.113:8112 to start using NZBget. Your Deluge default login details are password:deluge. Instructions to setup Deluge are [HERE]
+### 4.12 Setup Deluge 
+Browse to http://192.168.30.113:8112 to start using Deluge. Your Deluge default login details are password:deluge. Instructions to complete the setup of Deluge is [HERE]
 
 ---
 
@@ -890,16 +971,18 @@ Filebot is installed on the Deluge LXC container.
 Filebot is installed on the Deluge LXC container. So using the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-sudo mkdir /home/media/.config/filebot; sudo chown -R media:media /home/media/.config/filebot
+sudo mkdir /home/media/.filebot; sudo chown -R media:media /home/media/.filebot
 ```
 
 ### 7.12 Configuring host machine locales - Ubuntu 18.04
 The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-echo -e "LANG=en_US.UTF-8" > /etc/default/locale &&
-sudo locale-gen
+echo -e "LANG=en_US.UTF-8" > /etc/default/locale" &&
+sudo locale-gen &&
+sudo reboot
 ```
+Your `113 (deluge)` will reboot. So you will have to re-login into machine `113 (deluge)` to continue.
 
 ### 7.13 Install FileBot - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
@@ -911,7 +994,7 @@ bash -xu <<< "$(curl -fsSL https://raw.githubusercontent.com/filebot/plugins/mas
 
 To check your FileBot installation is without errors type the following:
 ```
-filebot -script fn:sysinfo
+sudo -u media -H sh -c "filebot -script fn:sysinfo"
 
 ### Results ....
 FileBot 4.8.5 (r6224)
@@ -934,7 +1017,7 @@ Package: DEB
 License: FileBot License XXXXXXX (Valid-Until: 2020-09-13)
 Done ヾ(＠⌒ー⌒＠)ノ
 ```
-If you receive the following error, read on: `Unicode Filesystem` - **Unicode Filesystem: java.nio.file.InvalidPathException: Malformed input or input contains unmappable characters: /root/.filebot/龍飛鳳舞**. First check you've completed Step 7.12. Finally if the unicode error persists after performing Step 7.12 then manually set your machine locale to `en_US.UTF-8 UTF-8` using the command:
+If you receive the following error, read on: `Unicode Filesystem` - **Unicode Filesystem: java.nio.file.InvalidPathException: Malformed input or input contains unmappable characters: /root/.filebot/龍飛鳳舞**. First check you've completed Step 7.12. Finally if the unicode error persists after performing Step 7.12 then manually set your machine locale to `en_US.UTF-8 UTF-8` using the command (spavebar to select / tab to move to <ok>):
 ```
 sudo dpkg-reconfigure locales
 ```
@@ -947,10 +1030,11 @@ You will recieve your License Key via email and the activation instructions are 
 
 With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
-nano /home/media/.filebot/FileBot_License.psm &&
-chown 1005:1005 /home/media/.filebot/*.psm
+nano /home/media/.filebot/FileBot_License.psm
 ```
 Note: After pasting your key into the termail, it's `CTRL O` (thats a capital letter O, not numerical 0) to save the file and `CTRL X` to exit nano.
+
+Note: After pasting your key (copy & paste the license key code with your mouse buttons) into the terminal, it's `CTRL O` (thats a capital letter O, not numerical 0) to prompt a save, `Enter` to save the file and `CTRL X` to exit nano.
 
 The following command will execute Filebot licensing under user `media` for you. So type the following:
 ```
