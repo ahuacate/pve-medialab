@@ -890,7 +890,7 @@ Filebot is installed on the Deluge LXC container.
 Filebot is installed on the Deluge LXC container. So using the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-sudo mkdir /home/media/.config/filebot; sudo chown -R media:media /home/media/.config/filebot; sudo chmod -R 777 /home/media/.config/filebot
+sudo mkdir /home/media/.config/filebot; sudo chown -R media:media /home/media/.config/filebot
 ```
 
 ### 7.12 Configuring host machine locales - Ubuntu 18.04
@@ -931,7 +931,7 @@ OS: Linux (amd64)
 HW: Linux deluge 4.15.18-12-pve #1 SMP PVE 4.15.18-35 (Wed, 13 Mar 2019 08:24:42 +0100) x86_64 x86_64 x86_64 GNU/Linux
 DATA: /root/.filebot
 Package: DEB
-License: FileBot License P9265941 (Valid-Until: 2020-09-13)
+License: FileBot License XXXXXXX (Valid-Until: 2020-09-13)
 Done ヾ(＠⌒ー⌒＠)ノ
 ```
 If you receive the following error, read on: `Unicode Filesystem` - **Unicode Filesystem: java.nio.file.InvalidPathException: Malformed input or input contains unmappable characters: /root/.filebot/龍飛鳳舞**. First check you've completed Step 7.12. Finally if the unicode error persists after performing Step 7.12 then manually set your machine locale to `en_US.UTF-8 UTF-8` using the command:
@@ -943,15 +943,25 @@ This should resolve the unicode error issue.
 ### 6.10 Register and Activate FileBot
 Go get yourself a license key for FileBot from [HERE](https://www.filebot.net/). You need it and its afforadable.
 
-You will recieve your License Key via email and the activation instructions are available [HERE](https://www.filebot.net/forums/viewtopic.php?f=8&t=6121). Copy your FileBot_License_PXXXXXXX.psm License Key file to /home/media/.config/filebot. Or use nano and paste your key data into the new file. With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+You will recieve your License Key via email and the activation instructions are available [HERE](https://www.filebot.net/forums/viewtopic.php?f=8&t=6121). Copy your FileBot_License_PXXXXXXX.psm License Key file to `/home/media/.filebot` folder. Or use nano and paste your key data into a new file. It's a **MUST** the following FileBot licensing is performed under the 'media' user ID otherwise the SW will bot be licensed to run under the `media` user. 
+
+With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
-nano /home/media/.config/filebot/FileBot_License.psm
+nano /home/media/.filebot/FileBot_License.psm &&
+chown 1005:1005 /home/media/.filebot/*.psm
 ```
 Note: After pasting your key into the termail, it's `CTRL O` (thats a capital letter O, not numerical 0) to save the file and `CTRL X` to exit nano.
 
-Then type in the CLI:
+The following command will execute Filebot licensing under user `media` for you. So type the following:
 ```
-filebot --license /home/media/.config/filebot/*.psm
+sudo -u media -H sh -c "filebot --license /home/media/.filebot/*.psm" 
+```
+Your terminal licensing output results should look like the following:
+```
+root@deluge:/home/media/.filebot# sudo -u media -H sh -c "filebot --license /home/media/.filebot/*.psm" 
+Activate License XXXXXXX
+Write [FileBot License XXXXXX (Valid-Until: 2020-09-13)] to [/home/media/.filebot/license.txt]
+FileBot License P9265941 (Valid-Until: 2020-09-13) has been activated successfully.
 ```
 
 ### 6.11 Setup FileBot 
