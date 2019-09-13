@@ -877,7 +877,7 @@ mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typ
 ### 6.05 Create Flexget content folders on your NAS
 To create Flexget content folders on your NAS use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir -p {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies}
+mkdir -p {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/unsorted}
 ```
 
 ### 6.06 Create new "media" user - Ubuntu 18.04
@@ -929,6 +929,16 @@ sudo add-apt-repository ppa:deluge-team/stable -y &&
 sudo apt-get update &&
 sudo apt-get install deluged deluge-webui -y
 ```
+### 6.10 Create the Flexget YAML Configuration File
+The is your Flexget configuration file which is pre-built and working. The main file `config.yml` also requires `secrets.yml` and `serial.yml` - so a total of 3x files.
+
+Download the Flexget YAML configuration file from GitHub. Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+```
+wget https://raw.githubusercontent.com/ahuacate/flexget/master/config.yml -P /home/media/flexget &&
+wget https://raw.githubusercontent.com/ahuacate/flexget/master/secrets.yml -P /home/media/flexget &&
+wget https://raw.githubusercontent.com/ahuacate/flexget/master/serial.yml -P /home/media/flexget
+```
+The `secrets.yml` file requires you to enter some pivate user credentials and instructions are [HERE](https://github.com/ahuacate/flexget).
 
 ### 6.10 Create Flexget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
