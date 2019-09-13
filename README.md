@@ -1032,8 +1032,6 @@ With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` 
 ```
 nano /home/media/.filebot/FileBot_License.psm
 ```
-Note: After pasting your key into the termail, it's `CTRL O` (thats a capital letter O, not numerical 0) to save the file and `CTRL X` to exit nano.
-
 Note: After pasting your key (copy & paste the license key code with your mouse buttons) into the terminal, it's `CTRL O` (thats a capital letter O, not numerical 0) to prompt a save, `Enter` to save the file and `CTRL X` to exit nano.
 
 The following command will execute Filebot licensing under user `media` for you. So type the following:
