@@ -940,7 +940,7 @@ wget https://raw.githubusercontent.com/ahuacate/flexget/master/serial.yml -P /ho
 ```
 The `secrets.yml` file requires you to enter some pivate user credentials and instructions are [HERE](https://github.com/ahuacate/flexget).
 
-### 6.10 Create Flexget Service file - Ubuntu 18.04
+### 6.11 Create Flexget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -963,7 +963,7 @@ sudo systemctl enable flexget &&
 sudo systemctl start flexget
 ```
 
-### 6.11 Setup Flexget 
+### 6.12 Setup Flexget 
 Instructions to setup Flexget are [HERE](https://github.com/ahuacate/flexget#flexget-build) .
 
 ---
