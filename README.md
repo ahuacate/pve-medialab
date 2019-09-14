@@ -589,7 +589,7 @@ systemctl daemon-reload &&
 su -c 'deluged' media &&
 sleep 5 &&
 pkill -9 deluged &&
-wget --content-disposition https://forum.deluge-torrent.org/download/file.php?id=6306 -P /home/media/.config/deluge/plugins/ &&
+wget --content-disposition https://forum.deluge-torrent.org/download/file.php?id=6305 -P /home/media/.config/deluge/plugins/ &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/deluge-postprocess.sh -P /home/media/.config/deluge &&
 chmod +rx /home/media/.config/deluge/deluge-postprocess.sh &&
 chown 1005:1005 /home/media/.config/deluge/deluge-postprocess.sh &&
