@@ -575,9 +575,9 @@ Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Sh
 ```
 sudo apt-get update &&
 sudo apt install software-properties-common -y &&
-sudo add-apt-repository ppa:deluge-team/stable -y &&
+sudo add-apt-repository ppa:deluge-team/ppa -y &&
 sudo apt-get update &&
-sudo apt-get install deluged deluge-webui deluge-console -y
+sudo apt-get install deluged deluge-web deluge-console -y
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
@@ -589,7 +589,7 @@ systemctl daemon-reload &&
 su -c 'deluged' media &&
 sleep 5 &&
 pkill -9 deluged &&
-wget --content-disposition https://forum.deluge-torrent.org/download/file.php?id=6305 -P /home/media/.config/deluge/plugins/ &&
+wget --content-disposition https://forum.deluge-torrent.org/download/file.php?id=6306 -P /home/media/.config/deluge/plugins/ &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/deluge-postprocess.sh -P /home/media/.config/deluge &&
 chmod +rx /home/media/.config/deluge/deluge-postprocess.sh &&
 chown 1005:1005 /home/media/.config/deluge/deluge-postprocess.sh &&
@@ -713,7 +713,7 @@ Group=media
 
 Type=simple
 Umask=027
-ExecStart=/usr/bin/deluge-web -d
+ExecStart=/usr/bin/deluge-web
 Restart=on-failure
 
 [Install]
@@ -988,11 +988,11 @@ sudo mkdir /home/media/.filebot; sudo chown -R media:media /home/media/.filebot
 The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-echo -e "LANG=en_US.UTF-8" > /etc/default/locale" &&
-sudo locale-gen &&
+echo -e "LANG=en_US.UTF-8" > /etc/default/locale &&
+sudo locale-gen "en_US.UTF-8" &&
 sudo reboot
 ```
-Your `113 (deluge)` will reboot. So you will have to re-login into machine `113 (deluge)` to continue.
+Your `113 (deluge)`container will reboot. So you will have to re-login into machine `113 (deluge)` to continue.
 
 ### 7.13 Install FileBot - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
@@ -1024,7 +1024,7 @@ OS: Linux (amd64)
 HW: Linux deluge 4.15.18-12-pve #1 SMP PVE 4.15.18-35 (Wed, 13 Mar 2019 08:24:42 +0100) x86_64 x86_64 x86_64 GNU/Linux
 DATA: /root/.filebot
 Package: DEB
-License: FileBot License XXXXXXX (Valid-Until: 2020-09-13)
+License: UNREGISTERED
 Done ヾ(＠⌒ー⌒＠)ノ
 ```
 If you receive the following error, read on: `Unicode Filesystem` - **Unicode Filesystem: java.nio.file.InvalidPathException: Malformed input or input contains unmappable characters: /root/.filebot/龍飛鳳舞**. First check you've completed Step 7.12. Finally if the unicode error persists after performing Step 7.12 then manually set your machine locale to `en_US.UTF-8 UTF-8` using the command (spavebar to select / tab to move to <ok>):
@@ -1036,11 +1036,34 @@ This should resolve the unicode error issue.
 ### 6.10 Register and Activate FileBot
 Go get yourself a license key for FileBot from [HERE](https://www.filebot.net/). You need it and its afforadable.
 
-You will recieve your License Key via email and the activation instructions are available [HERE](https://www.filebot.net/forums/viewtopic.php?f=8&t=6121). Copy your FileBot_License_PXXXXXXX.psm License Key file to `/home/media/.filebot` folder. Or use nano and paste your key data into a new file. It's a **MUST** the following FileBot licensing is performed under the 'media' user ID otherwise the SW will bot be licensed to run under the `media` user. 
+You will recieve your License Key via email and the activation instructions are available [HERE](https://www.filebot.net/forums/viewtopic.php?f=8&t=6121). Copy your FileBot_License_PXXXXXXX.psm License Key file to `/home/media/.filebot` folder. Or use nano and paste your key data into a new file. You **MUST** performed FileBot licensing under the 'media' user ID otherwise the software will not be licensed to run under the `media` user. 
 
 With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 nano /home/media/.filebot/FileBot_License.psm
+```
+Your FileBot license to Copy & Paste looks like this (extracted from the emailed received):
+```
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Product: FileBot
+Name: Funny Man
+Email: funnyman@funnyman.com
+Order: P72487328
+Issue-Date: 2016-09-01
+Valid-Until: 2017-09-01
+-----BEGIN PGP SIGNATURE-----
+
+7gDSg86bvBvnnasdjkhNBjkadasjkbdxasbxBghhjkvBhjkHVHJKGVVjbKHJVHVv
+7gDSg86bvBvnnasdjkhNBjkadasjkbdxasbxBghhjkvBhjkHVHJKGVVjbKHJVHVv
+7gDSg86bvBvnnasdjkhNBjkadasjkbdxasbxBghhjkvBhjkHVHJKGVVjbKHJVHVv
+7gDSg86bvBvnnasdjkhNBjkadasjkbdxasbxBghhjkvBhjkHVHJKGVVjbKHJVHVv
+7gDSg86bvBvnnasdjkhNBjkadasjkbdxasbxBghhjkvBhjkHVHJKGVVjbKHJVHVv
+7gDSg86bvBvnnasdjkhNBjkadasjkbdxasbxBghhjkvBhjkHVHJKGVVjbKHJVHVv
+7gDSg86bvBvnnasdjkhNBjkadasjkb==
+=2maB
+-----END PGP SIGNATURE-----
 ```
 Note: After pasting your key (copy & paste the license key code with your mouse buttons) into the terminal, it's `CTRL O` (thats a capital letter O, not numerical 0) to prompt a save, `Enter` to save the file and `CTRL X` to exit nano.
 
@@ -1052,8 +1075,8 @@ Your terminal licensing output results should look like the following:
 ```
 root@deluge:/home/media/.filebot# sudo -u media -H sh -c "filebot --license /home/media/.filebot/*.psm" 
 Activate License XXXXXXX
-Write [FileBot License XXXXXX (Valid-Until: 2020-09-13)] to [/home/media/.filebot/license.txt]
-FileBot License P9265941 (Valid-Until: 2020-09-13) has been activated successfully.
+Write [FileBot License XXXXXX (Valid-Until: 2020-09-01)] to [/home/media/.filebot/license.txt]
+FileBot License P874348 (Valid-Until: 2020-09-01) has been activated successfully.
 ```
 
 ### 6.11 Setup FileBot 
