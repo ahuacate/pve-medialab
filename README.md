@@ -567,7 +567,19 @@ useradd -u 1005 -g media -m media
 ```
 Note: This time we create a home folder for user media - required by Deluge.
 
-### 4.07 Install Deluge - Ubuntu 18.04
+
+### 4.07 Configuring host machine locales - Ubuntu 18.04
+The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+
+```
+echo -e "LC_ALL=en_US.UTF-8
+LANG=en_US.UTF-8" > /etc/default/locale &&
+sudo locale-gen &&
+sudo reboot
+```
+Your `113 (deluge)`container will reboot. So you will have to re-login into machine `113 (deluge)` to continue.
+
+### 4.08 Install Deluge - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
@@ -577,11 +589,11 @@ sudo apt-get update &&
 sudo apt install software-properties-common -y &&
 sudo add-apt-repository ppa:deluge-team/ppa -y &&
 sudo apt-get update &&
-sudo apt-get install deluged deluge-web deluge-console -y
+sudo apt-get install deluged deluge-webui deluge-console -y
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-### 4.08 Configuring Deluge - Ubuntu 18.04
+### 4.09 Configuring Deluge - Ubuntu 18.04
 Here we are going to do as much configuring of Deluge preferences by script as possible. Unfortunately some work needs to done later using the UI interface.
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
@@ -655,7 +667,7 @@ echo -e '{
 chown media:media {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/plugins/*.egg}
 ```
 
-### 4.09 Create Deluge Service file - Ubuntu 18.04
+### 4.10 Create Deluge Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -681,7 +693,7 @@ sudo systemctl enable deluge &&
 sudo systemctl start deluge
 ```
 
-### 4.10 Final Configuring of Deluge - Ubuntu 18.04
+### 4.11 Final Configuring of Deluge - Ubuntu 18.04
 Here we are going to use the deluge-console commands to configure Deluge Preferences.
 
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
@@ -697,7 +709,7 @@ su -c 'deluge-console "config -s stop_seed_ratio 1.5"' media &&
 sudo systemctl restart deluge
 ````
 
-### 4.11 Create Deluge WebGUI Service file - Ubuntu 18.04
+### 4.12 Create Deluge WebGUI Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -722,7 +734,7 @@ sudo systemctl enable deluge-web &&
 sudo systemctl start deluge-web
 ```
 
-### 4.12 Setup Deluge 
+### 4.13 Setup Deluge 
 Browse to http://192.168.30.113:8112 to start using Deluge. Your Deluge default login details are password:deluge. Instructions to complete the setup of Deluge is [HERE]
 
 ---
@@ -984,17 +996,7 @@ Filebot is installed on the Deluge LXC container. So using the Proxmox web inter
 sudo mkdir /home/media/.filebot; sudo chown -R media:media /home/media/.filebot
 ```
 
-### 7.12 Configuring host machine locales - Ubuntu 18.04
-The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
-
-```
-echo -e "LANG=en_US.UTF-8" > /etc/default/locale &&
-sudo locale-gen "en_US.UTF-8" &&
-sudo reboot
-```
-Your `113 (deluge)`container will reboot. So you will have to re-login into machine `113 (deluge)` to continue.
-
-### 7.13 Install FileBot - Ubuntu 18.04
+### 7.12 Install FileBot - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
@@ -1033,7 +1035,7 @@ sudo dpkg-reconfigure locales
 ```
 This should resolve the unicode error issue.
 
-### 6.10 Register and Activate FileBot
+### 7.13 Register and Activate FileBot
 Go get yourself a license key for FileBot from [HERE](https://www.filebot.net/). You need it and its afforadable.
 
 You will recieve your License Key via email and the activation instructions are available [HERE](https://www.filebot.net/forums/viewtopic.php?f=8&t=6121). Copy your FileBot_License_PXXXXXXX.psm License Key file to `/home/media/.filebot` folder. Or use nano and paste your key data into a new file. You **MUST** performed FileBot licensing under the 'media' user ID otherwise the software will not be licensed to run under the `media` user. 
@@ -1079,7 +1081,7 @@ Write [FileBot License XXXXXX (Valid-Until: 2020-09-01)] to [/home/media/.filebo
 FileBot License P874348 (Valid-Until: 2020-09-01) has been activated successfully.
 ```
 
-### 6.11 Setup FileBot 
+### 7.14 Setup FileBot 
 Instructions to setup FileBot are [HERE](https://github.com/ahuacate/flexget#flexget-build). 
 
 ---
