@@ -640,7 +640,7 @@ sudo systemctl start deluge
 ```
 
 ### 4.11 Final Configuring of Deluge - Ubuntu 18.04
-Here we are going to use the deluge-console commands to configure Deluge Preferences.
+Here we are going to use the deluge-console commands to configure Deluge Preferences. Unfortunately I have'nt found a way to `enable` the Deluge Plugins command line -- this must be done with WebUI after you've completed this installation tutorial.
 
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
@@ -654,10 +654,6 @@ su -c 'deluge-console "config -s remove_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_ratio 1.5"' media &&
 sudo systemctl restart deluge &&
-sleep 5 &&
-pkill -9 deluged &&
-sed -i '/  "enabled_plugins": \[\],/c\  "enabled_plugins": \[\n    "Execute",\n    "AutoRemovePlus",\n    "Label"\n  ],' /home/media/.config/deluge/core.conf &&
-sudo systemctl restart deluge
 ````
 
 ### 4.12 Create Deluge WebGUI Service file - Ubuntu 18.04
