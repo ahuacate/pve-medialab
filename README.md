@@ -593,8 +593,7 @@ sudo apt-get install deluged deluge-webui deluge-console -y
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-### 4.09 Configuring Deluge - Ubuntu 18.04
-Here we are going to do as much configuring of Deluge preferences by script as possible.
+### 4.09 Download Deluge Plugins and settings files - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 systemctl daemon-reload &&
@@ -640,7 +639,7 @@ sudo systemctl start deluge
 ```
 
 ### 4.11 Final Configuring of Deluge - Ubuntu 18.04
-Here we are going to use the deluge-console commands to configure Deluge Preferences. Unfortunately I have'nt found a way to `enable` the Deluge Plugins command line -- this must be done with WebUI after you've completed this installation tutorial.
+Here we are going to use the deluge-console commands to configure Deluge Preferences. Unfortunately I have'nt found a way to `enable` the Deluge Plugins command line -- follow the instructions [HERE](https://github.com/ahuacate/deluge/blob/master/README.md#101-manual-configuration) after you've completed installing Deluge.
 
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
@@ -653,7 +652,7 @@ su -c 'deluge-console "config -s max_connections_global 200"' media &&
 su -c 'deluge-console "config -s remove_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_ratio 1.5"' media &&
-sudo systemctl restart deluge &&
+sudo systemctl restart deluge
 ````
 
 ### 4.12 Create Deluge WebGUI Service file - Ubuntu 18.04
