@@ -594,7 +594,7 @@ sudo apt-get install deluged deluge-webui deluge-console -y
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
 ### 4.09 Configuring Deluge - Ubuntu 18.04
-Here we are going to do as much configuring of Deluge preferences by script as possible. Unfortunately some work needs to done later using the UI interface.
+Here we are going to do as much configuring of Deluge preferences by script as possible.
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 systemctl daemon-reload &&
@@ -610,7 +610,8 @@ lazylibrarian:9c67cf728b8c079c2e0065ee11cb3a9a6771421a:10" >> /home/media/.confi
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/label.conf -P /home/media/.config/deluge &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/execute.conf -P /home/media/.config/deluge &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/autoremoveplus.conf -P /home/media/.config/deluge &&
-chown 1005:1005 {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/autoremoveplus.conf,/home/media/.config/deluge/plugins/*.egg}
+chown 1005:1005 {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/autoremoveplus.conf,/home/media/.config/deluge/plugins/*.egg} &&
+sed -i '/  "enabled_plugins": \[\],/c\  "enabled_plugins": \[\n    "Execute",\n    "AutoRemovePlus",\n    "Label"\n  /],' /home/media/.config/deluge/core.conf
 ```
 
 ### 4.10 Create Deluge Service file - Ubuntu 18.04
