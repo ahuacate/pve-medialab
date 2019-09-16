@@ -607,64 +607,10 @@ chmod +rx /home/media/.config/deluge/deluge-postprocess.sh &&
 chown 1005:1005 /home/media/.config/deluge/deluge-postprocess.sh &&
 echo -e "flexget:9c67cf728b8c079c2e0065ee11cb3a9a6771420a:10
 lazylibrarian:9c67cf728b8c079c2e0065ee11cb3a9a6771421a:10" >> /home/media/.config/deluge/auth &&
-echo -e '{
-    "file": 1,
-    "format": 1
-}{
-    "labels": {
-        "flexget-series": {
-            "apply_max": false,
-            "apply_move_completed": false,
-            "apply_queue": false,
-            "auto_add": false,
-            "auto_add_trackers": [],
-            "is_auto_managed": false,
-            "max_connections": -1,
-            "max_download_speed": -1,
-            "max_upload_slots": -1,
-            "max_upload_speed": -1,
-            "move_completed": false,
-            "move_completed_path": "",
-            "prioritize_first_last": false,
-            "remove_at_ratio": false,
-            "stop_at_ratio": false,
-            "stop_ratio": 2.0
-        },
-        "lazy": {
-            "apply_max": false,
-            "apply_move_completed": true,
-            "apply_queue": false,
-            "auto_add": false,
-            "auto_add_trackers": [],
-            "is_auto_managed": false,
-            "max_connections": -1,
-            "max_download_speed": -1,
-            "max_upload_slots": -1,
-            "max_upload_speed": -1,
-            "move_completed": true,
-            "move_completed_path": "/mnt/downloads/deluge/complete/lazy",
-            "prioritize_first_last": false,
-            "remove_at_ratio": false,
-            "stop_at_ratio": false,
-            "stop_ratio": 2.0
-        }
-    },
-    "torrent_labels": {
-    }
-}' >> /home/media/.config/deluge/label.conf &&
-echo -e '{
-    "file": 1,
-    "format": 1
-}{
-    "commands": [
-        [
-            "1",
-            "complete",
-            "/home/media/.config/deluge/deluge-postprocess.sh"
-        ]
-    ]
-}' >> /home/media/.config/deluge/execute.conf &&
-chown media:media {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/plugins/*.egg}
+wget  https://raw.githubusercontent.com/ahuacate/deluge/master/label.conf -P /home/media/.config/deluge &&
+wget  https://raw.githubusercontent.com/ahuacate/deluge/master/execute.conf -P /home/media/.config/deluge &&
+wget  https://raw.githubusercontent.com/ahuacate/deluge/master/autoremoveplus.conf -P /home/media/.config/deluge &&
+chown 1005:1005 {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/autoremoveplus.conf,/home/media/.config/deluge/plugins/*.egg}
 ```
 
 ### 4.10 Create Deluge Service file - Ubuntu 18.04
@@ -699,9 +645,10 @@ Here we are going to use the deluge-console commands to configure Deluge Prefere
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 su -c 'deluge-console "config -s allow_remote True"' media &&
-su -c 'deluge-console "config -s max_active_downloading 10"' media &&
-su -c 'deluge-console "config -s max_active_limit 8"' media &&
-su -c 'deluge-console "config -s max_active_seeding 5"' media &&
+su -c 'deluge-console "config -s download_location /mnt/downloads/deluge/incomplete"' media &&
+su -c 'deluge-console "config -s max_active_downloading 20"' media &&
+su -c 'deluge-console "config -s max_active_limit 20"' media &&
+su -c 'deluge-console "config -s max_active_seeding 20"' media &&
 su -c 'deluge-console "config -s max_connections_global 200"' media &&
 su -c 'deluge-console "config -s remove_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_at_ratio true"' media &&
