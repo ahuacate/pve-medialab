@@ -572,9 +572,9 @@ Note: This time we create a home folder for user media - required by Deluge.
 The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-echo -e "LC_ALL=en_US.UTF-8
-LANG=en_US.UTF-8" > /etc/default/locale &&
-sudo locale-gen &&
+echo -e "LANG=en_US.UTF-8
+LC_ALL=en_US.UTF-8" > /etc/default/locale &&
+sudo locale-gen en_US.UTF-8 &&
 sudo reboot
 ```
 Your `113 (deluge)`container will reboot. So you will have to re-login into machine `113 (deluge)` to continue.
@@ -610,8 +610,7 @@ lazylibrarian:9c67cf728b8c079c2e0065ee11cb3a9a6771421a:10" >> /home/media/.confi
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/label.conf -P /home/media/.config/deluge &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/execute.conf -P /home/media/.config/deluge &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/autoremoveplus.conf -P /home/media/.config/deluge &&
-chown 1005:1005 {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/autoremoveplus.conf,/home/media/.config/deluge/plugins/*.egg} &&
-sed -i '/  "enabled_plugins": \[\],/c\  "enabled_plugins": \[\n    "Execute",\n    "AutoRemovePlus",\n    "Label"\n  /],' /home/media/.config/deluge/core.conf
+chown 1005:1005 {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/autoremoveplus.conf,/home/media/.config/deluge/plugins/*.egg}
 ```
 
 ### 4.10 Create Deluge Service file - Ubuntu 18.04
@@ -654,6 +653,10 @@ su -c 'deluge-console "config -s max_connections_global 200"' media &&
 su -c 'deluge-console "config -s remove_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_ratio 1.5"' media &&
+sudo systemctl restart deluge &&
+sleep 5 &&
+pkill -9 deluged &&
+sed -i '/  "enabled_plugins": \[\],/c\  "enabled_plugins": \[\n    "Execute",\n    "AutoRemovePlus",\n    "Label"\n  ],' /home/media/.config/deluge/core.conf &&
 sudo systemctl restart deluge
 ````
 
