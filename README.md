@@ -552,7 +552,8 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/113.conf
 ### 4.05 Create Deluge download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the Deluge download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,typhoon-share/downloads/deluge/complete/movies,typhoon-share/downloads/deluge/complete/series,typhoon-share/downloads/deluge/complete/music,/typhoon-share/downloads/deluge/autoadd}
+mkdir -m 775 -p {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,typhoon-share/downloads/deluge/complete/movies,typhoon-share/downloads/deluge/complete/series,typhoon-share/downloads/deluge/complete/music,/typhoon-share/downloads/deluge/autoadd} &&
+chown1005:1005 {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,typhoon-share/downloads/deluge/complete/movies,typhoon-share/downloads/deluge/complete/series,typhoon-share/downloads/deluge/complete/music,/typhoon-share/downloads/deluge/autoadd}
 ```
 
 ### 4.06 Create new "media" user - Ubuntu 18.04
@@ -710,19 +711,7 @@ tar zxvf /opt/Jackett.Binaries.LinuxAMDx64.tar.gz &&
 sudo rm /opt/Jackett.Binaries.LinuxAMDx64.tar.gz
 ```
 
-### 5.02 Download the latest Jackett Server configuration file & Indexers
-With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
-```
-# Here we update the Jackett Server configuration file
-wget -q https://raw.githubusercontent.com/ahuacate/jackett/master/ServerConfig.json -O /home/media/.config/Jackett/ServerConfig.json &&
-chown 1005:1005 /home/media/.config/Jackett/ServerConfig.json &&
-# Here we update the jacket indexers
-rm /home/media/.config/Jackett/Indexers/* &&
-svn checkout https://github.com/ahuacate/jackett/trunk/Indexers /home/media/.config/Jackett/Indexers &&
-chown 1005:1005 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak}
-```
-
-### 5.03 Create Jackett Service file - Ubuntu 18.04
+### 5.02 Create Jackett Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -745,6 +734,22 @@ WantedBy=multi-user.target" > /etc/systemd/system/jackett.service &&
 sudo systemctl enable jackett &&
 sudo systemctl start jackett
 ```
+### 5.03 Download the latest Jackett Server configuration file & Indexers
+With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+```
+# Here we update the Jackett Server configuration file
+sudo systemctl stop jackett &&
+sleep 5 &&
+wget -q https://raw.githubusercontent.com/ahuacate/jackett/master/ServerConfig.json -O /home/media/.config/Jackett/ServerConfig.json &&
+chown 1005:1005 /home/media/.config/Jackett/ServerConfig.json &&
+# Here we update the jacket indexers
+mkdir -m 775 -p /home/media/.config/Jackett/Indexers &&
+chown 1005:1005 /home/media/.config/Jackett/Indexers &&
+svn checkout https://github.com/ahuacate/jackett/trunk/Indexers /home/media/.config/Jackett/Indexers &&
+chown 1005:1005 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak} &&
+sudo systemctl restart jackett
+```
+
 
 ### 5.04 Setup Jackett 
 Browse to http://192.168.30.113:9117 to start using Jackett.
@@ -869,8 +874,10 @@ useradd -u 1005 -g media -m media
 The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 
 ```
-echo -e "LANG=en_US.UTF-8" > /etc/default/locale &&
-sudo locale-gen
+echo -e "LANG=en_US.UTF-8
+LC_ALL=en_US.UTF-8" > /etc/default/locale &&
+sudo locale-gen en_US.UTF-8 &&
+sudo reboot
 ```
 
 ### 6.08 Create Flexget `Home` Folder - Ubuntu 18.04
