@@ -586,6 +586,7 @@ Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Sh
 
 ```
 sudo apt-get update &&
+sudo apt install subversion -y &&
 sudo apt install software-properties-common -y &&
 sudo add-apt-repository ppa:deluge-team/ppa -y &&
 sudo apt-get update &&
@@ -652,9 +653,11 @@ su -c 'deluge-console "config -s max_connections_global 200"' media &&
 su -c 'deluge-console "config -s remove_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_ratio 1.5"' media &&
+sleep 5 &&
 su -c 'deluge-console "plugin -e autoremoveplus"' media &&
 su -c 'deluge-console "plugin -e label"' media &&
 su -c 'deluge-console "plugin -e execute"' media &&
+sleep 2 &&
 sudo systemctl restart deluge
 ````
 
@@ -707,7 +710,19 @@ tar zxvf /opt/Jackett.Binaries.LinuxAMDx64.tar.gz &&
 sudo rm /opt/Jackett.Binaries.LinuxAMDx64.tar.gz
 ```
 
-### 5.02 Create Jackett Service file - Ubuntu 18.04
+### 5.02 Download the latest Jackett Server configuration file & Indexers
+With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+```
+# Here we update the Jackett Server configuration file
+wget -q https://raw.githubusercontent.com/ahuacate/jackett/master/ServerConfig.json -O /home/media/.config/Jackett/ServerConfig.json &&
+chown 1005:1005 /home/media/.config/Jackett/ServerConfig.json &&
+# Here we update the jacket indexers
+rm /home/media/.config/Jackett/Indexers/* &&
+svn checkout https://github.com/ahuacate/jackett/trunk/Indexers /home/media/.config/Jackett/Indexers &&
+chown 1005:1005 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak}
+```
+
+### 5.03 Create Jackett Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -731,7 +746,7 @@ sudo systemctl enable jackett &&
 sudo systemctl start jackett
 ```
 
-### 5.03 Setup Jackett 
+### 5.04 Setup Jackett 
 Browse to http://192.168.30.113:9117 to start using Jackett.
 
 ---
