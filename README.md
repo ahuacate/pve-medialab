@@ -639,7 +639,7 @@ sudo systemctl start deluge
 ```
 
 ### 4.11 Final Configuring of Deluge - Ubuntu 18.04
-Here we are going to use the deluge-console commands to configure Deluge Preferences. Unfortunately I have'nt found a way to `enable` the Deluge Plugins command line -- follow the instructions [HERE](https://github.com/ahuacate/deluge/blob/master/README.md#101-manual-configuration) after you've completed installing Deluge.
+Here we are going to use the deluge-console commands to configure Deluge Preferences and enable some Deluge Plugins.
 
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
@@ -652,6 +652,9 @@ su -c 'deluge-console "config -s max_connections_global 200"' media &&
 su -c 'deluge-console "config -s remove_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_at_ratio true"' media &&
 su -c 'deluge-console "config -s stop_seed_ratio 1.5"' media &&
+su -c 'deluge-console "plugin -e autoremoveplus"' media &&
+su -c 'deluge-console "plugin -e label"' media &&
+su -c 'deluge-console "plugin -e execute"' media &&
 sudo systemctl restart deluge
 ````
 
