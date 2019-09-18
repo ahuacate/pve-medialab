@@ -385,7 +385,8 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/112.conf
 ### 3.05 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir 1005:1005 -p {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music}
+mkdir -p {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music} &&
+chown 1005:1005 {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music}
 ```
 
 ### 3.06 Create new "media" user - Ubuntu 18.04
@@ -553,7 +554,7 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/113.conf
 To create the Deluge download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 mkdir -m 775 -p {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,typhoon-share/downloads/deluge/complete/movies,typhoon-share/downloads/deluge/complete/series,typhoon-share/downloads/deluge/complete/music,/typhoon-share/downloads/deluge/autoadd} &&
-chown1005:1005 {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,typhoon-share/downloads/deluge/complete/movies,typhoon-share/downloads/deluge/complete/series,typhoon-share/downloads/deluge/complete/music,/typhoon-share/downloads/deluge/autoadd}
+chown 1005:1005 {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,typhoon-share/downloads/deluge/complete/movies,typhoon-share/downloads/deluge/complete/series,typhoon-share/downloads/deluge/complete/music,/typhoon-share/downloads/deluge/autoadd}
 ```
 
 ### 4.06 Create new "media" user - Ubuntu 18.04
@@ -852,7 +853,8 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/114.conf
 ### 6.04 Create Flexget download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create Flexget download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir 1005:1005 -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies,/typhoon-share/downloads/deluge/complete/flexget/podcasts}
+mkdir -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies,/typhoon-share/downloads/deluge/complete/flexget/podcasts} &&
+chown 1005:1005 {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies,/typhoon-share/downloads/deluge/complete/flexget/podcasts}
 ```
 
 ### 6.05 Create Flexget content folders on your NAS
@@ -883,7 +885,8 @@ sudo reboot
 ### 6.08 Create Flexget `Home` Folder - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
-sudo mkdir /home/media/flexget; sudo chown -R media:media /home/media/flexget; sudo chmod -R 777 /home/media/flexget
+mkdir -m 775 -p /home/media/flexget &&
+sudo chown -R media:media /home/media/flexget
 ```
 
 ### 6.09 Install Flexget - Ubuntu 18.04
@@ -912,16 +915,18 @@ sudo add-apt-repository ppa:deluge-team/stable -y &&
 sudo apt-get update &&
 sudo apt-get install deluged deluge-webui -y
 ```
-### 6.10 Create the Flexget YAML Configuration File
-The is your Flexget configuration file which is pre-built and working. The main file `config.yml` also requires `secrets.yml` and `serial.yml` - so a total of 3x files.
+### 6.10 Download the Flexget YAML Configuration Files
+Your Flexget configuration files are pre-built and working. There are x files to download.
 
 Download the Flexget YAML configuration file from GitHub. Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 wget https://raw.githubusercontent.com/ahuacate/flexget/master/config.yml -P /home/media/flexget &&
+wget https://raw.githubusercontent.com/ahuacate/flexget/master/list-showrss.yml.yml -P /home/media/flexget &&
+wget https://raw.githubusercontent.com/ahuacate/flexget/master/list-mvgroup.yml -P /home/media/flexget &&
+wget https://raw.githubusercontent.com/ahuacate/flexget/master/list-documentarytorrents.yml -P /home/media/flexget &&
 wget https://raw.githubusercontent.com/ahuacate/flexget/master/secrets.yml -P /home/media/flexget &&
-wget https://raw.githubusercontent.com/ahuacate/flexget/master/serial.yml -P /home/media/flexget
 ```
-The `secrets.yml` file requires you to enter some pivate user credentials and instructions are [HERE](https://github.com/ahuacate/flexget).
+The `secrets.yml` file requires you to enter your private user credentials and instructions are [HERE](https://github.com/ahuacate/flexget).
 
 ### 6.11 Create Flexget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
