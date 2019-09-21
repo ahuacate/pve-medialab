@@ -751,7 +751,6 @@ chown 1005:1005 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config
 sudo systemctl restart jackett
 ```
 
-
 ### 5.04 Setup Jackett 
 Browse to http://192.168.30.113:9117 to start using Jackett.
 
@@ -853,8 +852,8 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/114.conf
 ### 6.04 Create Flexget download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create Flexget download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies,/typhoon-share/downloads/deluge/complete/flexget/podcasts} &&
-chown 1005:1005 {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies,/typhoon-share/downloads/deluge/complete/flexget/podcasts}
+mkdir -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies} &&
+chown 1005:1005 {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies}
 ```
 
 ### 6.05 Create Flexget content folders on your NAS
@@ -1058,17 +1057,17 @@ FileBot License P874348 (Valid-Until: 2020-09-01) has been activated successfull
 ```
 
 ### 7.14 Setup FileBot 
-Instructions to setup FileBot are [HERE](https://github.com/ahuacate/flexget#flexget-build). 
+FileBot works inconjunction with Flexget. So instructions to setup FileBot are [HERE](https://github.com/ahuacate/flexget#flexget-build). 
 
 ---
 
-## 7.0 Sonarr LXC - Ubuntu 18.04
+## 8.0 Sonarr LXC - Ubuntu 18.04
 Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
 Prerequisites are:
 - [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
 
-### 7.1 Create a Ubuntu 18.04 LXC for Sonarr
+### 8.1 Create a Ubuntu 18.04 LXC for Sonarr
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -1128,7 +1127,7 @@ pct create 115 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 115 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.115/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 7.2 Setup Sonarr Mount Points - Ubuntu 18.04
+### 8.2 Setup Sonarr Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 8.1 then you have no Moint Points.
 
 Please note your Proxmox Sonarr LXC **MUST BE** in the shutdown state before proceeding.
@@ -1140,7 +1139,7 @@ pct set 115 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 115 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 7.3 Unprivileged container mapping - Ubuntu 18.04
+### 8.3 Unprivileged container mapping - Ubuntu 18.04
 To change the Sonarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/115.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
@@ -1152,7 +1151,7 @@ lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/115.conf
 ```
 
-### 7.4 Create new "media" user - Ubuntu 18.04
+### 8.4 Create new "media" user - Ubuntu 18.04
 First start LXC 115 (sonarr) with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
@@ -1162,7 +1161,7 @@ useradd -u 1005 -g media -m media
 ```
 Note: This time we create a home folder for user media - required by Sonarr.
 
-### 7.5 Install Sonarr
+### 8.5 Install Sonarr
 Th following Sonarr installation recipe is from the official Sonarr website [HERE](https://sonarr.tv/#downloads-v3-linux-ubuntu). Please refer for the latest updates.
 
 During the installation, you will be asked which user and group Sonarr must run as. It's important to choose these correctly to avoid permission issues with your media files. I suggest you keep the group named `media` and username `media` identical between your download client(s) and Sonarr. 
@@ -1183,7 +1182,7 @@ sudo apt install nzbdrone -y &&
 sudo chown -R media:media /opt/NzbDrone
 ```
 
-### 7.6 Create Sonarr Service file - Ubuntu 18.04
+### 8.6 Create Sonarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 ```
 sudo echo -e "[Unit]
@@ -1205,11 +1204,27 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/sonarr.service &&
 sudo systemctl enable sonarr.service &&
-sudo systemctl start sonarr.service &&
-sudo reboot
+sudo systemctl start sonarr.service
 ```
 
-### 7.7 Setup Sonarr
+### 8.7 Update the Sonarr configuration base file
+```
+sudo systemctl stop sonarr.service &&
+wget -q https://raw.githubusercontent.com/ahuacate/sonarr/master/config.xml -O /home/media/.config/NzbDrone/config.xml &&
+sudo systemctl start sonarr.service
+```
+
+### 8.7 Install sonarr-episode-trimmer
+A script for use with Sonarr that allows you to set the number of episodes of a show that you would like to keep.
+Useful for shows that air daily. The script sorts the episodes you have for a show by the season and episode number, and then deletes the oldest episodes past the threshold you set.
+```
+mkdir 775 -p /home/media/.config/NzbDrone/custom-scripts &&
+chown 1005:1005 /home/media/.config/NzbDrone/custom-scripts &&
+wget https://gitlab.com/spoatacus/sonarr-episode-trimmer/raw/master/sonarr-episode-trimmer.py -P /home/media/.config/NzbDrone/custom-scripts &&
+wget https://raw.githubusercontent.com/ahuacate/sonarr/master/sonarr-episode-trimmer/config -P /home/media/.config/NzbDrone/custom-scripts
+```
+
+### 8.7 Setup Sonarr
 Browse to http://192.168.50.115:8989 to start using Sonarr.
 
 ---
