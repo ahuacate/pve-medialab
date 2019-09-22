@@ -386,8 +386,8 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/112.conf
 ### 3.05 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir -p {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/sonarr-series,/typhoon-share/downloads/nzbget/completed/radarr-movies,/typhoon-share/downloads/nzbget/completed/lidarr-music} &&
-chown 1005:1005 {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/sonarr-series,/typhoon-share/downloads/nzbget/completed/radarr-movies,/typhoon-share/downloads/nzbget/completed/lidarr-music}
+mkdir -p {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music} &&
+chown 1005:1005 {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music}
 ```
 
 ### 3.06 Create new "media" user - Ubuntu 18.04
@@ -415,7 +415,7 @@ sudo chown -R media:media /opt/nzbget
 The NZBGET configuration file needs to have its default settings changed. In this step we are going to change or add the following settings:
 *  download location changed to your ZFS typhoon-share downloads folder /mnt/downloads/nzbget;
 *  NZBGet daemon username changed to run under `media` not root;
-*  create and add labels sonarr, radarr, lidarr and lazylibrarian;
+*  create and add labels sonarr-series, radarr-movies, lidarr-music and lazylibrarian;
 *  create a RPC username and password.
 
 Using the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
@@ -427,10 +427,10 @@ sed -i 's|MainDir=${AppDir}/downloads|MainDir=/mnt/downloads/nzbget|g' /opt/nzbg
 sed -i "/DaemonUsername=/c\DaemonUsername=media" /opt/nzbget/nzbget.conf &&
 # Set all the category labels and destination settings
 sed -i "/Category1.Name=Movies/c\Category1.Name=radarr-movies" /opt/nzbget/nzbget.conf &&
-sed -i "/Category1.DestDir=/c\Category1.DestDir=/mnt/downloads/nzbget/completed/radarr-movies" /opt/nzbget/nzbget.conf &&
+sed -i "/Category1.DestDir=/c\Category1.DestDir=/mnt/downloads/nzbget/completed/movies" /opt/nzbget/nzbget.conf &&
 sed -i "/Category1.Aliases=movies*/c\Category1.Aliases=radarr-movies*" /opt/nzbget/nzbget.conf &&
-sed -i 's/Category2.Name=Series/Category2.Name=sonarr-series\nCategory2.DestDir=\/mnt\/downloads\/nzbget\/completed\/sonarr-series\nCategory2.Unpack=yes\nCategory2.Extensions=\nCategory2.Aliases=sonarr-series*/' /opt/nzbget/nzbget.conf &&
-sed -i 's/Category3.Name=Music/Category3.Name=lidarr-music\nCategory3.DestDir=\/mnt\/downloads\/nzbget\/completed\/lidarr-music\nCategory3.Unpack=yes\nCategory3.Extensions=\nCategory3.Aliases=lidarr-music*/' /opt/nzbget/nzbget.conf &&
+sed -i 's/Category2.Name=Series/Category2.Name=sonarr-series\nCategory2.DestDir=\/mnt\/downloads\/nzbget\/completed\/series\nCategory2.Unpack=yes\nCategory2.Extensions=\nCategory2.Aliases=sonarr-series*/' /opt/nzbget/nzbget.conf &&
+sed -i 's/Category3.Name=Music/Category3.Name=lidarr-music\nCategory3.DestDir=\/mnt\/downloads\/nzbget\/completed\/music\nCategory3.Unpack=yes\nCategory3.Extensions=\nCategory3.Aliases=lidarr-music*/' /opt/nzbget/nzbget.conf &&
 sed -i 's/Category4.Name=Software/Category4.Name=lazy\nCategory4.DestDir=\/mnt\/downloads\/nzbget\/completed\/lazy\nCategory4.Unpack=yes\nCategory4.Extensions=\nCategory4.Aliases=lazy*/' /opt/nzbget/nzbget.conf &&
 # Add username and password for RPC Access
 sed -i "/AddUsername=/c\AddUsername=rpcaccess" /opt/nzbget/nzbget.conf &&
