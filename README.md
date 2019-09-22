@@ -412,8 +412,11 @@ sudo chown -R media:media /opt/nzbget
 ```
 
 ### 3.08 Edit NZBget configuration file - Ubuntu 18.04
-The NZBGET configuration file needs to have its default download location changed to your ZFS typhoon-share downloads folder. NZBGET default variable on the nzbget.conf file is set to `MainDir=${AppDir}/downloads` which we need to change to `MainDir=/mnt/downloads/nzbget`.
-We also need to change the NZBGet Daemon to run under `media` not `root`.
+The NZBGET configuration file needs to have its default settings changed. In this step we are going to change or add the following settings:
+*  download location changed to your ZFS typhoon-share downloads folder /mnt/downloads/nzbget;
+*  NZBGet daemon username changed to run under `media` not root;
+*  create and add labels sonarr, radarr, lidarr and lazylibrarian;
+*  create a RPC username and password.
 
 Using the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 
