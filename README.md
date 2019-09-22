@@ -351,7 +351,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /typhoon-share/downloads,mp=/mnt/downloads
+pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /typhoon-share/downloads,mp=/mnt/downloads --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -367,7 +367,8 @@ Please note your Proxmox NZBget LXC MUST BE in the shutdown state before proceed
 
 To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-pct set 112 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
+pct set 112 -mp0 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 112 -mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 ### 3.04 Unprivileged container mapping - Ubuntu 18.04
@@ -385,8 +386,8 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/112.conf
 ### 3.05 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir -p {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music} &&
-chown 1005:1005 {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music}
+mkdir -p {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/sonarr-series,/typhoon-share/downloads/nzbget/completed/radarr-movies,/typhoon-share/downloads/nzbget/completed/lidarr-music} &&
+chown 1005:1005 {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/sonarr-series,/typhoon-share/downloads/nzbget/completed/radarr-movies,/typhoon-share/downloads/nzbget/completed/lidarr-music}
 ```
 
 ### 3.06 Create new "media" user - Ubuntu 18.04
@@ -417,9 +418,23 @@ We also need to change the NZBGet Daemon to run under `media` not `root`.
 Using the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 
 ```
+# Set the Download folder
 sed -i 's|MainDir=${AppDir}/downloads|MainDir=/mnt/downloads/nzbget|g' /opt/nzbget/nzbget.conf &&
+# Set the User Daemon
 sed -i "/DaemonUsername=/c\DaemonUsername=media" /opt/nzbget/nzbget.conf &&
-sudo chmod 755 /opt/nzbget/nzbget.conf
+# Set all the category labels and destination settings
+sed -i "/Category1.Name=Movies/c\Category1.Name=radarr-movies" /opt/nzbget/nzbget.conf &&
+sed -i "/Category1.DestDir=/c\Category1.DestDir=/mnt/downloads/nzbget/completed/radarr-movies" /opt/nzbget/nzbget.conf &&
+sed -i "/Category1.Aliases=movies*/c\Category1.Aliases=radarr-movies*" /opt/nzbget/nzbget.conf &&
+sed -i 's/Category2.Name=Series/Category2.Name=sonarr-series\nCategory2.DestDir=\/mnt\/downloads\/nzbget\/completed\/sonarr-series\nCategory2.Unpack=yes\nCategory2.Extensions=\nCategory2.Aliases=sonarr-series*/' /opt/nzbget/nzbget.conf &&
+sed -i 's/Category3.Name=Music/Category3.Name=lidarr-music\nCategory3.DestDir=\/mnt\/downloads\/nzbget\/completed\/lidarr-music\nCategory3.Unpack=yes\nCategory3.Extensions=\nCategory3.Aliases=lidarr-music*/' /opt/nzbget/nzbget.conf &&
+sed -i 's/Category4.Name=Software/Category4.Name=lazy\nCategory4.DestDir=\/mnt\/downloads\/nzbget\/completed\/lazy\nCategory4.Unpack=yes\nCategory4.Extensions=\nCategory4.Aliases=lazy*/' /opt/nzbget/nzbget.conf &&
+# Add username and password for RPC Access
+sed -i "/AddUsername=/c\AddUsername=rpcaccess" /opt/nzbget/nzbget.conf &&
+sed -i "/AddPassword=/c\AddPassword=Ut#)>3'o&RVmRj>]" /opt/nzbget/nzbget.conf &&
+# Set the file permissions and ownership
+sudo chmod 755 /opt/nzbget/nzbget.conf &&
+chown 1005:1005 /opt/nzbget/nzbget.conf
 ```
 
 ### 3.09 Create NZBget Service file - Ubuntu 18.04
