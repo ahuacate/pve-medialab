@@ -1239,7 +1239,9 @@ Useful for shows that air daily. The script sorts the episodes you have for a sh
 mkdir 775 -p /home/media/.config/NzbDrone/custom-scripts &&
 chown 1005:1005 /home/media/.config/NzbDrone/custom-scripts &&
 wget https://gitlab.com/spoatacus/sonarr-episode-trimmer/raw/master/sonarr-episode-trimmer.py -P /home/media/.config/NzbDrone/custom-scripts &&
-wget https://raw.githubusercontent.com/ahuacate/sonarr/master/sonarr-episode-trimmer/config -P /home/media/.config/NzbDrone/custom-scripts
+wget https://raw.githubusercontent.com/ahuacate/sonarr/master/sonarr-episode-trimmer/config -P /home/media/.config/NzbDrone/custom-scripts &&
+chmod +rx /home/media/.config/NzbDrone/custom-scripts/sonarr-episode-trimmer.py &&
+chown 1005:1005 /home/media/.config/NzbDrone/custom-scripts/*
 ```
 
 ### 8.7 Setup Sonarr
