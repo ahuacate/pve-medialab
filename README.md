@@ -1226,16 +1226,9 @@ sudo systemctl enable sonarr.service &&
 sudo systemctl start sonarr.service
 ```
 
-### 8.7 Update the Sonarr configuration base file
-```
-sudo systemctl stop sonarr.service &&
-wget -q https://raw.githubusercontent.com/ahuacate/sonarr/master/config.xml -O /home/media/.config/NzbDrone/config.xml &&
-sudo systemctl start sonarr.service
-```
-
 ### 8.7 Install sonarr-episode-trimmer
 A script for use with Sonarr that allows you to set the number of episodes of a show that you would like to keep.
-Useful for shows that air daily. The script sorts the episodes you have for a show by the season and episode number, and then deletes the oldest episodes past the threshold you set.
+Useful for aily shows. The script sorts the episodes you have for a show by the season and episode number, and then deletes the oldest episodes past the threshold you set.
 ```
 mkdir 775 -p /home/media/.config/NzbDrone/custom-scripts &&
 chown 1005:1005 /home/media/.config/NzbDrone/custom-scripts &&
@@ -1245,18 +1238,35 @@ chmod +rx /home/media/.config/NzbDrone/custom-scripts/sonarr-episode-trimmer.py 
 chown 1005:1005 /home/media/.config/NzbDrone/custom-scripts/*
 ```
 
+### 8.8 Update the Sonarr configuration base file
+This step near completes the Sonarr preferences settings by downloading a pre-built settings file from Github.
+
+Begin with the Proxmox web interface and go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
+```
+sudo systemctl stop sonarr.service &&
+sleep 5 &&
+rm -r /home/media/.config/NzbDrone/nzbdrone.db &&
+wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/nzbdrone.db -O /home/media/.config/NzbDrone/nzbdrone.db &&
+wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/config.xml -O /home/media/.config/NzbDrone/config.xml
+chown 1005:1005 /home/media/.config/NzbDrone/nzbdrone.db &&
+chown 1005:1005 /home/media/.config/NzbDrone/config.xml &&
+sudo systemctl restart sonarr.service
+```
+
+Thats it. Now go and complete Steps [2.05 Configure Download Clients](https://github.com/ahuacate/sonarr/blob/master/README.md#205-configure-download-clients) and [2.07 Configure General](https://github.com/ahuacate/sonarr/blob/master/README.md#207-configure-general).
+
 ### 8.7 Setup Sonarr
 Browse to http://192.168.50.115:8989 to start using Sonarr.
 
 ---
 
-## 8.0 Radarr LXC - Ubuntu 18.04
+## 9.0 Radarr LXC - Ubuntu 18.04
 Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
 Prerequisites are:
 - [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
 
-### 8.1 Create a Ubuntu 18.04 LXC for Radarr
+### 9.1 Create a Ubuntu 18.04 LXC for Radarr
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -1316,7 +1326,7 @@ pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.116/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 8.2 Setup Radarr Mount Points - Ubuntu 18.04
+### 9.2 Setup Radarr Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 9.1 then you have no Moint Points.
 
 Please note your Proxmox Radarr LXC **MUST BE** in the shutdown state before proceeding.
@@ -1328,7 +1338,7 @@ pct set 116 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 116 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 8.3 Unprivileged container mapping - Ubuntu 18.04
+### 9.3 Unprivileged container mapping - Ubuntu 18.04
 To change the Radarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/116.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
@@ -1340,7 +1350,7 @@ lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/116.conf
 ```
 
-### 8.4 Create new "media" user - Ubuntu 18.04
+### 9.4 Create new "media" user - Ubuntu 18.04
 First start LXC 116 (radarr) with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
@@ -1350,7 +1360,7 @@ useradd -u 1005 -g media -m media
 ```
 Note: This time we create a home folder for user media - required by Radarr.
 
-### 8.5 Install Radarr
+### 9.5 Install Radarr
 First start your Radarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
@@ -1366,7 +1376,7 @@ sudo tar -xvzf Radarr.develop.*.linux.tar.gz &&
 sudo rm *.linux.tar.gz &&
 sudo chown -R media:media /opt/Radarr
 ```
-### 8.6 Create Radarr Service file - Ubuntu 18.04
+### 9.6 Create Radarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -1392,6 +1402,23 @@ sudo systemctl enable radarr.service &&
 sudo systemctl start radarr.service &&
 sudo reboot
 ```
+
+### 9.7 Update the Radarr configuration base file
+This step near completes the Sonarr preferences settings by downloading a pre-built settings file from Github.
+
+Begin with the Proxmox web interface and go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
+```
+sudo systemctl stop sonarr.service &&
+sleep 5 &&
+rm -r /home/media/.config/NzbDrone/nzbdrone.db &&
+wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/nzbdrone.db -O /home/media/.config/NzbDrone/nzbdrone.db &&
+wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/config.xml -O /home/media/.config/NzbDrone/config.xml
+chown 1005:1005 /home/media/.config/NzbDrone/nzbdrone.db &&
+chown 1005:1005 /home/media/.config/NzbDrone/config.xml &&
+sudo systemctl restart sonarr.service
+```
+
+Thats it. Now go and complete Steps [2.05 Configure Download Clients](https://github.com/ahuacate/sonarr/blob/master/README.md#205-configure-download-clients) and [2.07 Configure General](https://github.com/ahuacate/sonarr/blob/master/README.md#207-configure-general).
 
 ### 8.7 Setup Radarr
 Browse to http://192.168.50.116:7878 to start using Radarr.
