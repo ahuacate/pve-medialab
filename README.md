@@ -1407,19 +1407,19 @@ sudo reboot
 ### 9.7 Update the Radarr configuration base file
 This step near completes the Sonarr preferences settings by downloading a pre-built settings file from Github.
 
-Begin with the Proxmox web interface and go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
+Begin with the Proxmox web interface and go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
 ```
-sudo systemctl stop sonarr.service &&
+sudo systemctl stop radarr.service &&
 sleep 5 &&
-rm -r /home/media/.config/NzbDrone/nzbdrone.db &&
-wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/nzbdrone.db -O /home/media/.config/NzbDrone/nzbdrone.db &&
-wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/config.xml -O /home/media/.config/NzbDrone/config.xml
-chown 1005:1005 /home/media/.config/NzbDrone/nzbdrone.db &&
-chown 1005:1005 /home/media/.config/NzbDrone/config.xml &&
-sudo systemctl restart sonarr.service
+rm -r /home/media/.config/Radarr/nzbdrone.db &&
+wget https://raw.githubusercontent.com/ahuacate/radarr/master/backup/nzbdrone.db -O /home/media/.config/Radarr/nzbdrone.db &&
+wget https://raw.githubusercontent.com/ahuacate/radarr/master/backup/config.xml -O /home/media/.config/Radarr/config.xml
+chown 1005:1005 /home/media/.config/Radarr/nzbdrone.db &&
+chown 1005:1005 /home/media/.config/Radarr/config.xml &&
+sudo systemctl restart radarr.service
 ```
 
-Thats it. Now go and complete Steps [2.05 Configure Download Clients](https://github.com/ahuacate/sonarr/blob/master/README.md#205-configure-download-clients) and [2.07 Configure General](https://github.com/ahuacate/sonarr/blob/master/README.md#207-configure-general).
+Thats it. Now go and complete Steps [2.03 (B) Configure Indexers](https://github.com/ahuacate/radarr#203-configure-indexers), [2.04 (A) Configure Download Client](https://github.com/ahuacate/radarr#204-configure-download-clients) and [2.06 Configure General](https://github.com/ahuacate/radarr#206-configure-general).
 
 ### 8.7 Setup Radarr
 Browse to http://192.168.50.116:7878 to start using Radarr.
