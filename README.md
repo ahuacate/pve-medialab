@@ -4,7 +4,7 @@ The following is for creating our Media family of LXC containers.
 Network Prerequisites are:
 - [x] Layer 2 Network Switches
 - [x] Network Gateway is `192.168.1.5`
-- [x] Network DNS server is `192.168.1.5` (Note: your Gateway hardware should enable you to a configure DNS server(s), like a UniFi USG Gateway, so set the following: primary DNS `192.168.1.254` which will be your PiHole server IP address; and, secondary DNS `1.1.1.1` which is a backup Cloudfare DNS server in the event your PiHole server 192.168.1.254 fails or os down)
+- [x] Network DNS server is `192.168.1.5` (Note: your Gateway hardware should enable you to a configure DNS server(s), like a UniFi USG Gateway, so set the following: primary DNS `192.168.1.254` which will be your PiHole server IP address; and, secondary DNS `1.1.1.1` which is a backup Cloudfare DNS server in the event your PiHole server 192.168.1.254 fails or is down)
 - [x] Network DHCP server is `192.168.1.5`
 - [x] A DDNS service is fully configured and enabled (I recommend you use the free Synology DDNS service)
 - [x] A ExpressVPN account (or any preferred VPN provider) is valid and its smart DNS feature is working (public IP registration is working with your DDNS provider)
