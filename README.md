@@ -1079,13 +1079,13 @@ FileBot works inconjunction with Flexget. So instructions to setup FileBot are [
 
 ---
 
-## 8.0 Sonarr LXC - Ubuntu 18.04
+## 8.00 Sonarr LXC - Ubuntu 18.04
 Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
 Prerequisites are:
 - [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
 
-### 8.1 Create a Ubuntu 18.04 LXC for Sonarr
+### 8.01 Create a Ubuntu 18.04 LXC for Sonarr
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -1145,7 +1145,7 @@ pct create 115 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 115 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.115/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 8.2 Setup Sonarr Mount Points - Ubuntu 18.04
+### 8.02 Setup Sonarr Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 8.1 then you have no Moint Points.
 
 Please note your Proxmox Sonarr LXC **MUST BE** in the shutdown state before proceeding.
@@ -1157,7 +1157,7 @@ pct set 115 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 115 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 8.3 Unprivileged container mapping - Ubuntu 18.04
+### 8.03 Unprivileged container mapping - Ubuntu 18.04
 To change the Sonarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/115.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
@@ -1169,7 +1169,7 @@ lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/115.conf
 ```
 
-### 8.4 Create new "media" user - Ubuntu 18.04
+### 8.04 Create new "media" user - Ubuntu 18.04
 First start LXC 115 (sonarr) with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
@@ -1179,7 +1179,7 @@ useradd -u 1005 -g media -m media
 ```
 Note: This time we create a home folder for user media - required by Sonarr.
 
-### 8.5 Install Sonarr
+### 8.05 Install Sonarr
 Th following Sonarr installation recipe is from the official Sonarr website [HERE](https://sonarr.tv/#downloads-v3-linux-ubuntu). Please refer for the latest updates.
 
 During the installation, you will be asked which user and group Sonarr must run as. It's important to choose these correctly to avoid permission issues with your media files. I suggest you keep the group named `media` and username `media` identical between your download client(s) and Sonarr. 
@@ -1201,7 +1201,7 @@ sudo apt install nzbdrone -y &&
 sudo chown -R media:media /opt/NzbDrone
 ```
 
-### 8.6 Create Sonarr Service file - Ubuntu 18.04
+### 8.06 Create Sonarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 ```
 sudo echo -e "[Unit]
@@ -1226,7 +1226,7 @@ sudo systemctl enable sonarr.service &&
 sudo systemctl start sonarr.service
 ```
 
-### 8.7 Install sonarr-episode-trimmer
+### 8.07 Install sonarr-episode-trimmer
 A script for use with Sonarr that allows you to set the number of episodes of a show that you would like to keep.
 Useful for aily shows. The script sorts the episodes you have for a show by the season and episode number, and then deletes the oldest episodes past the threshold you set.
 ```
@@ -1238,7 +1238,7 @@ chmod +rx /home/media/.config/NzbDrone/custom-scripts/sonarr-episode-trimmer.py 
 chown 1005:1005 /home/media/.config/NzbDrone/custom-scripts/*
 ```
 
-### 8.8 Update the Sonarr configuration base file
+### 8.08 Update the Sonarr configuration base file
 This step near completes the Sonarr preferences settings by downloading a pre-built settings file from Github.
 
 Begin with the Proxmox web interface and go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
@@ -1255,18 +1255,18 @@ sudo systemctl restart sonarr.service
 
 Thats it. Now go and complete Steps [2.05 Configure Download Clients](https://github.com/ahuacate/sonarr/blob/master/README.md#205-configure-download-clients) and [2.07 Configure General](https://github.com/ahuacate/sonarr/blob/master/README.md#207-configure-general).
 
-### 8.7 Setup Sonarr
+### 8.09 Setup Sonarr
 Browse to http://192.168.50.115:8989 to start using Sonarr.
 
 ---
 
-## 9.0 Radarr LXC - Ubuntu 18.04
+## 9.00 Radarr LXC - Ubuntu 18.04
 Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
 Prerequisites are:
 - [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
 
-### 9.1 Create a Ubuntu 18.04 LXC for Radarr
+### 9.01 Create a Ubuntu 18.04 LXC for Radarr
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -1326,7 +1326,7 @@ pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.116/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 9.2 Setup Radarr Mount Points - Ubuntu 18.04
+### 9.02 Setup Radarr Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 9.1 then you have no Moint Points.
 
 Please note your Proxmox Radarr LXC **MUST BE** in the shutdown state before proceeding.
@@ -1338,7 +1338,7 @@ pct set 116 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 116 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 9.3 Unprivileged container mapping - Ubuntu 18.04
+### 9.03 Unprivileged container mapping - Ubuntu 18.04
 To change the Radarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/116.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
@@ -1350,7 +1350,7 @@ lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/116.conf
 ```
 
-### 9.4 Create new "media" user - Ubuntu 18.04
+### 9.04 Create new "media" user - Ubuntu 18.04
 First start LXC 116 (radarr) with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
@@ -1360,7 +1360,7 @@ useradd -u 1005 -g media -m media
 ```
 Note: This time we create a home folder for user media - required by Radarr.
 
-### 9.5 Install Radarr
+### 9.05 Install Radarr
 First start your Radarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
@@ -1377,7 +1377,7 @@ sudo rm *.linux.tar.gz &&
 sudo chown -R media:media /opt/Radarr &&
 sudo apt-get install libmediainfo-dev #Required to patch Mediainfo
 ```
-### 9.6 Create Radarr Service file - Ubuntu 18.04
+### 9.06 Create Radarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -1404,7 +1404,7 @@ sudo systemctl start radarr.service &&
 sudo reboot
 ```
 
-### 9.7 Update the Radarr configuration base file
+### 9.07 Update the Radarr configuration base file
 This step near completes the Sonarr preferences settings by downloading a pre-built settings file from Github.
 
 Begin with the Proxmox web interface and go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
@@ -1421,18 +1421,18 @@ sudo systemctl restart radarr.service
 
 Thats it. Now go and complete Steps [2.03 (B) Configure Indexers](https://github.com/ahuacate/radarr#203-configure-indexers), [2.04 (A) Configure Download Client](https://github.com/ahuacate/radarr#204-configure-download-clients) and [2.06 Configure General](https://github.com/ahuacate/radarr#206-configure-general).
 
-### 8.7 Setup Radarr
+### 9.08 Setup Radarr
 Browse to http://192.168.50.116:7878 to start using Radarr.
 
 ---
 
-## 8.0 Lidarr LXC - Ubuntu 18.04
+## 10.00 Lidarr LXC - Ubuntu 18.04
 Lidarr is a music collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new tracks from your favorite artists and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
 Prerequisites are:
 - [x] Allow a LXC to perform mapping on the Proxmox host as shown [HERE](https://github.com/ahuacate/proxmox-lxc/blob/master/README.md#12-allow-a-lxc-to-perform-mapping-on-the-proxmox-host)
 
-### 8.1 Create a Ubuntu 18.04 LXC for Lidarr
+### 10.01 Create a Ubuntu 18.04 LXC for Lidarr
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -1492,7 +1492,7 @@ pct create 117 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 117 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lidarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.117/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 8.2 Setup Lidarr Mount Points - Ubuntu 18.04
+### 10.02 Setup Lidarr Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 10.1 then you have no Moint Points.
 
 Please note your Proxmox Radarr LXC **MUST BE** in the shutdown state before proceeding.
@@ -1504,7 +1504,7 @@ pct set 117 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 117 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 8.3 Unprivileged container mapping - Ubuntu 18.04
+### 9.03 Unprivileged container mapping - Ubuntu 18.04
 To change the Lidarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/117.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
@@ -1516,7 +1516,7 @@ lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/117.conf
 ```
 
-### 8.5 Create new "media" user - Ubuntu 18.04
+### 10.04 Create new "media" user - Ubuntu 18.04
 First start LXC 117 (lidarr) with the Proxmox web interface go to `typhoon-01` > `117 (lidarr)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
@@ -1526,7 +1526,7 @@ useradd -u 1005 -g media -m media
 ```
 Note: This time we create a home folder for user media - required by Lidarr.
 
-### 8.3 Install Lidarr
+### 10.05 Install Lidarr
 First start your Lidarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
@@ -1543,7 +1543,7 @@ sudo rm *.linux.tar.gz &&
 sudo chown -R media:media /opt/Lidarr &&
 sudo apt-get install libchromaprint-tools -y
 ```
-### 8.4 Create Lidarr Service file - Ubuntu 18.04
+### 10.06 Create Lidarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -1570,15 +1570,15 @@ sudo systemctl start lidarr.service &&
 sudo reboot
 ```
 
-### 8.5 Setup Lidarr
+### 10.07 Setup Lidarr
 Browse to http://192.168.50.117:8686 to start using Lidarr.
 
 ---
 
-## 9.0 Lazylibrarian LXC - Ubuntu 18.04
+## 11.00 Lazylibrarian LXC - Ubuntu 18.04
 LazyLibrarian is a program available for Linux that is used to follow authors and grab metadata for all your digital reading needs. It uses a combination of Goodreads Librarything and optionally GoogleBooks as sources for author info and book info. It’s nice to be able to have all of our book in digital form since books are extremely heavy and take up a lot of space, which we are already lacking in the bus.
 
-### 9.1 Create a Ubuntu 18.04 LXC for Lazylibrarian
+### 11.01 Create a Ubuntu 18.04 LXC for Lazylibrarian
 Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -1638,7 +1638,7 @@ pct create 118 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 118 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lazy --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.118/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 9.2 Setup Lazylibrarian Mount Points - Ubuntu 18.04
+### 11.02 Setup Lazylibrarian Mount Points - Ubuntu 18.04
 If you used **Script (B)** in Section 11.1 then you have no Moint Points.
 
 Please note your Proxmox Lazylibrarian (lazy) LXC **MUST BE** in the shutdown state before proceeding.
@@ -1651,7 +1651,7 @@ pct set 118 -mp2 /typhoon-share/downloads,mp=/mnt/downloads &&
 pct set 118 -mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
-### 9.4 Unprivileged container mapping - Ubuntu 18.04
+### 11.03 Unprivileged container mapping - Ubuntu 18.04
 To change the LazyLibrarian container mapping we change the container UID and GID in the file `/etc/pve/lxc/118.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
@@ -1663,7 +1663,7 @@ lxc.idmap: u 1006 101006 64530
 lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/118.conf
 ```
 
-### 9.5 Create new "media" user - Ubuntu 18.04
+### 11.04 Create new "media" user - Ubuntu 18.04
 
 First start LXC 112 (lazy) with the Proxmox web interface go to typhoon-01 > 118 (lazy) > START.
 
@@ -1673,7 +1673,7 @@ groupadd -g 1005 media &&
 useradd -u 1005 -g media -M media
 ```
 
-### 9.6 Install Lazylibrarian
+### 11.05 Install Lazylibrarian
 First start your Lazylibrarian LXC and login. Then go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
@@ -1687,7 +1687,7 @@ cd /opt &&
 sudo git clone https://gitlab.com/LazyLibrarian/LazyLibrarian.git &&
 sudo chown -R 1005:1005 /opt/LazyLibrarian
 ```
-### 9.4 Create Lazylibrarian Service file - Ubuntu 18.04
+### 11.06 Create Lazylibrarian Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
 ```
 sudo echo -e "[Unit]
@@ -1708,6 +1708,6 @@ sudo systemctl restart lazy.service &&
 sudo reboot
 ```
 
-### 9.5 Setup Lazylibrarian
+### 11.07 Setup Lazylibrarian
 Browse to http://192.168.50.118:5299 to start using Lazylibrarian (aka lazy).
 
