@@ -1538,9 +1538,10 @@ sudo apt update -y &&
 sudo apt install mono-devel curl -y &&
 cd /opt &&
 sudo curl -L -O $( curl -s https://api.github.com/repos/lidarr/Lidarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
-sudo tar -xvzf Lidarr.develop.*.linux.tar.gz &&
+sudo tar -xvzf Lidarr.*.*.linux.tar.gz &&
 sudo rm *.linux.tar.gz &&
-sudo chown -R media:media /opt/Lidarr
+sudo chown -R media:media /opt/Lidarr &&
+sudo apt-get install libchromaprint-tools -y
 ```
 ### 8.4 Create Lidarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
