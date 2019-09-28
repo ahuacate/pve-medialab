@@ -15,10 +15,18 @@ Other Prerequisites are:
 - [x] pfSense is fully configured on typhoon-01 including both OpenVPN Gateways VPNGATE-LOCAL and VPNGATE-WORLD.
 
 Tasks to be performed are:
-- [ ] 1.0 PiHole LXC - CentOS7
-- [ ] 2.0 UniFi Controller - CentOS7
-- [ ] 3.0 Jellyfin LXC - CentOS (*Not working*)
-- [ ] 4.0 Jellyfin LXC - Ubuntu 18.04
+- [ ] 1.00 Unprivileged LXC Containers and file permissions
+- [ ] 2.00 Jellyfin LXC - Ubuntu 18.04
+- [ ] 3.00 NZBget LXC - Ubuntu 18.04
+- [ ] 4.00 Deluge LXC - Ubuntu 18.04
+- [ ] 5.00 Jackett LXC - Ubuntu 18.04
+- [ ] 6.00 Flexget LXC - Ubuntu 18.04
+- [ ] 7.00 FileBot Installation on Deluge LXC - Ubuntu 18.04
+- [ ] 8.00 Sonarr LXC - Ubuntu 18.04
+- [ ] 9.00 Radarr LXC - Ubuntu 18.04
+- [ ] 10.00 Lidarr LXC - Ubuntu 18.04
+- [ ] 11.00 Lazylibrarian LXC - Ubuntu 18.04
+- [ ] 
 
 ## About LXC Media Installations
 CentosOS7 is my preferred linux distribution but for media software Ubuntu seems to be the most supported linux distribution. I have used Ubuntu 18.04 for all media LXC's.
