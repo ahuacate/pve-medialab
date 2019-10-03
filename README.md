@@ -56,11 +56,11 @@ lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/container-id.conf
 Next we have to allow LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
 To achieve this we need to **add** the line `root:1005:1` to the files `/etc/subuid` and `/etc/subgid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
 ```
-echo -e "root:1005:1" >> /etc/subuid
+grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid
 ```
 Then we need to also **add** the line `root:1005:1` to the file `/etc/subuid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 ```
-echo -e "root:1005:1" >> /etc/subgid
+grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
 ```
 Note, we **add** these lines not replace any default lines. My /etc/subuid and /etc/subgid both look identical:
 ```
@@ -388,7 +388,9 @@ lxc.idmap: g 0 100000 1005
 lxc.idmap: u 1005 1005 1
 lxc.idmap: g 1005 1005 1
 lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/112.conf
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/112.conf &&
+grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
+grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
 ```
 
 ### 3.05 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04
@@ -573,7 +575,9 @@ lxc.idmap: g 0 100000 1005
 lxc.idmap: u 1005 1005 1
 lxc.idmap: g 1005 1005 1
 lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/113.conf
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/113.conf &&
+grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
+grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
 ```
 
 ### 4.05 Create Deluge download folders on your ZFS typhoon-share - Ubuntu 18.04
@@ -872,7 +876,9 @@ lxc.idmap: g 0 100000 1005
 lxc.idmap: u 1005 1005 1
 lxc.idmap: g 1005 1005 1
 lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/114.conf
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/114.conf &&
+grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
+grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
 ```
 
 ### 6.04 Create Flexget download folders on your ZFS typhoon-share - Ubuntu 18.04
@@ -1174,7 +1180,9 @@ lxc.idmap: g 0 100000 1005
 lxc.idmap: u 1005 1005 1
 lxc.idmap: g 1005 1005 1
 lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/115.conf
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/115.conf &&
+grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
+grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
 ```
 
 ### 8.04 Create new "media" user - Ubuntu 18.04
@@ -1355,7 +1363,9 @@ lxc.idmap: g 0 100000 1005
 lxc.idmap: u 1005 1005 1
 lxc.idmap: g 1005 1005 1
 lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/116.conf
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/116.conf &&
+grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
+grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
 ```
 
 ### 9.04 Create new "media" user - Ubuntu 18.04
@@ -1521,7 +1531,9 @@ lxc.idmap: g 0 100000 1005
 lxc.idmap: u 1005 1005 1
 lxc.idmap: g 1005 1005 1
 lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/117.conf
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/117.conf &&
+grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
+grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
 ```
 
 ### 10.04 Create new "media" user - Ubuntu 18.04
@@ -1668,7 +1680,9 @@ lxc.idmap: g 0 100000 1005
 lxc.idmap: u 1005 1005 1
 lxc.idmap: g 1005 1005 1
 lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/118.conf
+lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/118.conf &&
+grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
+grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
 ```
 
 ### 11.04 Create new "media" user - Ubuntu 18.04
