@@ -40,47 +40,43 @@ However you will soon realise that every file and directory will be mapped to "n
 
 The fix is to change the UID and GID mapping.
 
-So in our build we will create a new user/group called `media` and make uid 1005 and gid 1005 accessible to unprivileged LXC containers used by user/group media (i.e NZBGet, Deluge, Sonarr, Radarr, LazyLibrarian, Flexget). This is achieved in three parts during the course of creating your new media LXC's.
+So in our build we will create a new user called `media` with uid 1105 and gid 100 (users) accessible to unprivileged LXC containers used by user/group media (i.e NZBGet, Deluge, Sonarr, Radarr, LazyLibrarian, Flexget). This is achieved in three parts during the course of creating your new media LXC's.
 
 ### 1.01 Unprivileged container mapping
 To change a container mapping we change the container UID and GID in the file `/etc/pve/lxc/container-id.conf` after you create a new container. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 ```
-echo -e "lxc.idmap: u 0 100000 1005
-lxc.idmap: g 0 100000 1005
-lxc.idmap: u 1005 1005 1
-lxc.idmap: g 1005 1005 1
-lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/container-id.conf
+echo -e "lxc.idmap: u 0 100000 1105
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1105 1105 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1106 101106 64430
+lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/container-id.conf
 ```
 ### 1.02 Allow a LXC to perform mapping on the Proxmox host
-Next we have to allow LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
-To achieve this we need to **add** the line `root:1005:1` to the files `/etc/subuid` and `/etc/subgid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
+Next we have to allow the LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
+To achieve this we need to **add** the line `root:1105:1` to the file `/etc/subuid` and  `root:100:1` to the file /etc/subgid. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
+
 ```
-grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid
+grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid
 ```
-Then we need to also **add** the line `root:1005:1` to the file `/etc/subuid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+Then we need to also **add** the line `root:100:1` to the file `/etc/subgid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 ```
-grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 ```
-Note, we **add** these lines not replace any default lines. My /etc/subuid and /etc/subgid both look identical:
-```
-root:100000:65536
-root:1005:1
-```
+Note, we **add** these lines not replace any default lines.
 
 ### 1.03 Create a newuser `media` in a LXC
-We need to create a newuser in all LXC's which require access to shared data (ZFS share typhoon-share/downloads). After logging into the LXC container type the following:
+We need to create a `media` user in all media LXC's which require shared data (ZFS share typhoon-share/downloads or NAS shares). After logging into the LXC container type the following:
 
 (A) To create a user without a Home folder
 ```
-groupadd -g 1005 media &&
-useradd -u 1005 -g media -M media
+useradd -u 1105 -g users -M media
 ```
 (B) To create a user with a Home folder
 ```
-groupadd -g 1005 media &&
-useradd -u 1005 -g media -m media
+useradd -u 1105 -g users -m media
 ```
+Note we do not need to create the user group because it is a standard linux group with gid 100.
 
 ## 2.00 Jellyfin LXC - Ubuntu 18.04
 
@@ -383,21 +379,21 @@ pct set 112 -mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 To change the NZBGet container mapping we change the container UID and GID in the file `/etc/pve/lxc/112.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1005
-lxc.idmap: g 0 100000 1005
-lxc.idmap: u 1005 1005 1
-lxc.idmap: g 1005 1005 1
-lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/112.conf &&
-grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
-grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
+echo -e "lxc.idmap: u 0 100000 1105
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1105 1105 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1106 101106 64430
+lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/112.conf &&
+grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 ```
 
 ### 3.05 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04
-To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > `typhoon-01` > `>_ Shell` and type the following:
 ```
 mkdir -p {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music} &&
-chown 1005:1005 {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music}
+chown 1105:100 {/typhoon-share/downloads/nzbget,/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music}
 ```
 
 ### 3.06 Create new "media" user - Ubuntu 18.04
@@ -405,8 +401,8 @@ First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` >
 
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 ```
-groupadd -g 1005 media &&
-useradd -u 1005 -g media -M media
+sudo apt-get update &&
+useradd -u 1105 -g users -M media
 ```
 
 ### 3.07 Install NZBget - Ubuntu 18.04
@@ -418,7 +414,7 @@ Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Sh
 wget https://nzbget.net/download/nzbget-latest-bin-linux.run -P /tmp &&
 sh /tmp/nzbget-latest-bin-linux.run --destdir /opt/nzbget &&
 rm /tmp/nzbget-latest-bin-linux.run &&
-sudo chown -R media:media /opt/nzbget
+sudo chown -R 1105:100 /opt/nzbget
 ```
 
 ### 3.08 Edit NZBget configuration file - Ubuntu 18.04
@@ -447,7 +443,7 @@ sed -i "/AddUsername=/c\AddUsername=rpcaccess" /opt/nzbget/nzbget.conf &&
 sed -i "/AddPassword=/c\AddPassword=Ut#)>3'o&RVmRj>]" /opt/nzbget/nzbget.conf &&
 # Set the file permissions and ownership
 sudo chmod 755 /opt/nzbget/nzbget.conf &&
-chown 1005:1005 /opt/nzbget/nzbget.conf
+chown 1105:100 /opt/nzbget/nzbget.conf
 ```
 
 ### 3.09 Create NZBget Service file - Ubuntu 18.04
@@ -460,7 +456,7 @@ After=network.target
 
 [Service]
 User=media
-Group=media
+Group=users
 Type=forking
 ExecStart=/opt/nzbget/nzbget -D
 ExecStop=/opt/nzbget/nzbget -Q
@@ -471,7 +467,7 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/nzbget.service &&
 sudo systemctl enable nzbget &&
-sudo systemctl start nzbget &&
+sudo systemctl restart nzbget &&
 sudo systemctl status nzbget
 
 ```
