@@ -355,7 +355,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /typhoon-share/downloads,mp=/mnt/downloads --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -371,7 +371,7 @@ Please note your Proxmox NZBget LXC MUST BE in the shutdown state before proceed
 
 To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-pct set 112 -mp0 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 112 -mp0 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 112 -mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
@@ -392,8 +392,8 @@ grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 ### 3.05 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > `typhoon-01` > `>_ Shell` and type the following:
 ```
-mkdir -p {/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music} &&
-chown 1105:100 {/typhoon-share/downloads/nzbget,/typhoon-share/downloads/nzbget/nzb,/typhoon-share/downloads/nzbget/queue,/typhoon-share/downloads/nzbget/tmp,/typhoon-share/downloads/nzbget/intermediate,/typhoon-share/downloads/nzbget/completed,/typhoon-share/downloads/nzbget/completed/lazy,/typhoon-share/downloads/nzbget/completed/series,/typhoon-share/downloads/nzbget/completed/movies,/typhoon-share/downloads/nzbget/completed/music}
+mkdir -p {/mnt/pve/cyclone-01-downloads/nzbget/nzb,/mnt/pve/cyclone-01-downloads/nzbget/queue,/mnt/pve/cyclone-01-downloads/nzbget/tmp,/mnt/pve/cyclone-01-downloads/nzbget/intermediate,/mnt/pve/cyclone-01-downloads/nzbget/completed,/mnt/pve/cyclone-01-downloads/nzbget/completed/lazy,/mnt/pve/cyclone-01-downloads/nzbget/completed/series,/mnt/pve/cyclone-01-downloads/nzbget/completed/movies,/mnt/pve/cyclone-01-downloads/nzbget/completed/music} &&
+chown 1105:100 {/mnt/pve/cyclone-01-downloads/nzbget,/mnt/pve/cyclone-01-downloads/nzbget/nzb,/mnt/pve/cyclone-01-downloads/nzbget/queue,/mnt/pve/cyclone-01-downloads/nzbget/tmp,/mnt/pve/cyclone-01-downloads/nzbget/intermediate,/mnt/pve/cyclone-01-downloads/nzbget/completed,/mnt/pve/cyclone-01-downloads/nzbget/completed/lazy,/mnt/pve/cyclone-01-downloads/nzbget/completed/series,/mnt/pve/cyclone-01-downloads/nzbget/completed/movies,/mnt/pve/cyclone-01-downloads/nzbget/completed/music}
 ```
 
 ### 3.06 Create new "media" user - Ubuntu 18.04
@@ -543,7 +543,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /typhoon-share/downloads,mp=/mnt/downloads --mp1 /mnt/pve/cyclone-01-video,mp=/mnt/video
+pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp1 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -559,39 +559,39 @@ Please note your Proxmox Deluge LXC MUST BE in the shutdown state before proceed
 
 To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-pct set 113 -mp0 /typhoon-share/downloads,mp=/mnt/downloads
+pct set 113 -mp0 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads
 pct set 113 -mp1 /mnt/pve/cyclone-01-video,mp=/mnt/video
 ```
 
 ### 4.04 Unprivileged container mapping - Ubuntu 18.04
 To change the Deluge container mapping we change the container UID and GID in the file /etc/pve/lxc/113.conf. Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:
 ```
-echo -e "lxc.idmap: u 0 100000 1005
-lxc.idmap: g 0 100000 1005
-lxc.idmap: u 1005 1005 1
-lxc.idmap: g 1005 1005 1
-lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/113.conf &&
-grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
-grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
+echo -e "lxc.idmap: u 0 100000 1105
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1105 1105 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1106 101106 64430
+lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/113.conf &&
+grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 ```
 
 ### 4.05 Create Deluge download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the Deluge download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir -m 775 -p {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,typhoon-share/downloads/deluge/complete/movies,typhoon-share/downloads/deluge/complete/series,typhoon-share/downloads/deluge/complete/music,/typhoon-share/downloads/deluge/autoadd} &&
-chown 1005:1005 {/typhoon-share/downloads/deluge/incomplete,/typhoon-share/downloads/deluge/complete,/typhoon-share/downloads/deluge/complete/lazy,typhoon-share/downloads/deluge/complete/movies,typhoon-share/downloads/deluge/complete/series,typhoon-share/downloads/deluge/complete/music,/typhoon-share/downloads/deluge/autoadd}
+mkdir -m 775 -p {/mnt/pve/cyclone-01-downloads/deluge/incomplete,/mnt/pve/cyclone-01-downloads/deluge/complete,/mnt/pve/cyclone-01-downloads/deluge/complete/lazy,/mnt/pve/cyclone-01-downloads/deluge/complete/movies,/mnt/pve/cyclone-01-downloads/deluge/complete/series,/mnt/pve/cyclone-01-downloads/deluge/complete/music,/mnt/pve/cyclone-01-downloads/deluge/autoadd} &&
+chown -R 1105:100 {/mnt/pve/cyclone-01-downloads/deluge,/mnt/pve/cyclone-01-downloads/deluge/incomplete,/mnt/pve/cyclone-01-downloads/deluge/complete,/mnt/pve/cyclone-01-downloads/deluge/complete/lazy,/mnt/pve/cyclone-01-downloads/deluge/complete/movies,/mnt/pve/cyclone-01-downloads/deluge/complete/series,/mnt/pve/cyclone-01-downloads/deluge/complete/music,/mnt/pve/cyclone-01-downloads/deluge/autoadd}
 ```
 
 ### 4.06 Create new "media" user - Ubuntu 18.04
 
-First start LXC 113 (deluge) with the Proxmox web interface go to typhoon-01 > 113 (deluge) > START.
+First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
 
-Then with the Proxmox web interface go to typhoon-01 > 113 (deluge) > >_ Shell and type the following:
+Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-groupadd -g 1005 media &&
-useradd -u 1005 -g media -m media
+sudo apt-get update &&
+useradd -u 1105 -g users -m media
 ```
 Note: This time we create a home folder for user media - required by Deluge.
 
@@ -651,7 +651,7 @@ After=network-online.target
 
 [Service]
 User=media
-Group=media
+Group=users
 Type=simple
 Umask=007
 ExecStart=/usr/bin/deluged -d
@@ -701,7 +701,7 @@ Wants=deluge.service
 
 [Service]
 User=media
-Group=media
+Group=users
 
 Type=simple
 Umask=027
@@ -710,7 +710,9 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/deluge-web.service &&
+sleep 2 &&
 sudo systemctl enable deluge-web &&
+sleep 2 &&
 sudo systemctl start deluge-web
 ```
 
@@ -751,14 +753,16 @@ Restart=always
 RestartSec=5
 Type=simple
 User=media
-Group=media
+Group=users
 WorkingDirectory=/opt/Jackett
 ExecStart=/opt/Jackett/jackett --NoRestart
 TimeoutStopSec=20
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/jackett.service &&
+sleep 2 &&
 sudo systemctl enable jackett &&
+sleep 2 &&
 sudo systemctl start jackett
 ```
 ### 5.03 Download the latest Jackett Server configuration file & Indexers
@@ -768,12 +772,12 @@ With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` 
 sudo systemctl stop jackett &&
 sleep 5 &&
 wget -q https://raw.githubusercontent.com/ahuacate/jackett/master/ServerConfig.json -O /home/media/.config/Jackett/ServerConfig.json &&
-chown 1005:1005 /home/media/.config/Jackett/ServerConfig.json &&
+chown 1105:100 /home/media/.config/Jackett/ServerConfig.json &&
 # Here we update the jacket indexers
 mkdir -m 775 -p /home/media/.config/Jackett/Indexers &&
-chown 1005:1005 /home/media/.config/Jackett/Indexers &&
+chown 1105:100 /home/media/.config/Jackett/Indexers &&
 svn checkout https://github.com/ahuacate/jackett/trunk/Indexers /home/media/.config/Jackett/Indexers &&
-chown 1005:1005 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak} &&
+chown 1105:100 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak} &&
 sudo systemctl restart jackett
 ```
 
