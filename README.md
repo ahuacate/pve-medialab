@@ -1196,11 +1196,7 @@ useradd -u 1105 -g users -m media
 Note: This time we create a home folder for user media - required by Sonarr.
 
 ### 8.05 Install Sonarr
-Th following Sonarr installation recipe is from the official Sonarr website [HERE](https://sonarr.tv/#downloads-v3-linux-ubuntu). Please refer for the latest updates.
-
-During the installation, you will be asked which user and group Sonarr must run as. It's important to choose these correctly to avoid permission issues with your media files. I suggest you keep the group named `media` and username `media` identical between your download client(s) and Sonarr. 
-
-First start your Sonarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
+Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 
 ```
 sudo apt-get update -y &&
@@ -1216,6 +1212,7 @@ sudo apt update -y &&
 sudo apt install nzbdrone -y &&
 sudo chown -R 1105:100 /opt/NzbDrone
 ```
+At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
 ### 8.06 Create Sonarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
@@ -1262,6 +1259,7 @@ Begin with the Proxmox web interface and go to `typhoon-01` > `115 (sonarr)` > `
 sudo systemctl stop sonarr.service &&
 sleep 5 &&
 rm -r /home/media/.config/NzbDrone/nzbdrone.db* &&
+rm -r /home/media/.config/NzbDrone/config.xml &&
 wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/nzbdrone.db -O /home/media/.config/NzbDrone/nzbdrone.db &&
 wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/config.xml -O /home/media/.config/NzbDrone/config.xml &&
 chown 1105:100 /home/media/.config/NzbDrone/nzbdrone.db &&
@@ -1334,7 +1332,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.116/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.116/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -1350,7 +1348,7 @@ Please note your Proxmox Radarr LXC **MUST BE** in the shutdown state before pro
 To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
 ```
 pct set 116 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
-pct set 116 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 116 -mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 116 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
@@ -1358,14 +1356,14 @@ pct set 116 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 To change the Radarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/116.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1005
-lxc.idmap: g 0 100000 1005
-lxc.idmap: u 1005 1005 1
-lxc.idmap: g 1005 1005 1
-lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/116.conf &&
-grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
-grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
+echo -e "lxc.idmap: u 0 100000 1105
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1105 1105 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1106 101106 64430
+lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/116.conf &&
+grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 ```
 
 ### 9.04 Create new "media" user - Ubuntu 18.04
@@ -1373,8 +1371,7 @@ First start LXC 116 (radarr) with the Proxmox web interface go to `typhoon-01` >
 
 Then with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
 ```
-groupadd -g 1005 media &&
-useradd -u 1005 -g media -m media
+useradd -u 1105 -g users -m media
 ```
 Note: This time we create a home folder for user media - required by Radarr.
 
@@ -1383,6 +1380,7 @@ First start your Radarr LXC and login. Then go to the Proxmox web interface `typ
 
 ```
 sudo apt-get update -y &&
+sudo apt-get install -y unzip &&
 sudo apt install gnupg ca-certificates -y &&
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
 echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
@@ -1392,9 +1390,11 @@ cd /opt &&
 sudo curl -L -O $( curl -s https://api.github.com/repos/Radarr/Radarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
 sudo tar -xvzf Radarr.develop.*.linux.tar.gz &&
 sudo rm *.linux.tar.gz &&
-sudo chown -R media:media /opt/Radarr &&
+sudo chown -R 1105:100 /opt/Radarr &&
 sudo apt-get install libmediainfo-dev #Required to patch Mediainfo
 ```
+At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
+
 ### 9.06 Create Radarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
 ```
@@ -1405,7 +1405,7 @@ After=syslog.target network.target
 [Service]
 # Change the user and group variables here.
 User=media
-Group=media
+Group=users
 
 Type=simple
 
@@ -1417,7 +1417,9 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/radarr.service &&
+sleep 2 &&
 sudo systemctl enable radarr.service &&
+sleep 2 &&
 sudo systemctl start radarr.service &&
 sudo reboot
 ```
@@ -1429,11 +1431,11 @@ Begin with the Proxmox web interface and go to `typhoon-01` > `116 (radarr)` > `
 ```
 sudo systemctl stop radarr.service &&
 sleep 5 &&
-rm -r /home/media/.config/Radarr/nzbdrone.db &&
+rm -r /home/media/.config/Radarr/nzbdrone.db* &&
 wget https://raw.githubusercontent.com/ahuacate/radarr/master/backup/nzbdrone.db -O /home/media/.config/Radarr/nzbdrone.db &&
 wget https://raw.githubusercontent.com/ahuacate/radarr/master/backup/config.xml -O /home/media/.config/Radarr/config.xml
-chown 1005:1005 /home/media/.config/Radarr/nzbdrone.db &&
-chown 1005:1005 /home/media/.config/Radarr/config.xml &&
+chown 1105:100 /home/media/.config/Radarr/nzbdrone.db &&
+chown 1105:100 /home/media/.config/Radarr/config.xml &&
 sudo systemctl restart radarr.service
 ```
 
