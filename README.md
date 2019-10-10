@@ -26,7 +26,6 @@ Tasks to be performed are:
 - [ ] 9.00 Radarr LXC - Ubuntu 18.04
 - [ ] 10.00 Lidarr LXC - Ubuntu 18.04
 - [ ] 11.00 Lazylibrarian LXC - Ubuntu 18.04
-- [ ] 
 
 ## About LXC Media Installations
 CentosOS7 is my preferred linux distribution but for media software Ubuntu seems to be the most supported linux distribution. I have used Ubuntu 18.04 for all media LXC's.
@@ -1420,8 +1419,7 @@ WantedBy=multi-user.target" > /etc/systemd/system/radarr.service &&
 sleep 2 &&
 sudo systemctl enable radarr.service &&
 sleep 2 &&
-sudo systemctl start radarr.service &&
-sudo reboot
+sudo systemctl start radarr.service
 ```
 
 ### 9.07 Update the Radarr configuration base file
@@ -1439,10 +1437,10 @@ chown 1105:100 /home/media/.config/Radarr/config.xml &&
 sudo systemctl restart radarr.service
 ```
 
-Thats it. Now go and complete Steps [2.03 (B) Configure Indexers](https://github.com/ahuacate/radarr#203-configure-indexers), [2.04 (A) Configure Download Client](https://github.com/ahuacate/radarr#204-configure-download-clients) and [2.06 Configure General](https://github.com/ahuacate/radarr#206-configure-general).
-
 ### 9.08 Setup Radarr
 Browse to http://192.168.50.116:7878 to start using Radarr.
+
+Thats it. Now go and complete Steps [2.03 (B) Configure Indexers](https://github.com/ahuacate/radarr#203-configure-indexers), [2.04 (A) Configure Download Client](https://github.com/ahuacate/radarr#204-configure-download-clients) and [2.06 Configure General](https://github.com/ahuacate/radarr#206-configure-general).
 
 ---
 
@@ -1504,7 +1502,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 117 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lidarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.117/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 117 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lidarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.117/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -1520,7 +1518,7 @@ Please note your Proxmox Radarr LXC **MUST BE** in the shutdown state before pro
 To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
 ```
 pct set 117 -mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music &&
-pct set 117 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 117 -mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 117 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
@@ -1528,14 +1526,14 @@ pct set 117 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 To change the Lidarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/117.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1005
-lxc.idmap: g 0 100000 1005
-lxc.idmap: u 1005 1005 1
-lxc.idmap: g 1005 1005 1
-lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/117.conf &&
-grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
-grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
+echo -e "lxc.idmap: u 0 100000 1105
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1105 1105 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1106 101106 64430
+lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/117.conf &&
+grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 ```
 
 ### 10.04 Create new "media" user - Ubuntu 18.04
@@ -1543,8 +1541,7 @@ First start LXC 117 (lidarr) with the Proxmox web interface go to `typhoon-01` >
 
 Then with the Proxmox web interface go to `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
 ```
-groupadd -g 1005 media &&
-useradd -u 1005 -g media -m media
+useradd -u 1105 -g users -m media
 ```
 Note: This time we create a home folder for user media - required by Lidarr.
 
@@ -1553,6 +1550,7 @@ First start your Lidarr LXC and login. Then go to the Proxmox web interface `typ
 
 ```
 sudo apt-get update -y &&
+sudo apt-get install -y unzip &&
 sudo apt install gnupg ca-certificates -y &&
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
 echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
@@ -1562,9 +1560,11 @@ cd /opt &&
 sudo curl -L -O $( curl -s https://api.github.com/repos/lidarr/Lidarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
 sudo tar -xvzf Lidarr.*.*.linux.tar.gz &&
 sudo rm *.linux.tar.gz &&
-sudo chown -R media:media /opt/Lidarr &&
+sudo chown -R 1105:100 /opt/Lidarr &&
 sudo apt-get install libchromaprint-tools -y
 ```
+At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
+
 ### 10.06 Create Lidarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
 ```
@@ -1575,7 +1575,7 @@ After=network.target
 [Service]
 # Change the user and group variables here.
 User=media
-Group=media
+Group=users
 
 Type=simple
 
@@ -1587,9 +1587,10 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/lidarr.service &&
+sleep 2 &&
 sudo systemctl enable lidarr.service &&
-sudo systemctl start lidarr.service &&
-sudo reboot
+sleep 2 &&
+sudo systemctl start lidarr.service
 ```
 
 ### 10.07 Setup Lidarr
@@ -1607,7 +1608,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | :---  | :---: |
 | **General**
 | Node | `typhoon-01` |
-| CT ID |`1178`|
+| CT ID |`118`|
 | Hostname |`lazy`|
 | Unprivileged container | `☑` |
 | Resource Pool | Leave Blank
@@ -1652,7 +1653,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 118 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lazy --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.118/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp1 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp2 /typhoon-share/downloads,mp=/mnt/downloads --mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 118 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lazy --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.118/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp1 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp2 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -1669,7 +1670,7 @@ To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` 
 ```
 pct set 118 -mp0 /mnt/pve/cyclone-01-audio,mp=/mnt/audio &&
 pct set 118 -mp1 /mnt/pve/cyclone-01-books,mp=/mnt/books
-pct set 118 -mp2 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 118 -mp2 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 118 -mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
@@ -1677,24 +1678,23 @@ pct set 118 -mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 To change the LazyLibrarian container mapping we change the container UID and GID in the file `/etc/pve/lxc/118.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1005
-lxc.idmap: g 0 100000 1005
-lxc.idmap: u 1005 1005 1
-lxc.idmap: g 1005 1005 1
-lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/118.conf &&
-grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
-grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
+echo -e "lxc.idmap: u 0 100000 1105
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1105 1105 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1106 101106 64430
+lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/118.conf &&
+grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 ```
 
 ### 11.04 Create new "media" user - Ubuntu 18.04
 
-First start LXC 112 (lazy) with the Proxmox web interface go to typhoon-01 > 118 (lazy) > START.
+First start LXC 118 (lazy) with the Proxmox web interface go to `typhoon-01` > `118 (lazy)` > `START`.
 
-Then with the Proxmox web interface go to typhoon-01 > 118 (lazy) > >_ Shell and type the following:
+Then with the Proxmox web interface go to `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
 ```
-groupadd -g 1005 media &&
-useradd -u 1005 -g media -M media
+useradd -u 1105 -g users -M media
 ```
 
 ### 11.05 Install Lazylibrarian
@@ -1709,8 +1709,10 @@ pip3 install pyopenssl &&
 pip3 install urllib3 &&
 cd /opt &&
 sudo git clone https://gitlab.com/LazyLibrarian/LazyLibrarian.git &&
-sudo chown -R 1005:1005 /opt/LazyLibrarian
+sudo chown -R 1105:100 /opt/LazyLibrarian
 ```
+At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
+
 ### 11.06 Create Lazylibrarian Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
 ```
@@ -1722,16 +1724,18 @@ ExecStart=/usr/bin/python3 /opt/LazyLibrarian/LazyLibrarian.py --daemon --config
 GuessMainPID=no
 Type=forking
 User=media
-Group=media
+Group=users
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/lazy.service &&
+sleep 2 &&
 sudo systemctl enable lazy.service &&
-sudo systemctl restart lazy.service &&
-sudo reboot
+sleep 2 &&
+sudo systemctl restart lazy.service
 ```
 
 ### 11.07 Setup Lazylibrarian
 Browse to http://192.168.50.118:5299 to start using Lazylibrarian (aka lazy).
 
+Thats it. Now go and complete [LazyLibrarian Build](https://github.com/ahuacate/lazylibrarian/blob/master/README.md#lazylibrarian-build) for your first time build **OR** use the restore instructions [3.00 Restore Lazylibrarian backup](https://github.com/ahuacate/lazylibrarian/blob/master/README.md#300-restore-lazylibrarian-backup).
