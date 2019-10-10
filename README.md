@@ -631,13 +631,13 @@ pkill -9 deluged &&
 wget --content-disposition https://forum.deluge-torrent.org/download/file.php?id=6306 -P /home/media/.config/deluge/plugins/ &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/deluge-postprocess.sh -P /home/media/.config/deluge &&
 chmod +rx /home/media/.config/deluge/deluge-postprocess.sh &&
-chown 1005:1005 /home/media/.config/deluge/deluge-postprocess.sh &&
+chown 1105:100 /home/media/.config/deluge/deluge-postprocess.sh &&
 echo -e "flexget:9c67cf728b8c079c2e0065ee11cb3a9a6771420a:10
 lazylibrarian:9c67cf728b8c079c2e0065ee11cb3a9a6771421a:10" >> /home/media/.config/deluge/auth &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/label.conf -P /home/media/.config/deluge &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/execute.conf -P /home/media/.config/deluge &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/autoremoveplus.conf -P /home/media/.config/deluge &&
-chown 1005:1005 {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/autoremoveplus.conf,/home/media/.config/deluge/plugins/*.egg}
+chown 1105:100 {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/autoremoveplus.conf,/home/media/.config/deluge/plugins/*.egg}
 ```
 
 ### 4.10 Create Deluge Service file - Ubuntu 18.04
