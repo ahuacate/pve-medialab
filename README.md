@@ -844,7 +844,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
+pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -862,7 +862,7 @@ Please note your Proxmox Flexget LXC MUST BE in the shutdown state before procee
 To create the Mount Points use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 pct set 114 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
-pct set 114 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 114 -mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 114 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 pct set 114 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 ```
@@ -871,27 +871,28 @@ pct set 114 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 To change the Flexget container mapping we change the container UID and GID in the file `/etc/pve/lxc/114.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1005
-lxc.idmap: g 0 100000 1005
-lxc.idmap: u 1005 1005 1
-lxc.idmap: g 1005 1005 1
-lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/114.conf &&
-grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
-grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
+echo -e "lxc.idmap: u 0 100000 1105
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1105 1105 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1106 101106 64430
+lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/114.conf &&
+grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 ```
 
 ### 6.04 Create Flexget download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create Flexget download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir -p {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies} &&
-chown 1005:1005 {/typhoon-share/downloads/deluge/complete/flexget/series,/typhoon-share/downloads/deluge/complete/flexget/movies}
+mkdir -p {/mnt/pve/cyclone-01-downloads/deluge/complete/flexget/series,/mnt/pve/cyclone-01-downloads/deluge/complete/flexget/movies} &&
+chown 1105:100 {/mnt/pve/cyclone-01-downloads/deluge/complete/flexget,/mnt/pve/cyclone-01-downloads/deluge/complete/flexget/series,/mnt/pve/cyclone-01-downloads/deluge/complete/flexget/movies}
 ```
 
 ### 6.05 Create Flexget content folders on your NAS
 To create Flexget content folders on your NAS use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
-mkdir -p {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/unsorted}
+mkdir -p {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/unsorted} &&
+chown 1105:100 {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/unsorted}
 ```
 
 ### 6.06 Create new "media" user - Ubuntu 18.04
@@ -899,8 +900,7 @@ First start LXC 114 (nzbget) with the Proxmox web interface go to `typhoon-01` >
 
 Then with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
-groupadd -g 1005 media &&
-useradd -u 1005 -g media -m media
+useradd -u 1105 -g users -m media
 ```
 
 ### 6.07 Configuring Flexget machine locales - Ubuntu 18.04
@@ -917,7 +917,7 @@ sudo reboot
 With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 mkdir -m 775 -p /home/media/flexget &&
-sudo chown -R media:media /home/media/flexget
+sudo chown -R 1105:100 /home/media/flexget
 ```
 
 ### 6.09 Install Flexget - Ubuntu 18.04
@@ -969,7 +969,7 @@ After=network.target
 [Service]
 Type=simple
 User=media
-Group=media
+Group=users
 UMask=000
 WorkingDirectory=/home/media/flexget
 ExecStart=/usr/local/bin/flexget daemon start
@@ -978,6 +978,7 @@ ExecReload=/usr/local/bin/flexget daemon reload
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/flexget.service &&
+sleep 2 &&
 sudo systemctl enable flexget &&
 sudo systemctl start flexget
 ```
@@ -1000,7 +1001,7 @@ Filebot is installed on the Deluge LXC container.
 Filebot is installed on the Deluge LXC container. So using the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-sudo mkdir /home/media/.filebot; sudo chown -R media:media /home/media/.filebot
+sudo mkdir /home/media/.filebot; sudo chown -R 1105:100 /home/media/.filebot
 ```
 
 ### 7.12 Install FileBot - Ubuntu 18.04
@@ -1151,7 +1152,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 115 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.115/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /typhoon-share/downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 115 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.115/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -1167,7 +1168,7 @@ Please note your Proxmox Sonarr LXC **MUST BE** in the shutdown state before pro
 To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
 ```
 pct set 115 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
-pct set 115 -mp1 /typhoon-share/downloads,mp=/mnt/downloads &&
+pct set 115 -mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 115 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 ```
 
@@ -1175,14 +1176,14 @@ pct set 115 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 To change the Sonarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/115.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1005
-lxc.idmap: g 0 100000 1005
-lxc.idmap: u 1005 1005 1
-lxc.idmap: g 1005 1005 1
-lxc.idmap: u 1006 101006 64530
-lxc.idmap: g 1006 101006 64530" >> /etc/pve/lxc/115.conf &&
-grep -qxF 'root:1005:1' /etc/subuid || echo 'root:1005:1' >> /etc/subuid &&
-grep -qxF 'root:1005:1' /etc/subgid || echo 'root:1005:1' >> /etc/subgid
+echo -e "lxc.idmap: u 0 100000 1105
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1105 1105 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1106 101106 64430
+lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/115.conf &&
+grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 ```
 
 ### 8.04 Create new "media" user - Ubuntu 18.04
@@ -1190,8 +1191,7 @@ First start LXC 115 (sonarr) with the Proxmox web interface go to `typhoon-01` >
 
 Then with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 ```
-groupadd -g 1005 media &&
-useradd -u 1005 -g media -m media
+useradd -u 1105 -g users -m media
 ```
 Note: This time we create a home folder for user media - required by Sonarr.
 
@@ -1214,7 +1214,7 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0xA236C58F409091A1
 echo "deb http://apt.sonarr.tv/ master main" | sudo tee /etc/apt/sources.list.d/sonarr.list &&
 sudo apt update -y &&
 sudo apt install nzbdrone -y &&
-sudo chown -R media:media /opt/NzbDrone
+sudo chown -R 1105:100 /opt/NzbDrone
 ```
 
 ### 8.06 Create Sonarr Service file - Ubuntu 18.04
@@ -1226,7 +1226,7 @@ After=network.target
 
 [Service]
 User=media
-Group=media
+Group=users
 
 Type=simple
 
@@ -1247,11 +1247,11 @@ A script for use with Sonarr that allows you to set the number of episodes of a 
 Useful for aily shows. The script sorts the episodes you have for a show by the season and episode number, and then deletes the oldest episodes past the threshold you set.
 ```
 mkdir 775 -p /home/media/.config/NzbDrone/custom-scripts &&
-chown 1005:1005 /home/media/.config/NzbDrone/custom-scripts &&
+chown 1105:100 /home/media/.config/NzbDrone/custom-scripts &&
 wget https://gitlab.com/spoatacus/sonarr-episode-trimmer/raw/master/sonarr-episode-trimmer.py -P /home/media/.config/NzbDrone/custom-scripts &&
 wget https://raw.githubusercontent.com/ahuacate/sonarr/master/sonarr-episode-trimmer/config -P /home/media/.config/NzbDrone/custom-scripts &&
 chmod +rx /home/media/.config/NzbDrone/custom-scripts/sonarr-episode-trimmer.py &&
-chown 1005:1005 /home/media/.config/NzbDrone/custom-scripts/*
+chown 1105:100 /home/media/.config/NzbDrone/custom-scripts/*
 ```
 
 ### 8.08 Update the Sonarr configuration base file
@@ -1261,11 +1261,11 @@ Begin with the Proxmox web interface and go to `typhoon-01` > `115 (sonarr)` > `
 ```
 sudo systemctl stop sonarr.service &&
 sleep 5 &&
-rm -r /home/media/.config/NzbDrone/nzbdrone.db &&
+rm -r /home/media/.config/NzbDrone/nzbdrone.db* &&
 wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/nzbdrone.db -O /home/media/.config/NzbDrone/nzbdrone.db &&
-wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/config.xml -O /home/media/.config/NzbDrone/config.xml
-chown 1005:1005 /home/media/.config/NzbDrone/nzbdrone.db &&
-chown 1005:1005 /home/media/.config/NzbDrone/config.xml &&
+wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/config.xml -O /home/media/.config/NzbDrone/config.xml &&
+chown 1105:100 /home/media/.config/NzbDrone/nzbdrone.db &&
+chown 1105:100 /home/media/.config/NzbDrone/config.xml &&
 sudo systemctl restart sonarr.service
 ```
 
