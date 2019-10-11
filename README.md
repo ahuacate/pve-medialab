@@ -65,7 +65,7 @@ grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 Note, we **add** these lines not replace any default lines.
 
 ### 1.03 Create a newuser `media` in a LXC
-We need to create a `media` user in all media LXC's which require shared data (ZFS share typhoon-share/downloads or NAS shares). After logging into the LXC container type the following:
+We need to create a `media` user in all media LXC's which require shared data (NFS NAS shares). After logging into the LXC container type the following:
 
 (A) To create a user without a Home folder
 ```
@@ -165,8 +165,21 @@ pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 pct set 111 -mp4 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 pct set 111 -mp5 /mnt/pve/cyclone-01-books,mp=/mnt/books
 ```
+### 2.04 Unprivileged container mapping - Ubuntu 18.04
+To change the Jellyfin container mapping we change the container UID and GID in the file `/etc/pve/lxc/111.conf`. Simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following:
 
-### 2.03 Configure and Install VAAPI - Ubuntu 18.04
+```
+echo -e "lxc.idmap: u 0 100000 1105
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1105 1105 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1106 101106 64430
+lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/111.conf &&
+grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
+```
+
+### 2.05 Configure and Install VAAPI - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
@@ -236,7 +249,7 @@ vainfo: Supported profile and entrypoints
       VAProfileVP9Profile0            : VAEntrypointEncSlice
       VAProfileVP9Profile2            : VAEntrypointVLD
 ```
-### 2.04 Create a rc.local
+### 2.06 Create a rc.local
 For FFMPEG to work we must create a script to `chmod 666 /dev/dri/renderD128` everytime the Proxmox host reboots. Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
 ```
 echo '#!/bin/sh -e
@@ -246,7 +259,7 @@ chmod +x /etc/rc.local &&
 bash /etc/rc.local
 ```
 
-### 2.05 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
+### 2.07 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Here we edit the LXC configuration file with the line `lxc.cgroup.devices.allow` to declare your hardmetal GPU device to your Jellyfin LXC container so it can access your hosts GPU.
@@ -265,7 +278,17 @@ lxc.cgroup.devices.allow = c 226:0 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/111.conf
 ```
 
-### 2.06 Install Jellyfin - Ubuntu 18.04
+### 2.07 Create new "media" user and add to "adm" group - Ubuntu 18.04
+First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
+```
+# Create media user and add to adm group
+useradd -u 1105 -g users -M media &&
+sudo usermod -a -G adm media
+```
+
+### 2.08 Install Jellyfin - Ubuntu 18.04
 This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
@@ -280,8 +303,29 @@ sudo apt update -y &&
 sudo apt install jellyfin -y &&
 sudo systemctl restart jellyfin
 ```
+### 2.09 Edit Jellyfin Service file - Ubuntu 18.04
+With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
-### 2.08 Check your Jellyfin Installation
+```
+sudo systemctl stop jellyfin &&
+sed -i 's/User = jellyfin/User = media\nGroup = users/' /lib/systemd/system/jellyfin.service
+```
+
+### 2.10 Make Jellyfin run under user "media"
+The Jellyfin team provided Ubuntu repository for installation on Ubuntu automaticaly creates a new system user/group called `jellyfin:jellyfin`. The issue is the new UID's and GID's are random. WE need to run Jellyfin under our 'media' user so NFS permissions work.
+
+The solution is some permission changes. Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
+
+```
+sudo systemctl stop jellyfin &&
+sudo chown media:adm /var/cache/jellyfin &&
+sudo chown -R media:users /var/cache/jellyfin/* &&
+sudo find /etc /lib /var -user jellyfin -group adm -exec sudo chown media:adm {} + &&
+sudo find /etc /lib /var -user jellyfin -group jellyfin -exec sudo chown media:users {} + &&
+sudo systemctl restart jellyfin
+```
+
+### 2.11 Setup your Jellyfin Installation
 In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
 
 ---
