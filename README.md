@@ -75,7 +75,9 @@ useradd -u 1105 -g users -M media
 ```
 useradd -u 1105 -g users -m media
 ```
-Note we do not need to create the user group because it is a standard linux group with gid 100.
+Note: We do not need to create a new user group because `users` is a default linux group with GID value 100.
+
+---
 
 ## 2.00 Jellyfin LXC - Ubuntu 18.04
 
