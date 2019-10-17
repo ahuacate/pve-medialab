@@ -310,7 +310,7 @@ sudo apt install gnupg gnupg2 gnupg1 -y &&
 wget -O - https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | sudo apt-key add - &&
 echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/ubuntu $( lsb_release -c -s ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list &&
 sudo apt update -y &&
-sudo apt install jellyfin -y &&
+sudo apt install jellyfin -y
 ```
 
 ### 2.07 Create and edit user groups- Ubuntu 18.04
