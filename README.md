@@ -39,41 +39,53 @@ However you will soon realise that every file and directory will be mapped to "n
 
 The fix is to change the UID and GID mapping.
 
-So in our build we will create a new user called `media` with uid 1105 and gid 100 (users) accessible to unprivileged LXC containers used by user/group media (i.e NZBGet, Deluge, Sonarr, Radarr, LazyLibrarian, Flexget). This is achieved in three parts during the course of creating your new media LXC's.
+So in our build we will create a new user called `media` with uid 1605 and gid 65605 (medialab) accessible to unprivileged LXC containers used by user/group media (i.e Jellyfin, NZBGet, Deluge, Sonarr, Radarr, LazyLibrarian, Flexget).
+
+Also because Synology new Group ID's are in ranges above 65536, outside of Proxmox ID map range, we must pass through our Medialab (gid 65605), Homelab (gid 65606) and Privatelab (gid 65607) Group GID's mapped 1:1.
+
+This is achieved in three parts during the course of creating your new media LXC's.
 
 ### 1.01 Unprivileged container mapping
 To change a container mapping we change the container UID and GID in the file `/etc/pve/lxc/container-id.conf` after you create a new container. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 ```
-echo -e "lxc.idmap: u 0 100000 1105
+# User media | Group medialab
+echo -e "lxc.idmap: u 0 100000 1605
 lxc.idmap: g 0 100000 100
-lxc.idmap: u 1105 1105 1
+lxc.idmap: u 1605 1605 1
 lxc.idmap: g 100 100 1
-lxc.idmap: u 1106 101106 64430
-lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/container-id.conf
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e medialab,homelab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/container-id.conf
 ```
 ### 1.02 Allow a LXC to perform mapping on the Proxmox host
 Next we have to allow the LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
-To achieve this we need to **add** the line `root:1105:1` to the file `/etc/subuid` and  `root:100:1` to the file /etc/subgid. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
+
+To achieve this we need to **add** lines to `/etc/subuid` (users) and `/etc/subgid` (groups). So we need to define two ranges: one where the system IDs (i.e root uid 0) of the container can be mapped to an arbitrary range on the host for security reasons, and another where Synology GIDs above 65536 of the container can be mapped to the same GIDs on the host. That's why we have the following lines in the /etc/subuid and /etc/subgid files.
+
+Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following (NOTE: Only needs to be performed ONCE on each host (i.e typhoon-01/02/03)):
 
 ```
-grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
-Then we need to also **add** the line `root:100:1` to the file `/etc/subgid`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
-```
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
-```
-Note, we **add** these lines not replace any default lines.
+
+The above code adds a ID map range from 65604 > 65704 on the container to the same range on the host. Next ID maps gid100 (default linux users group) and uid1605 (username media) on the container to the same range on the host.
+
 
 ### 1.03 Create a newuser `media` in a LXC
 We need to create a `media` user in all media LXC's which require shared data (NFS NAS shares). After logging into the LXC container type the following:
 
 (A) To create a user without a Home folder
 ```
-useradd -u 1105 -g users -M media
+useradd -u 1605 -g users -M media
 ```
 (B) To create a user with a Home folder
 ```
-useradd -u 1105 -g users -m media
+useradd -u 1605 -g users -m media
 ```
 Note: We do not need to create a new user group because `users` is a default linux group with GID value 100.
 
@@ -145,7 +157,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp4 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp5 /mnt/pve/cyclone-01-books,mp=/mnt/books
+pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype centos --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-photo,mp=/mnt/photo --mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode --mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp4 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp5 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp6 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -166,19 +178,25 @@ pct set 111 -mp2 /mnt/pve/cyclone-01-transcode,mp=/mnt/transcode &&
 pct set 111 -mp3 /mnt/pve/cyclone-01-video,mp=/mnt/video
 pct set 111 -mp4 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 pct set 111 -mp5 /mnt/pve/cyclone-01-books,mp=/mnt/books
+pct set 111 -mp6 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 ### 2.04 Unprivileged container mapping - Ubuntu 18.04
 To change the Jellyfin container mapping we change the container UID and GID in the file `/etc/pve/lxc/111.conf`. Simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1105
+# User media | Group medialab
+echo -e "lxc.idmap: u 0 100000 1605
 lxc.idmap: g 0 100000 100
-lxc.idmap: u 1105 1105 1
+lxc.idmap: u 1605 1605 1
 lxc.idmap: g 100 100 1
-lxc.idmap: u 1106 101106 64430
-lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/111.conf &&
-grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/111.conf &&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
 ### 2.05 Configure and Install VAAPI - Ubuntu 18.04
@@ -280,16 +298,6 @@ lxc.cgroup.devices.allow = c 226:0 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/111.conf
 ```
 
-### 2.07 Create new "media" user and add to "adm" group - Ubuntu 18.04
-First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`.
-
-Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
-```
-# Create media user and add to adm group
-useradd -u 1105 -g users -M media &&
-sudo usermod -a -G adm media
-```
-
 ### 2.08 Install Jellyfin - Ubuntu 18.04
 This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`.
 
@@ -303,27 +311,25 @@ wget -O - https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | sudo apt-key 
 echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/ubuntu $( lsb_release -c -s ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list &&
 sudo apt update -y &&
 sudo apt install jellyfin -y &&
-sudo systemctl restart jellyfin
 ```
-### 2.09 Edit Jellyfin Service file - Ubuntu 18.04
+
+### 2.07 Create and edit user groups- Ubuntu 18.04
+Jellyfin installation creates a new username and group: `jellyfin:jellyfin`. By default Jellyfin SW runs under username `jellyfin`. So Jellyfin has library access to our NAS we need to add the user `jellyfin` to the `medialab` group.
+
 With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
-sudo systemctl stop jellyfin &&
-sed -i 's/User = jellyfin/User = media\nGroup = users/' /lib/systemd/system/jellyfin.service
+# Create username media and group medialab
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -M media &&
+# Add jellyfin to medialab
+sudo usermod -a -G medialab jellyfin
 ```
 
-### 2.10 Make Jellyfin run under user "media"
-The Jellyfin team provided Ubuntu repository for installation on Ubuntu automaticaly creates a new system user/group called `jellyfin:jellyfin`. The issue is the new UID's and GID's are random. WE need to run Jellyfin under our 'media' user so NFS permissions work.
-
-The solution is some permission changes. Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
+### 2.09 Start Jellyfin - Ubuntu 18.04
+With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
-sudo systemctl stop jellyfin &&
-sudo chown media:adm /var/cache/jellyfin &&
-sudo chown -R media:users /var/cache/jellyfin/* &&
-sudo find /etc /lib /var -user jellyfin -group adm -exec sudo chown media:adm {} + &&
-sudo find /etc /lib /var -user jellyfin -group jellyfin -exec sudo chown media:users {} + &&
 sudo systemctl restart jellyfin
 ```
 
