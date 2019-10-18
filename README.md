@@ -690,9 +690,12 @@ sudo apt-get update &&
 sudo apt install subversion -y &&
 sudo apt install software-properties-common -y &&
 sudo add-apt-repository ppa:deluge-team/ppa -y &&
+# sudo add-apt-repository ppa:deluge-team/stable && # Plugins dont work in v2
 sudo apt-get update &&
 sudo apt-get install deluged deluge-webui deluge-console -y
 ```
+You will receive the following prompts:
+~At the prompt `As the maintainer of this PPA, you can now support me on Patreon` press `[ENTER]`.~
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
 ### 4.09 Download Deluge Plugins and settings files - Ubuntu 18.04
@@ -828,7 +831,7 @@ Restart=always
 RestartSec=5
 Type=simple
 User=media
-Group=users
+Group=medialab
 WorkingDirectory=/opt/Jackett
 ExecStart=/opt/Jackett/jackett --NoRestart
 TimeoutStopSec=20
@@ -847,12 +850,12 @@ With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` 
 sudo systemctl stop jackett &&
 sleep 5 &&
 wget -q https://raw.githubusercontent.com/ahuacate/jackett/master/ServerConfig.json -O /home/media/.config/Jackett/ServerConfig.json &&
-chown 1105:100 /home/media/.config/Jackett/ServerConfig.json &&
+chown 1605:65605 /home/media/.config/Jackett/ServerConfig.json &&
 # Here we update the jacket indexers
 mkdir -m 775 -p /home/media/.config/Jackett/Indexers &&
-chown 1105:100 /home/media/.config/Jackett/Indexers &&
+chown 1605:65605 /home/media/.config/Jackett/Indexers &&
 svn checkout https://github.com/ahuacate/jackett/trunk/Indexers /home/media/.config/Jackett/Indexers &&
-chown 1105:100 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak} &&
+chown 1605:65605 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak} &&
 sudo systemctl restart jackett
 ```
 
@@ -874,7 +877,7 @@ Now using the web interface `Datacenter` > `Create CT` and fill out the details 
 | :---  | :---: |
 | **General**
 | Node | `typhoon-01` |
-| CT ID |`115`|
+| CT ID |`114`|
 | Hostname |`flexget`|
 | Unprivileged container | `☑` |
 | Resource Pool | Leave Blank
@@ -919,7 +922,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
+pct create 114 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname flexget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.114/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp4 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -940,34 +943,41 @@ pct set 114 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
 pct set 114 -mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 114 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 pct set 114 -mp3 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
+pct set 113 -mp4 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 ### 6.03 Unprivileged container mapping - Ubuntu 18.04
 To change the Flexget container mapping we change the container UID and GID in the file `/etc/pve/lxc/114.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1105
+# User media | Group medialab
+echo -e "lxc.idmap: u 0 100000 1605
 lxc.idmap: g 0 100000 100
-lxc.idmap: u 1105 1105 1
+lxc.idmap: u 1605 1605 1
 lxc.idmap: g 100 100 1
-lxc.idmap: u 1106 101106 64430
-lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/114.conf &&
-grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/114.conf &&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
 ### 6.04 Create Flexget download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create Flexget download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 mkdir -p {/mnt/pve/cyclone-01-downloads/deluge/complete/flexget/series,/mnt/pve/cyclone-01-downloads/deluge/complete/flexget/movies} &&
-chown 1105:100 {/mnt/pve/cyclone-01-downloads/deluge/complete/flexget,/mnt/pve/cyclone-01-downloads/deluge/complete/flexget/series,/mnt/pve/cyclone-01-downloads/deluge/complete/flexget/movies}
+chown 1605:65605 {/mnt/pve/cyclone-01-downloads/deluge/complete/flexget,/mnt/pve/cyclone-01-downloads/deluge/complete/flexget/series,/mnt/pve/cyclone-01-downloads/deluge/complete/flexget/movies}
 ```
 
 ### 6.05 Create Flexget content folders on your NAS
 To create Flexget content folders on your NAS use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 mkdir -p {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/unsorted} &&
-chown 1105:100 {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/unsorted}
+chown 1605:65605 {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/unsorted}
 ```
 
 ### 6.06 Create new "media" user - Ubuntu 18.04
@@ -975,7 +985,8 @@ First start LXC 114 (nzbget) with the Proxmox web interface go to `typhoon-01` >
 
 Then with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
-useradd -u 1105 -g users -m media
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -M media
 ```
 
 ### 6.07 Configuring Flexget machine locales - Ubuntu 18.04
@@ -992,7 +1003,7 @@ sudo reboot
 With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 mkdir -m 775 -p /home/media/flexget &&
-sudo chown -R 1105:100 /home/media/flexget
+sudo chown -R 1605:65605 /home/media/flexget
 ```
 
 ### 6.09 Install Flexget - Ubuntu 18.04
@@ -1012,25 +1023,25 @@ pip3 install flexget
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-Now we need libtorrent for our config.yml to work. Until I figure out which libtorrent package & dependencies are required the workaround is to install Deluge (but, not starting/running Deluge - no services). So with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+Now we need libtorrent for our config.yml to work. Until I figure out which libtorrent package & dependencies are required the workaround is to install Deluge dependencies (but, not Deluge).
+
+So with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 
 ```
-sudo apt-get update &&
-sudo apt install software-properties-common -y &&
-sudo add-apt-repository ppa:deluge-team/stable -y &&
-sudo apt-get update &&
-sudo apt-get install deluged deluge-webui -y
+sudo apt-get -y install python python-twisted python-openssl python-setuptools intltool python-xdg python-chardet geoip-database python-libtorrent python-notify python-pygame python-glade2 librsvg2-common xdg-utils python-mako 
 ```
+
 ### 6.10 Download the Flexget YAML Configuration Files
 Your Flexget configuration files are pre-built and working. There are x files to download.
 
 Download the Flexget YAML configuration file from GitHub. Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 wget https://raw.githubusercontent.com/ahuacate/flexget/master/config.yml -P /home/media/flexget &&
-wget https://raw.githubusercontent.com/ahuacate/flexget/master/list-showrss.yml.yml -P /home/media/flexget &&
+wget https://raw.githubusercontent.com/ahuacate/flexget/master/list-showrss.yml -P /home/media/flexget &&
 wget https://raw.githubusercontent.com/ahuacate/flexget/master/list-mvgroup.yml -P /home/media/flexget &&
 wget https://raw.githubusercontent.com/ahuacate/flexget/master/list-documentarytorrents.yml -P /home/media/flexget &&
 wget https://raw.githubusercontent.com/ahuacate/flexget/master/secrets.yml -P /home/media/flexget &&
+chown 1605:65605 /home/media/flexget/*.yml
 ```
 The `secrets.yml` file requires you to enter your private user credentials and instructions are [HERE](https://github.com/ahuacate/flexget).
 
@@ -1044,7 +1055,7 @@ After=network.target
 [Service]
 Type=simple
 User=media
-Group=users
+Group=medialab
 UMask=000
 WorkingDirectory=/home/media/flexget
 ExecStart=/usr/local/bin/flexget daemon start
@@ -1076,7 +1087,7 @@ Filebot is installed on the Deluge LXC container.
 Filebot is installed on the Deluge LXC container. So using the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
-sudo mkdir /home/media/.filebot; sudo chown -R 1105:100 /home/media/.filebot
+sudo mkdir /home/media/.filebot; sudo chown -R 1605:65605 /home/media/.filebot
 ```
 
 ### 7.12 Install FileBot - Ubuntu 18.04
