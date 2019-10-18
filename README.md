@@ -37,15 +37,17 @@ With unprivileged LXC containers you will have issues with UIDs (user id) and GI
 
 However you will soon realise that every file and directory will be mapped to "nobody" (uid 65534). This isn't acceptable for host mounted shared data resources. For shared data you want to access the directory with the same - unprivileged - uid as it's using on other LXC machines.
 
-The fix is to change the UID and GID mapping.
+The fix is to change the UID and GID mapping. So in our build we will create a new users/groups:
 
-So in our build we will create a new user called `media` with uid 1605 and gid 65605 (medialab) accessible to unprivileged LXC containers used by user/group media (i.e Jellyfin, NZBGet, Deluge, Sonarr, Radarr, LazyLibrarian, Flexget).
+*  user `media` (uid 1605) and group `medialab` (gid 65605) accessible to unprivileged LXC containers (i.e Jellyfin, NZBGet, Deluge, Sonarr, Radarr, LazyLibrarian, Flexget);
+*  user `storm` (uid 1606) and group `homelab` (gid 65606) accessible to unprivileged LXC containers (i.e Syncthing, Nextcloud, Unifi);
+*  user `typhoon` (uid 1607) and group `privatelab` (gid 65606) accessible to unprivileged LXC containers (i.e all things private).
 
 Also because Synology new Group ID's are in ranges above 65536, outside of Proxmox ID map range, we must pass through our Medialab (gid 65605), Homelab (gid 65606) and Privatelab (gid 65607) Group GID's mapped 1:1.
 
 This is achieved in three parts during the course of creating your new media LXC's.
 
-### 1.01 Unprivileged container mapping
+### 1.01 Unprivileged container mapping - medialab
 To change a container mapping we change the container UID and GID in the file `/etc/pve/lxc/container-id.conf` after you create a new container. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 ```
 # User media | Group medialab
@@ -59,7 +61,7 @@ lxc.idmap: g 101 100101 65435
 lxc.idmap: u 65604 65604 100
 lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/container-id.conf
 ```
-### 1.02 Allow a LXC to perform mapping on the Proxmox host
+### 1.02 Allow a LXC to perform mapping on the Proxmox host - medialab
 Next we have to allow the LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
 
 To achieve this we need to **add** lines to `/etc/subuid` (users) and `/etc/subgid` (groups). So we need to define two ranges: one where the system IDs (i.e root uid 0) of the container can be mapped to an arbitrary range on the host for security reasons, and another where Synology GIDs above 65536 of the container can be mapped to the same GIDs on the host. That's why we have the following lines in the /etc/subuid and /etc/subgid files.
@@ -81,11 +83,13 @@ We need to create a `media` user in all media LXC's which require shared data (N
 
 (A) To create a user without a Home folder
 ```
-useradd -u 1605 -g users -M media
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -M media
 ```
 (B) To create a user with a Home folder
 ```
-useradd -u 1605 -g users -m media
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -m media
 ```
 Note: We do not need to create a new user group because `users` is a default linux group with GID value 100.
 
@@ -313,7 +317,7 @@ sudo apt update -y &&
 sudo apt install jellyfin -y
 ```
 
-### 2.07 Create and edit user groups- Ubuntu 18.04
+### 2.09 Create and edit user groups- Ubuntu 18.04
 Jellyfin installation creates a new username and group: `jellyfin:jellyfin`. By default Jellyfin SW runs under username `jellyfin`. So Jellyfin has library access to our NAS we need to add the user `jellyfin` to the `medialab` group.
 
 With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
@@ -326,7 +330,7 @@ useradd -u 1605 -g medialab -M media &&
 sudo usermod -a -G medialab jellyfin
 ```
 
-### 2.09 Start Jellyfin - Ubuntu 18.04
+### 2.10 Start Jellyfin - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
@@ -406,7 +410,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 112 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname nzbget --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.112/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp2 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -424,27 +428,33 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 ```
 pct set 112 -mp0 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 112 -mp1 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct set 112 -mp2 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 ### 3.04 Unprivileged container mapping - Ubuntu 18.04
 To change the NZBGet container mapping we change the container UID and GID in the file `/etc/pve/lxc/112.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1105
+# User media | Group medialab
+echo -e "lxc.idmap: u 0 100000 1605
 lxc.idmap: g 0 100000 100
-lxc.idmap: u 1105 1105 1
+lxc.idmap: u 1605 1605 1
 lxc.idmap: g 100 100 1
-lxc.idmap: u 1106 101106 64430
-lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/112.conf &&
-grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/112.conf &&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
 ### 3.05 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04
 To create the NZBGet download folders use the web interface go to Proxmox CLI Datacenter > `typhoon-01` > `>_ Shell` and type the following:
 ```
 mkdir -p {/mnt/pve/cyclone-01-downloads/nzbget/nzb,/mnt/pve/cyclone-01-downloads/nzbget/queue,/mnt/pve/cyclone-01-downloads/nzbget/tmp,/mnt/pve/cyclone-01-downloads/nzbget/intermediate,/mnt/pve/cyclone-01-downloads/nzbget/completed,/mnt/pve/cyclone-01-downloads/nzbget/completed/lazy,/mnt/pve/cyclone-01-downloads/nzbget/completed/series,/mnt/pve/cyclone-01-downloads/nzbget/completed/movies,/mnt/pve/cyclone-01-downloads/nzbget/completed/music} &&
-chown 1105:100 {/mnt/pve/cyclone-01-downloads/nzbget,/mnt/pve/cyclone-01-downloads/nzbget/nzb,/mnt/pve/cyclone-01-downloads/nzbget/queue,/mnt/pve/cyclone-01-downloads/nzbget/tmp,/mnt/pve/cyclone-01-downloads/nzbget/intermediate,/mnt/pve/cyclone-01-downloads/nzbget/completed,/mnt/pve/cyclone-01-downloads/nzbget/completed/lazy,/mnt/pve/cyclone-01-downloads/nzbget/completed/series,/mnt/pve/cyclone-01-downloads/nzbget/completed/movies,/mnt/pve/cyclone-01-downloads/nzbget/completed/music}
+chown -R 1605:65605 {/mnt/pve/cyclone-01-downloads/nzbget,/mnt/pve/cyclone-01-downloads/nzbget/nzb,/mnt/pve/cyclone-01-downloads/nzbget/queue,/mnt/pve/cyclone-01-downloads/nzbget/tmp,/mnt/pve/cyclone-01-downloads/nzbget/intermediate,/mnt/pve/cyclone-01-downloads/nzbget/completed,/mnt/pve/cyclone-01-downloads/nzbget/completed/lazy,/mnt/pve/cyclone-01-downloads/nzbget/completed/series,/mnt/pve/cyclone-01-downloads/nzbget/completed/movies,/mnt/pve/cyclone-01-downloads/nzbget/completed/music}
 ```
 
 ### 3.06 Create new "media" user - Ubuntu 18.04
@@ -453,7 +463,8 @@ First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` >
 Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 ```
 sudo apt-get update &&
-useradd -u 1105 -g users -M media
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -M media
 ```
 
 ### 3.07 Install NZBget - Ubuntu 18.04
@@ -465,7 +476,7 @@ Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Sh
 wget https://nzbget.net/download/nzbget-latest-bin-linux.run -P /tmp &&
 sh /tmp/nzbget-latest-bin-linux.run --destdir /opt/nzbget &&
 rm /tmp/nzbget-latest-bin-linux.run &&
-sudo chown -R 1105:100 /opt/nzbget
+sudo chown -R 1605:65605 /opt/nzbget
 ```
 
 ### 3.08 Edit NZBget configuration file - Ubuntu 18.04
@@ -494,7 +505,7 @@ sed -i "/AddUsername=/c\AddUsername=rpcaccess" /opt/nzbget/nzbget.conf &&
 sed -i "/AddPassword=/c\AddPassword=Ut#)>3'o&RVmRj>]" /opt/nzbget/nzbget.conf &&
 # Set the file permissions and ownership
 sudo chmod 755 /opt/nzbget/nzbget.conf &&
-chown 1105:100 /opt/nzbget/nzbget.conf
+chown 1605:65605 /opt/nzbget/nzbget.conf
 ```
 
 ### 3.09 Create NZBget Service file - Ubuntu 18.04
@@ -507,7 +518,7 @@ After=network.target
 
 [Service]
 User=media
-Group=users
+Group=medialab
 Type=forking
 ExecStart=/opt/nzbget/nzbget -D
 ExecStop=/opt/nzbget/nzbget -Q
@@ -517,7 +528,9 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/nzbget.service &&
+sleep 2 &&
 sudo systemctl enable nzbget &&
+sleep 2 &&
 sudo systemctl restart nzbget &&
 sudo systemctl status nzbget
 
