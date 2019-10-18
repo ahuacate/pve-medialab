@@ -607,7 +607,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp1 /mnt/pve/cyclone-01-video,mp=/mnt/video
+pct create 113 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname deluge --cpulimit 1 --cpuunits 1024 --memory 2048 --nameserver 192.168.30.5 --searchdomain 192.168.30.5 --net0 name=eth0,bridge=vmbr0,tag=30,firewall=1,gw=192.168.30.5,ip=192.168.30.113/24,type=veth --ostype ubuntu --rootfs typhoon-share:8 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password --mp0 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp1 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp2 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -625,26 +625,34 @@ To create the Mount Points use the web interface go to Proxmox CLI Datacenter > 
 ```
 pct set 113 -mp0 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads
 pct set 113 -mp1 /mnt/pve/cyclone-01-video,mp=/mnt/video
+pct set 113 -mp2 /mnt/pve/cyclone-01-public,mp=/mnt/public
+
 ```
 
 ### 4.04 Unprivileged container mapping - Ubuntu 18.04
 To change the Deluge container mapping we change the container UID and GID in the file /etc/pve/lxc/113.conf. Simply use Proxmox CLI typhoon-01 > >_ Shell and type the following:
 ```
-echo -e "lxc.idmap: u 0 100000 1105
+# User media | Group medialab
+echo -e "lxc.idmap: u 0 100000 1605
 lxc.idmap: g 0 100000 100
-lxc.idmap: u 1105 1105 1
+lxc.idmap: u 1605 1605 1
 lxc.idmap: g 100 100 1
-lxc.idmap: u 1106 101106 64430
-lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/113.conf &&
-grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/113.conf &&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
 ### 4.05 Create Deluge download folders on your ZFS typhoon-share - Ubuntu 18.04
-To create the Deluge download folders use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+To create the Deluge download folders use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
 ```
 mkdir -m 775 -p {/mnt/pve/cyclone-01-downloads/deluge/incomplete,/mnt/pve/cyclone-01-downloads/deluge/complete,/mnt/pve/cyclone-01-downloads/deluge/complete/lazy,/mnt/pve/cyclone-01-downloads/deluge/complete/movies,/mnt/pve/cyclone-01-downloads/deluge/complete/series,/mnt/pve/cyclone-01-downloads/deluge/complete/music,/mnt/pve/cyclone-01-downloads/deluge/autoadd} &&
-chown -R 1105:100 {/mnt/pve/cyclone-01-downloads/deluge,/mnt/pve/cyclone-01-downloads/deluge/incomplete,/mnt/pve/cyclone-01-downloads/deluge/complete,/mnt/pve/cyclone-01-downloads/deluge/complete/lazy,/mnt/pve/cyclone-01-downloads/deluge/complete/movies,/mnt/pve/cyclone-01-downloads/deluge/complete/series,/mnt/pve/cyclone-01-downloads/deluge/complete/music,/mnt/pve/cyclone-01-downloads/deluge/autoadd}
+chown -R 1605:65605 {/mnt/pve/cyclone-01-downloads/deluge,/mnt/pve/cyclone-01-downloads/deluge/incomplete,/mnt/pve/cyclone-01-downloads/deluge/complete,/mnt/pve/cyclone-01-downloads/deluge/complete/lazy,/mnt/pve/cyclone-01-downloads/deluge/complete/movies,/mnt/pve/cyclone-01-downloads/deluge/complete/series,/mnt/pve/cyclone-01-downloads/deluge/complete/music,/mnt/pve/cyclone-01-downloads/deluge/autoadd}
 ```
 
 ### 4.06 Create new "media" user - Ubuntu 18.04
@@ -655,9 +663,10 @@ Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Sh
 
 ```
 sudo apt-get update &&
-useradd -u 1105 -g users -m media
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -m media
 ```
-Note: This time we create a home folder for user media - required by Deluge.
+Note: This time we create a home folder for user `media` - required by Deluge.
 
 
 ### 4.07 Configuring host machine locales - Ubuntu 18.04
@@ -696,13 +705,13 @@ pkill -9 deluged &&
 wget --content-disposition https://forum.deluge-torrent.org/download/file.php?id=6306 -P /home/media/.config/deluge/plugins/ &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/deluge-postprocess.sh -P /home/media/.config/deluge &&
 chmod +rx /home/media/.config/deluge/deluge-postprocess.sh &&
-chown 1105:100 /home/media/.config/deluge/deluge-postprocess.sh &&
+chown 1605:65605 /home/media/.config/deluge/deluge-postprocess.sh &&
 echo -e "flexget:9c67cf728b8c079c2e0065ee11cb3a9a6771420a:10
 lazylibrarian:9c67cf728b8c079c2e0065ee11cb3a9a6771421a:10" >> /home/media/.config/deluge/auth &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/label.conf -P /home/media/.config/deluge &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/execute.conf -P /home/media/.config/deluge &&
 wget  https://raw.githubusercontent.com/ahuacate/deluge/master/autoremoveplus.conf -P /home/media/.config/deluge &&
-chown 1105:100 {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/autoremoveplus.conf,/home/media/.config/deluge/plugins/*.egg}
+chown 1605:65605 {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/autoremoveplus.conf,/home/media/.config/deluge/plugins/*.egg}
 ```
 
 ### 4.10 Create Deluge Service file - Ubuntu 18.04
@@ -715,7 +724,7 @@ After=network-online.target
 
 [Service]
 User=media
-Group=users
+Group=medialab
 Type=simple
 Umask=007
 ExecStart=/usr/bin/deluged -d
@@ -727,7 +736,9 @@ TimeoutStopSec=300
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/deluge.service &&
+sleep 2 &&
 sudo systemctl enable deluge &&
+sleep 2 &&
 sudo systemctl start deluge
 ```
 
@@ -765,7 +776,7 @@ Wants=deluge.service
 
 [Service]
 User=media
-Group=users
+Group=medialab
 
 Type=simple
 Umask=027
