@@ -1238,7 +1238,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 115 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.115/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 115 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname sonarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.115/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp3 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -1256,20 +1256,27 @@ To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` 
 pct set 115 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
 pct set 115 -mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 115 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct set 115 -mp3 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 ### 8.03 Unprivileged container mapping - Ubuntu 18.04
 To change the Sonarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/115.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1105
+# User media | Group medialab
+echo -e "lxc.idmap: u 0 100000 1605
 lxc.idmap: g 0 100000 100
-lxc.idmap: u 1105 1105 1
+lxc.idmap: u 1605 1605 1
 lxc.idmap: g 100 100 1
-lxc.idmap: u 1106 101106 64430
-lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/115.conf &&
-grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/115.conf &&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
 ### 8.04 Create new "media" user - Ubuntu 18.04
@@ -1277,7 +1284,8 @@ First start LXC 115 (sonarr) with the Proxmox web interface go to `typhoon-01` >
 
 Then with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 ```
-useradd -u 1105 -g users -m media
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -m media
 ```
 Note: This time we create a home folder for user media - required by Sonarr.
 
@@ -1296,7 +1304,7 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0xA236C58F409091A1
 echo "deb http://apt.sonarr.tv/ master main" | sudo tee /etc/apt/sources.list.d/sonarr.list &&
 sudo apt update -y &&
 sudo apt install nzbdrone -y &&
-sudo chown -R 1105:100 /opt/NzbDrone
+sudo chown -R 1605:65605 /opt/NzbDrone
 ```
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
@@ -1309,7 +1317,7 @@ After=network.target
 
 [Service]
 User=media
-Group=users
+Group=medialab
 
 Type=simple
 
@@ -1330,11 +1338,11 @@ A script for use with Sonarr that allows you to set the number of episodes of a 
 Useful for aily shows. The script sorts the episodes you have for a show by the season and episode number, and then deletes the oldest episodes past the threshold you set.
 ```
 mkdir 775 -p /home/media/.config/NzbDrone/custom-scripts &&
-chown 1105:100 /home/media/.config/NzbDrone/custom-scripts &&
+chown 1605:65605 /home/media/.config/NzbDrone/custom-scripts &&
 wget https://gitlab.com/spoatacus/sonarr-episode-trimmer/raw/master/sonarr-episode-trimmer.py -P /home/media/.config/NzbDrone/custom-scripts &&
 wget https://raw.githubusercontent.com/ahuacate/sonarr/master/sonarr-episode-trimmer/config -P /home/media/.config/NzbDrone/custom-scripts &&
 chmod +rx /home/media/.config/NzbDrone/custom-scripts/sonarr-episode-trimmer.py &&
-chown 1105:100 /home/media/.config/NzbDrone/custom-scripts/*
+chown 1605:65605 /home/media/.config/NzbDrone/custom-scripts/*
 ```
 
 ### 8.08 Update the Sonarr configuration base file
@@ -1348,8 +1356,8 @@ rm -r /home/media/.config/NzbDrone/nzbdrone.db* &&
 rm -r /home/media/.config/NzbDrone/config.xml &&
 wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/nzbdrone.db -O /home/media/.config/NzbDrone/nzbdrone.db &&
 wget https://raw.githubusercontent.com/ahuacate/sonarr/master/backup/config.xml -O /home/media/.config/NzbDrone/config.xml &&
-chown 1105:100 /home/media/.config/NzbDrone/nzbdrone.db &&
-chown 1105:100 /home/media/.config/NzbDrone/config.xml &&
+chown 1605:65605 /home/media/.config/NzbDrone/nzbdrone.db &&
+chown 1605:65605 /home/media/.config/NzbDrone/config.xml &&
 sudo systemctl restart sonarr.service
 ```
 
@@ -1418,7 +1426,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.116/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 116 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname radarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.116/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp3 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -1436,20 +1444,27 @@ To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` 
 pct set 116 -mp0 /mnt/pve/cyclone-01-video,mp=/mnt/video &&
 pct set 116 -mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 116 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct set 116 -mp3 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 ### 9.03 Unprivileged container mapping - Ubuntu 18.04
 To change the Radarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/116.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1105
+# User media | Group medialab
+echo -e "lxc.idmap: u 0 100000 1605
 lxc.idmap: g 0 100000 100
-lxc.idmap: u 1105 1105 1
+lxc.idmap: u 1605 1605 1
 lxc.idmap: g 100 100 1
-lxc.idmap: u 1106 101106 64430
-lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/116.conf &&
-grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/116.conf &&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
 ### 9.04 Create new "media" user - Ubuntu 18.04
@@ -1457,7 +1472,8 @@ First start LXC 116 (radarr) with the Proxmox web interface go to `typhoon-01` >
 
 Then with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
 ```
-useradd -u 1105 -g users -m media
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -m media
 ```
 Note: This time we create a home folder for user media - required by Radarr.
 
@@ -1476,8 +1492,8 @@ cd /opt &&
 sudo curl -L -O $( curl -s https://api.github.com/repos/Radarr/Radarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
 sudo tar -xvzf Radarr.develop.*.linux.tar.gz &&
 sudo rm *.linux.tar.gz &&
-sudo chown -R 1105:100 /opt/Radarr &&
-sudo apt-get install libmediainfo-dev #Required to patch Mediainfo
+sudo chown -R 1605:65605 /opt/Radarr &&
+sudo apt-get -y install libmediainfo-dev #Required to patch Mediainfo
 ```
 At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
 
@@ -1491,7 +1507,7 @@ After=syslog.target network.target
 [Service]
 # Change the user and group variables here.
 User=media
-Group=users
+Group=medialab
 
 Type=simple
 
@@ -1506,7 +1522,7 @@ WantedBy=multi-user.target" > /etc/systemd/system/radarr.service &&
 sleep 2 &&
 sudo systemctl enable radarr.service &&
 sleep 2 &&
-sudo systemctl start radarr.service
+sudo systemctl restart radarr.service
 ```
 
 ### 9.07 Update the Radarr configuration base file
@@ -1519,8 +1535,8 @@ sleep 5 &&
 rm -r /home/media/.config/Radarr/nzbdrone.db* &&
 wget https://raw.githubusercontent.com/ahuacate/radarr/master/backup/nzbdrone.db -O /home/media/.config/Radarr/nzbdrone.db &&
 wget https://raw.githubusercontent.com/ahuacate/radarr/master/backup/config.xml -O /home/media/.config/Radarr/config.xml
-chown 1105:100 /home/media/.config/Radarr/nzbdrone.db &&
-chown 1105:100 /home/media/.config/Radarr/config.xml &&
+chown 1605:65605 /home/media/.config/Radarr/nzbdrone.db &&
+chown 1605:65605 /home/media/.config/Radarr/config.xml &&
 sudo systemctl restart radarr.service
 ```
 
@@ -1589,7 +1605,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 117 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lidarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.117/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 117 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lidarr --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.117/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music --mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp3 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -1607,20 +1623,27 @@ To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` 
 pct set 117 -mp0 /mnt/pve/cyclone-01-music,mp=/mnt/music &&
 pct set 117 -mp1 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 117 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct set 117 -mp3 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 ### 9.03 Unprivileged container mapping - Ubuntu 18.04
 To change the Lidarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/117.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1105
+# User media | Group medialab
+echo -e "lxc.idmap: u 0 100000 1605
 lxc.idmap: g 0 100000 100
-lxc.idmap: u 1105 1105 1
+lxc.idmap: u 1605 1605 1
 lxc.idmap: g 100 100 1
-lxc.idmap: u 1106 101106 64430
-lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/117.conf &&
-grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/117.conf &&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
 ### 10.04 Create new "media" user - Ubuntu 18.04
@@ -1628,7 +1651,8 @@ First start LXC 117 (lidarr) with the Proxmox web interface go to `typhoon-01` >
 
 Then with the Proxmox web interface go to `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
 ```
-useradd -u 1105 -g users -m media
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -m media
 ```
 Note: This time we create a home folder for user media - required by Lidarr.
 
@@ -1647,7 +1671,7 @@ cd /opt &&
 sudo curl -L -O $( curl -s https://api.github.com/repos/lidarr/Lidarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
 sudo tar -xvzf Lidarr.*.*.linux.tar.gz &&
 sudo rm *.linux.tar.gz &&
-sudo chown -R 1105:100 /opt/Lidarr &&
+sudo chown -R 1605:65605 /opt/Lidarr &&
 sudo apt-get install libchromaprint-tools -y
 ```
 At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
@@ -1662,7 +1686,7 @@ After=network.target
 [Service]
 # Change the user and group variables here.
 User=media
-Group=users
+Group=medialab
 
 Type=simple
 
