@@ -1764,7 +1764,7 @@ If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type 
 
 **Script (A):** Including LXC Mount Points
 ```
-pct create 118 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lazy --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.118/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp1 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp2 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct create 118 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname lazy --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.118/24,type=veth --ostype centos --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-audio,mp=/mnt/audio --mp1 /mnt/pve/cyclone-01-books,mp=/mnt/books --mp2 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads --mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp4 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 **Script (B):** Excluding LXC Mount Points:
@@ -1783,20 +1783,27 @@ pct set 118 -mp0 /mnt/pve/cyclone-01-audio,mp=/mnt/audio &&
 pct set 118 -mp1 /mnt/pve/cyclone-01-books,mp=/mnt/books
 pct set 118 -mp2 /mnt/pve/cyclone-01-downloads,mp=/mnt/downloads &&
 pct set 118 -mp3 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct set 118 -mp4 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
 ### 11.03 Unprivileged container mapping - Ubuntu 18.04
 To change the LazyLibrarian container mapping we change the container UID and GID in the file `/etc/pve/lxc/118.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.idmap: u 0 100000 1105
+# User media | Group medialab
+echo -e "lxc.idmap: u 0 100000 1605
 lxc.idmap: g 0 100000 100
-lxc.idmap: u 1105 1105 1
+lxc.idmap: u 1605 1605 1
 lxc.idmap: g 100 100 1
-lxc.idmap: u 1106 101106 64430
-lxc.idmap: g 101 100101 65435" >> /etc/pve/lxc/118.conf &&
-grep -qxF 'root:1105:1' /etc/subuid || echo 'root:1105:1' >> /etc/subuid &&
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/118.conf &&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
 ### 11.04 Create new "media" user - Ubuntu 18.04
@@ -1805,7 +1812,8 @@ First start LXC 118 (lazy) with the Proxmox web interface go to `typhoon-01` > `
 
 Then with the Proxmox web interface go to `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
 ```
-useradd -u 1105 -g users -M media
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -M media
 ```
 
 ### 11.05 Install Lazylibrarian
@@ -1820,7 +1828,7 @@ pip3 install pyopenssl &&
 pip3 install urllib3 &&
 cd /opt &&
 sudo git clone https://gitlab.com/LazyLibrarian/LazyLibrarian.git &&
-sudo chown -R 1105:100 /opt/LazyLibrarian
+sudo chown -R 1605:65605 /opt/LazyLibrarian
 ```
 At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
 
@@ -1835,7 +1843,7 @@ ExecStart=/usr/bin/python3 /opt/LazyLibrarian/LazyLibrarian.py --daemon --config
 GuessMainPID=no
 Type=forking
 User=media
-Group=users
+Group=medialab
 Restart=on-failure
 
 [Install]
