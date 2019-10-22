@@ -1816,7 +1816,14 @@ groupadd -g 65605 medialab &&
 useradd -u 1605 -g medialab -M media
 ```
 
-### 11.05 Install Lazylibrarian
+### 11.05 Create Lazylibrarian content folders on your NAS
+To create Lazylibrarian content folders on your NAS use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+mkdir -p /mnt/pve/cyclone-01-audio/audiobooks &&
+chown 1605:65605 /mnt/pve/cyclone-01-audio/audiobooks
+```
+
+### 11.06 Install Lazylibrarian
 First start your Lazylibrarian LXC and login. Then go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and insert by cut & pasting the following:
 
 ```
@@ -1832,7 +1839,7 @@ sudo chown -R 1605:65605 /opt/LazyLibrarian
 ```
 At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
 
-### 11.06 Create Lazylibrarian Service file - Ubuntu 18.04
+### 11.07 Create Lazylibrarian Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
 ```
 sudo echo -e "[Unit]
@@ -1854,7 +1861,7 @@ sleep 2 &&
 sudo systemctl restart lazy.service
 ```
 
-### 11.07 Setup Lazylibrarian
+### 11.08 Setup Lazylibrarian
 Browse to http://192.168.50.118:5299 to start using Lazylibrarian (aka lazy).
 
 Thats it. Now go and complete [LazyLibrarian Build](https://github.com/ahuacate/lazylibrarian/blob/master/README.md#lazylibrarian-build) for your first time build **OR** use the restore instructions [3.00 Restore Lazylibrarian backup](https://github.com/ahuacate/lazylibrarian/blob/master/README.md#300-restore-lazylibrarian-backup).
