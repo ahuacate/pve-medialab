@@ -26,6 +26,7 @@ Tasks to be performed are:
 - [ ] 9.00 Radarr LXC - Ubuntu 18.04
 - [ ] 10.00 Lidarr LXC - Ubuntu 18.04
 - [ ] 11.00 Lazylibrarian LXC - Ubuntu 18.04
+- [ ] 12.00 Ombi LXC - Ubuntu 18.04
 
 ## About LXC Media Installations
 CentosOS7 is my preferred linux distribution but for media software Ubuntu seems to be the most supported linux distribution. I have used Ubuntu 18.04 for all media LXC's.
@@ -1865,3 +1866,171 @@ sudo systemctl restart lazy.service
 Browse to http://192.168.50.118:5299 to start using Lazylibrarian (aka lazy).
 
 Thats it. Now go and complete [LazyLibrarian Build](https://github.com/ahuacate/lazylibrarian/blob/master/README.md#lazylibrarian-build) for your first time build **OR** use the restore instructions [3.00 Restore Lazylibrarian backup](https://github.com/ahuacate/lazylibrarian/blob/master/README.md#300-restore-lazylibrarian-backup).
+
+
+## 12.00 Ombi LXC - Ubuntu 18.04
+Ombi is a self-hosted web application that automatically gives your shared Jellyfin users the ability to request content by themselves! Ombi can be linked to multiple TV Show and Movie DVR tools to create a seamless end-to-end experience for your users. 
+
+### 12.01 Create a Ubuntu 18.04 LXC for Lazylibrarian
+Now using the web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
+
+| Create: LXC Container | Value |
+| :---  | :---: |
+| **General**
+| Node | `typhoon-01` |
+| CT ID |`119`|
+| Hostname |`ombi`|
+| Unprivileged container | `☑` |
+| Resource Pool | Leave Blank
+| Password | Enter your pasword
+| Password | Enter your pasword
+| SSH Public key | Add one if you want to
+| **Template**
+| Storage | `local` |
+| Template | `ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz` |
+| **Root Disk**
+| Storage |`typhoon-share`|
+| Disk Size |`10 GiB`|
+| **CPU**
+| Cores |`1`|
+| CPU limit | Leave Blank
+| CPU Units | `1024`
+| **Memory**
+| Memory (MiB) |`1024`|
+| Swap (MiB) |`256`|
+| **Network**
+| Name | `eth0`
+| Mac Address | `auto`
+| Bridge | `vmbr0`
+| VLAN Tag | `50`
+| Rate limit (MN/s) | Leave Default (unlimited)
+| Firewall | `☑`
+| IPv4 | `☑  Static`
+| IPv4/CIDR |`192.168.50.119/24`|
+| Gateway (IPv4) |`192.168.50.5`|
+| IPv6 | Leave Blank
+| IPv4/CIDR | Leave Blank |
+| Gateway (IPv6) | Leave Blank |
+| **DNS**
+| DNS domain | Leave Default (use host settings)
+| DNS servers | Leave Default (use host settings)
+| **Confirm**
+| Start after Created | `☐`
+
+And Click `Finish` to create your Lazylibrarian LXC. The above will create the Lazylibrarian LXC without any of the required local Mount Points to the host.
+
+If you prefer you can simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following to achieve the same thing PLUS it will automatically add the required Mount Points (note, have your root password ready for Lazylibrarian LXC):
+
+**Script (A):** Including LXC Mount Points
+```
+pct create 119 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname ombi --cpulimit 1 --cpuunits 1024 --memory 2048 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.119/24,type=veth --ostype ubuntu --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=3 --password --mp0 /mnt/pve/cyclone-01-backup,mp=/mnt/backup --mp1 /mnt/pve/cyclone-01-public,mp=/mnt/public
+```
+
+**Script (B):** Excluding LXC Mount Points:
+```
+pct create 119 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 1 --hostname ombi --cpulimit 1 --cpuunits 1024 --memory 1024 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.119/24,type=veth --ostype ubuntu --rootfs typhoon-share:10 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
+```
+
+### 12.02 Setup Ombi Mount Points - Ubuntu 18.04
+If you used **Script (B)** in Section 12.1 then you have no Moint Points.
+
+Please note your Proxmox Ombi (lazy) LXC **MUST BE** in the shutdown state before proceeding.
+
+To create the Mount Points use the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
+```
+pct set 119 -mp0 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
+pct set 119 -mp1 /mnt/pve/cyclone-01-public,mp=/mnt/public
+```
+
+### 12.03 Unprivileged container mapping - Ubuntu 18.04
+To change the Ombi container mapping we change the container UID and GID in the file `/etc/pve/lxc/119.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
+
+```
+# User media | Group medialab
+echo -e "lxc.idmap: u 0 100000 1605
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1605 1605 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/119.conf &&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
+```
+
+### 12.04 Create new "media" user - Ubuntu 18.04
+
+First start LXC 119 (ombi) with the Proxmox web interface go to `typhoon-01` > `119 (ombi)` > `START`.
+
+Then with the Proxmox web interface go to `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
+```
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -M media
+```
+
+### 12.05 Create Ombi content folders on your NAS
+To create Ombi backup folders on your NAS use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+```
+mkdir -p /mnt/backup/ombi &&
+chown 1605:65605 /mnt/backup/ombi
+```
+
+### 12.06 Configuring Ombi machine locales - Ubuntu 18.04
+The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
+
+```
+echo -e "LANG=en_US.UTF-8
+LC_ALL=en_US.UTF-8" > /etc/default/locale &&
+sudo locale-gen en_US.UTF-8 &&
+sudo reboot
+```
+
+### 12.06 Install Ombi
+Go to the Proxmox web interface `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
+
+```
+# Update
+sudo apt update -y &&
+# Install gnupg
+sudo apt install gnupg -y &&
+# Add the apt repository to the apt sources list
+echo "deb [arch=amd64,armhf] http://repo.ombi.turd.me/stable/ jessie main" | sudo tee "/etc/apt/sources.list.d/ombi.list" &&
+# Install Ombi keys
+wget -qO - https://repo.ombi.turd.me/pubkey.txt | sudo apt-key add - &&
+# Update and Install Ombi
+sudo apt update -y && sudo apt install ombi -y &&
+sudo chown -R 1605:65605 /opt/Ombi
+```
+At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
+
+### 12.07 Create Ombi Service file - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
+```
+sudo echo -e "[Unit]
+Description=Ombi - PMS Requests System
+After=network-online.target
+
+[Service]
+User=media
+Group=medialab
+WorkingDirectory=/opt/Ombi/
+ExecStart=/opt/Ombi/Ombi
+Type=simple
+TimeoutStopSec=30
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/ombi.service &&
+sleep 2 &&
+sudo systemctl enable ombi.service &&
+sleep 2 &&
+sudo systemctl restart ombi.service
+```
+
+### 112.08 Setup Ombi
+Browse to http://192.168.50.119:5000 to start using Ombi.
