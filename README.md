@@ -819,6 +819,14 @@ tar zxvf /opt/Jackett.Binaries.LinuxAMDx64.tar.gz &&
 sudo rm /opt/Jackett.Binaries.LinuxAMDx64.tar.gz
 ```
 
+### 5.02 Create Jackett Home Folders
+Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+
+```
+mkdir -m 775 -p /home/media/.config/Jackett &&
+chown 1605:65605 /home/media/.config/Jackett
+```
+
 ### 5.02 Create Jackett Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
@@ -850,9 +858,9 @@ With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` 
 # Here we update the Jackett Server configuration file
 sudo systemctl stop jackett &&
 sleep 5 &&
-wget -q https://raw.githubusercontent.com/ahuacate/jackett/master/ServerConfig.json -O /home/media/.config/Jackett/ServerConfig.json &&
-chown 1605:65605 /home/media/.config/Jackett/ServerConfig.json &&
-# Here we update the jacket indexers
+# Set the API Key
+sed -i 's|"APIKey":.*|"APIKey": "s9tcqkddvjpkmis824pp6ucgpwcd2xnc",|g' /home/media/.config/Jackett/ServerConfig.json
+# Here import other indexers
 mkdir -m 775 -p /home/media/.config/Jackett/Indexers &&
 chown 1605:65605 /home/media/.config/Jackett/Indexers &&
 svn checkout https://github.com/ahuacate/jackett/trunk/Indexers /home/media/.config/Jackett/Indexers &&
