@@ -167,14 +167,14 @@ lxc.idmap: g 101 100101 65435
 lxc.idmap: u 65604 65604 100
 lxc.idmap: g 65604 65604 100
 EOF
-grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
-grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
-grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid
 grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 
 # Create a backup folder on NAS
 msg "Creating backup folder on NAS..."
-mkdir -p /mnt/pve/cyclone-01-backup/$HOSTNAME &&
+mkdir -p /mnt/pve/cyclone-01-backup/$HOSTNAME
 chown 1607:65607 /mnt/pve/cyclone-01-backup/$HOSTNAME
 
 # Start container
