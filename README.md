@@ -803,7 +803,36 @@ Browse to http://192.168.30.113:8112 to start using Deluge. Your Deluge default 
 ## 5.00 Jackett LXC - Ubuntu 18.04
 Jackett works as a proxy server: it translates queries from apps (Sonarr, Radarr, Lidarr etc) into tracker-site-specific http queries, parses the html response, then sends results back to the requesting software. This allows for getting recent uploads (like RSS) and performing searches. Jackett is a single repository of maintained indexer scraping & translation logic - removing the burden from other apps.
 
-This is installed on the Deluge LXC container.
+### 5.01 Download the Ubuntu LXC template - Ubuntu 18.04
+First you need to add Ubuntu 18.04 LXC to your Proxmox templates if you have'nt already done so. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
+
+Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
+```
+wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
+```
+
+### 5.02 Rapid Jackett Installation - Ubuntu 18.04
+
+To create a new Ubuntu 18.04 LXC container on Proxmox and setup Jackett to run inside of it, run the following in a SSH connection or use the Proxmox WebGUI shell `Proxmox Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
+
+```
+bash -c "$(wget -qLO - https://github.com/ahuacate/proxmox-lxc-smarthome/raw/master/scripts/hassio_create_container.sh)"
+```
+
+During the setup process you will be prompted for inputs to configure your new LXC (i.e IPv4 address, CTID, gateway, disk size, password or use our preset defaults).
+
+### 5.03 Jackett default console login credentials - Ubuntu 18.04
+
+Your default login password was set during the rapid installation process. If you did'nt change the default password here is your console login details.
+
+Username: root
+Password: ahuacate
+
+To change your default root password use the CLI command passwd.
+
+### 4.03 Jackett WebGUI HTTP Access - Ubuntu 18.04
+
+Home Assistant will be available at http://192.168.50.120:9117
 
 ### 5.01 Install Jackett - Ubuntu 18.04
 This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
