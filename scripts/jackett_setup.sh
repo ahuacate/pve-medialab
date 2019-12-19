@@ -32,7 +32,8 @@ apt-get -qqy upgrade &>/dev/null
 # Install prerequisites
 msg "Installing prerequisites..."
 apt-get -qqy install \
-    python-urllib3 python3-openssl libcurl4-openssl-dev bzip2 curl subversion >/dev/null
+    python-urllib3 python3-openssl libcurl4-openssl-dev bzip2 subversion >/dev/null
+sudo apt-get -y install curl >/dev/null
 
 # Download Jackett
 msg "Downloading Jackett..."
