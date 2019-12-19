@@ -32,32 +32,40 @@ apt-get -qqy upgrade &>/dev/null
 # Install prerequisites
 msg "Installing prerequisites..."
 apt-get -qqy install \
-    avahi-daemon curl jq network-manager &>/dev/null
+    python-urllib3 python3-openssl libcurl4-openssl-dev bzip2 subversion >/dev/null
 
-# Install Docker
-msg "Installing Docker..."
-sh <(curl -sSL https://get.docker.com) &>/dev/null
+# Download Jackett
+msg "Downloading Jackett..."
+cd /opt
+sudo curl -L -O $( curl -s https://api.github.com/repos/Jackett/Jackett/releases | grep Jackett.Binaries.LinuxAMDx64.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) >/dev/null
 
-# Install Hass.io
-msg "Installing Hass.io..."
-bash <(curl -sL https://github.com/home-assistant/hassio-installer/raw/master/hassio_install.sh) &>/dev/null
+# Install Jackett
+msg "Installing Jackett..."
+tar zxvf /opt/Jackett.Binaries.LinuxAMDx64.tar.gz >/dev/null
+sudo rm /opt/Jackett.Binaries.LinuxAMDx64.tar.gz >/dev/null
 
-# Fix for Hass.io Supervisor btime check
-mkdir -p /etc/systemd/system/hassio-supervisor.service.wants
-cat << EOF > /etc/systemd/system/hassio-fix-btime.service
+# Create Jackett Service file
+cat << EOF > /etc/systemd/system/jackett.service
 [Unit]
-Description=Removal of Hass.io last_boot parameter from config.json
-Before=hassio-supervisor.service
+Description=Jackett Daemon
+After=network.target
 
 [Service]
-Type=oneshot
-ExecStart=/bin/bash -c 'sed -i -e "/last_boot/\x20s/\x5c\x22\x5c\x28\x5b0\x2d9\x5d.\x2a\x5c\x29\x5c\x22/\x5c\x22\x5c\x22/" /usr/share/hassio/config.json'
-RemainAfterExit=yes
+SyslogIdentifier=jackett
+Restart=always
+RestartSec=5
+Type=simple
+User=media
+Group=medialab
+Environment=XDG_CONFIG_HOME=/home/media/.config
+WorkingDirectory=/opt/Jackett
+ExecStart=/opt/Jackett/jackett --NoRestart
+TimeoutStopSec=20
 
 [Install]
 WantedBy=multi-user.target
 EOF
-ln -s /etc/systemd/system/{hassio-fix-btime.service,hassio-supervisor.service.wants/}
+
 
 # Install hassio-cli
 msg "Installing hassio-cli..."
