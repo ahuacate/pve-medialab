@@ -44,7 +44,15 @@ msg "Installing Jackett..."
 tar zxvf /opt/Jackett.Binaries.LinuxAMDx64.tar.gz >/dev/null
 sudo rm /opt/Jackett.Binaries.LinuxAMDx64.tar.gz >/dev/null
 
+# Create Jackett home folders
+msg "Creating Jackett home folders..."
+mkdir -m 775 -p /home/media/.config/Jackett/Indexers
+chown 1605:65605 /home/media/.config
+chown 1605:65605 /home/media/.config/Jackett
+chown 1605:65605 /home/media/.config/Jackett/Indexers
+
 # Create Jackett Service file
+msg "Creating Jackett service file..."
 cat << EOF > /etc/systemd/system/jackett.service
 [Unit]
 Description=Jackett Daemon
@@ -65,29 +73,26 @@ TimeoutStopSec=20
 [Install]
 WantedBy=multi-user.target
 EOF
+sleep 1
+sudo systemctl enable jackett
+sleep 1
+sudo systemctl start jackett
 
+# Stop Jackett
+msg "Stopping Jackett..."
+sudo systemctl stop jackett
+sleep 5
 
-# Install hassio-cli
-msg "Installing hassio-cli..."
-docker pull homeassistant/amd64-hassio-cli >/dev/null
-ARCH=$(dpkg --print-architecture)
-HASSIO_CLI_PATH=/usr/sbin/hassio-cli
-cat << EOF > $HASSIO_CLI_PATH
-#!/bin/bash
-set -o errexit
+# Set Jackey API key
+msg "Setting Jackett API key..."
+sed -i 's|"APIKey":.*|"APIKey": "s9tcqkddvjpkmis824pp6ucgpwcd2xnc",|g' /home/media/.config/Jackett/ServerConfig.json
 
-HASSIO_TOKEN=\$(jq --raw-output '.access_token' /usr/share/hassio/homeassistant.json)
-
-docker container run --rm -it --init \
-  --security-opt apparmor="docker-default" \
-  -e HASSIO_TOKEN=\${HASSIO_TOKEN} \
-  --network=hassio \
-  --add-host hassio:172.30.32.2 \
-  homeassistant/${ARCH}-hassio-cli \
-  /bin/bash -c "sed -i '/HASSIO_TOKEN/ s/^/#/' /bin/cli.sh; /bin/cli.sh"
-EOF
-chmod +x $HASSIO_CLI_PATH
+# Downloading and Installing preconfigured Indexers
+msg "Installing preconfigured Jackett indexers..."
+svn checkout https://github.com/ahuacate/jackett/trunk/Indexers /home/media/.config/Jackett/Indexers
+chown 1605:65605 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak}
+sudo systemctl restart jackett
 
 # Cleanup container
 msg "Cleanup..."
-rm -rf /setup.sh /var/{cache,log}/* /var/lib/apt/lists/*
+rm -rf /*_setup.sh /var/{cache,log}/* /var/lib/apt/lists/*
