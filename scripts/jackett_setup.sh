@@ -83,7 +83,7 @@ msg "Stopping Jackett..."
 sudo systemctl stop jackett
 sleep 5
 
-# Set Jackey API key
+# Set Jackett API key
 msg "Setting Jackett API key..."
 sed -i 's|"APIKey":.*|"APIKey": "s9tcqkddvjpkmis824pp6ucgpwcd2xnc",|g' /home/media/.config/Jackett/ServerConfig.json
 
