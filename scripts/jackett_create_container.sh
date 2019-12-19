@@ -116,7 +116,7 @@ info "Container Virtual Disk is $DISK_SIZE."
 echo
 
 # Set container Memory
-read -p "Enter amount of container Memory (Gb): " -e -i 512 RAM
+read -p "Enter amount of container Memory (Mb): " -e -i 512 RAM
 info "Container allocated memory is $RAM."
 echo
 
