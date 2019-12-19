@@ -214,8 +214,8 @@ msg "Installing prerequisites..."
 
 # Setup container for Software script
 msg "Starting $HOSTNAME software installation script..."
-pct push $CTID $HOSTNAME_setup.sh /$HOSTNAME_setup.sh -perms 755
-pct exec $CTID -- bash -c "/$HOSTNAME_setup.sh"
+pct push $CTID jackett_setup.sh /jackett_setup.sh -perms 755
+pct exec $CTID -- bash -c "/jackett_setup.sh"
 
 # Get network details and show completion message
 IP=$(pct exec $CTID ip a s dev eth0 | sed -n '/inet / s/\// /p' | awk '{print $2}')
