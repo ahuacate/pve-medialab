@@ -60,7 +60,7 @@ TEMP_DIR=$(mktemp -d)
 pushd $TEMP_DIR >/dev/null
 
 # Download setup script
-wget -qL https://github.com/whiskerz007/proxmox_hassio_lxc/raw/master/setup.sh
+wget -qL https://github.com/ahuacate/proxmox-lxc-media/raw/master/scripts/jackett_setup.sh
 
 # Detect modules and automatically load at boot
 load_module aufs
@@ -91,37 +91,42 @@ echo -e "In the next step you must enter your desired Proxmox container settings
 echo
 
 # Set container IPv4 Address
-read -p "Enter IPv4 address: " -e -i 192.168.110.131/24 IP
+read -p "Enter IPv4 address: " -e -i 192.168.50.120/24 IP
 info "Container IPv4 address is $IP."
 echo
 
 # Set container VLAN tag
-read -p "Enter VLAN ID: " -e -i 110 TAG
+read -p "Enter VLAN ID: " -e -i 50 TAG
 info "Container VLAN is $TAG."
 echo
 
 # Set container Gateway IPv4 Address
-read -p "Enter Gateway IPv4 address: " -e -i 192.168.110.5 GW
+read -p "Enter Gateway IPv4 address: " -e -i 192.168.50.5 GW
 info "Container Gateway IPv4 address is $GW."
 echo
 
 # Set container ID
-read -p "Enter container CTID: " -e -i 131 CTID
+read -p "Enter container CTID: " -e -i 120 CTID
 info "Container ID is $CTID."
 echo
 
 # Set container Virtual Disk Size
-read -p "Enter container Virtual Disk Size (Gb): " -e -i 30 DISK_SIZE
+read -p "Enter container Virtual Disk Size (Gb): " -e -i 8 DISK_SIZE
 info "Container Virtual Disk is $DISK_SIZE."
 echo
 
 # Set container Memory
-read -p "Enter amount of container Memory (Gb): " -e -i 2048 RAM
+read -p "Enter amount of container Memory (Gb): " -e -i 512 RAM
 info "Container allocated memory is $RAM."
 echo
 
+# Set container Hostname
+read -p "Enter your LXC Hostname: " -e -i jackett HOSTNAME
+info "Container hostname is $HOSTNAME."
+echo
+
 # Set container password
-read -p "Enter container root password: " -e -i hassio PWD
+read -p "Enter container root password: " -e -i ahuacate PWD
 info "Container root password is '$PWD'."
 echo
 
@@ -136,37 +141,41 @@ TEMPLATE="${TEMPLATES[-1]}"
 pveam download local $TEMPLATE >/dev/null ||
   die "A problem occured while downloading the LXC template."
 ARCH=$(dpkg --print-architecture)
-HOSTNAME=hassio
+#HOSTNAME=jackett
 TEMPLATE_STRING="local:vztmpl/${TEMPLATE}"
 
 # Create LXC
 msg "Creating LXC container..." 
-pct create $CTID $TEMPLATE_STRING --arch $ARCH --cores 1 --hostname $HOSTNAME --cpulimit 1 --memory $RAM --features nesting=1 \
+pct create $CTID $TEMPLATE_STRING --arch $ARCH --cores 1 --hostname $HOSTNAME --cpulimit 1 --memory $RAM \
   --net0 name=eth0,bridge=vmbr0,tag=$TAG,firewall=1,gw=$GW,ip=$IP,type=veth \
-  --ostype $OSTYPE --rootfs $STORAGE:$DISK_SIZE --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password $PWD >/dev/null
+  --ostype $OSTYPE --rootfs $STORAGE:$DISK_SIZE --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password $PWD >/dev/null
 
 # Add LXC mount points
-pct set $CTID -mp0 /mnt/pve/cyclone-01-backup/hassio,mp=/mnt/backup
+pct set $CTID -mp0 /mnt/pve/cyclone-01-backup/$HOSTNAME,mp=/mnt/backup
 pct set $CTID -mp1 /mnt/pve/cyclone-01-public,mp=/mnt/public
 
-# Modify LXC permissions to support Docker
-LXC_CONFIG=/etc/pve/lxc/${CTID}.conf
-cat <<EOF >> $LXC_CONFIG
-lxc.cgroup.devices.allow: a
-lxc.cap.drop:
+# Unprivileged container mapping
+cat << EOF >> /etc/pve/lxc/$CTID.conf
+# User media | Group medialab
+lxc.idmap: u 0 100000 1605
+lxc.idmap: g 0 100000 100
+lxc.idmap: u 1605 1605 1
+lxc.idmap: g 100 100 1
+lxc.idmap: u 1606 101606 63930
+lxc.idmap: g 101 100101 65435
+# Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704
+lxc.idmap: u 65604 65604 100
+lxc.idmap: g 65604 65604 100
 EOF
+grep -qxF 'root:65604:100' /etc/subuid || echo 'root:65604:100' >> /etc/subuid &&
+grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &&
+grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
+grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 
-# Add access to ttyACM,ttyS,ttyUSB,net/tun devices
-LXC_CONFIG=/etc/pve/lxc/${CTID}.conf
-cat <<'EOF' >> $LXC_CONFIG
-lxc.autodev: 1
-lxc.hook.autodev: bash -c 'for dev in $(ls /dev/tty{ACM,S,USB}* 2>/dev/null) $([ -d "/dev/bus" ] && find /dev/bus -type c) /dev/mem /dev/net/tun; do mkdir -p $(dirname ${LXC_ROOTFS_MOUNT}${dev}); for link in $(udevadm info --query=property $dev | sed -n "s/DEVLINKS=//p"); do mkdir -p ${LXC_ROOTFS_MOUNT}$(dirname $link); cp -dR $link ${LXC_ROOTFS_MOUNT}${link}; done; cp -dR $dev ${LXC_ROOTFS_MOUNT}${dev}; done'
-EOF
-
-# Create a hassio backup folder on NAS
-msg "Creating hassio backup folder on NAS..."
-mkdir -p /mnt/pve/cyclone-01-backup/hassio &&
-chown 1607:65607 /mnt/pve/cyclone-01-backup/hassio
+# Create a backup folder on NAS
+msg "Creating backup folder on NAS..."
+mkdir -p /mnt/pve/cyclone-01-backup/$HOSTNAME &&
+chown 1607:65607 /mnt/pve/cyclone-01-backup/$HOSTNAME
 
 # Start container
 msg "Starting container..."
@@ -174,8 +183,8 @@ pct start $CTID
 
 # Create new container users and groups
 msg "Creating new container users and groups..."
-pct exec $CTID -- groupadd -g 65607 privatelab
-pct exec $CTID -- useradd -u 1607 -g privatelab -m typhoon
+pct exec $CTID -- groupadd -g 65605 medialab
+pct exec $CTID -- useradd -u 1605 -g medialab -m media
 
 # Set Container locale
 msg "Setting container locale..."
@@ -201,26 +210,21 @@ pct exec $CTID -- apt-get -qqy upgrade >/dev/null
 
 # Install prerequisites
 msg "Installing prerequisites..."
-pct exec $CTID -- apt-get install -y software-properties-common >/dev/null
-pct exec $CTID -- apt-get install -y apparmor-utils >/dev/null
-pct exec $CTID -- apt-get install -y apt-transport-https >/dev/null
-pct exec $CTID -- apt-get install -y ca-certificates >/dev/null
-pct exec $CTID -- apt-get install -y socat >/dev/null
-# pct exec $CTID -- apt-get install -y python3-pip >/dev/null
+#pct exec $CTID -- apt-get install -y software-properties-common >/dev/null
 
-# Setup container for Hass.io
-msg "Starting whiskerz007 hassio installation script..."
-pct push $CTID setup.sh /setup.sh -perms 755
-pct exec $CTID -- bash -c "/setup.sh"
+# Setup container for Software script
+msg "Starting software installation script..."
+pct push $CTID jackett_setup.sh /jackett_setup.sh -perms 755
+pct exec $CTID -- bash -c "/jackett_setup.sh"
 
 # Get network details and show completion message
 IP=$(pct exec $CTID ip a s dev eth0 | sed -n '/inet / s/\// /p' | awk '{print $2}')
-info "Successfully created Hass.io LXC to $CTID."
+info "Successfully created $HOSTNAME LXC to $CTID."
 msg "
 
-Hass.io is reachable by going to the following URLs.
+$HOSTNAME is reachable by going to the following URLs.
 
-      http://${IP}:8123
-      http://${HOSTNAME}.local:8123
+      http://${IP}:9117
+      http://${HOSTNAME}.local:9117
 
 "
