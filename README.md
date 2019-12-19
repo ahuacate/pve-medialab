@@ -816,7 +816,7 @@ wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_
 To create a new Ubuntu 18.04 LXC container on Proxmox and setup Jackett to run inside of it, run the following in a SSH connection or use the Proxmox WebGUI shell `Proxmox Datacenter` > `typhoon-01` > `>_ Shell` and type the following:
 
 ```
-bash -c "$(wget -qLO - https://github.com/ahuacate/proxmox-lxc-smarthome/raw/master/scripts/hassio_create_container.sh)"
+bash -c "$(wget -qLO - https://github.com/ahuacate/proxmox-lxc-media/raw/master/scripts/jackett_create_container.sh)"
 ```
 
 During the setup process you will be prompted for inputs to configure your new LXC (i.e IPv4 address, CTID, gateway, disk size, password or use our preset defaults).
