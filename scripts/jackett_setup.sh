@@ -78,6 +78,7 @@ sleep 1
 sudo systemctl enable jackett
 sleep 1
 sudo systemctl start jackett
+sleep 5
 
 # Stop Jackett
 msg "Stopping Jackett..."
@@ -85,15 +86,15 @@ sudo systemctl stop jackett
 sleep 5
 
 # Set Jackett API key
-#msg "Setting Jackett API key..."
-#sed -i 's|"APIKey":.*|"APIKey": "s9tcqkddvjpkmis824pp6ucgpwcd2xnc",|g' /home/media/.config/Jackett/ServerConfig.json
+msg "Setting Jackett API key..."
+sed -i 's|"APIKey":.*|"APIKey": "s9tcqkddvjpkmis824pp6ucgpwcd2xnc",|g' /home/media/.config/Jackett/ServerConfig.json
 
 # Downloading and Installing preconfigured Indexers
-#msg "Installing preconfigured Jackett indexers..."
-#svn checkout https://github.com/ahuacate/jackett/trunk/Indexers /home/media/.config/Jackett/Indexers
-#chown 1605:65605 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak}
-#sudo systemctl restart jackett
+msg "Installing preconfigured Jackett indexers..."
+svn checkout https://github.com/ahuacate/jackett/trunk/Indexers /home/media/.config/Jackett/Indexers
+chown 1605:65605 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak}
+sudo systemctl restart jackett
 
 # Cleanup container
-#msg "Cleanup..."
-#rm -rf /*_setup.sh /var/{cache,log}/* /var/lib/apt/lists/*
+msg "Cleanup..."
+rm -rf /*_setup.sh /var/{cache,log}/* /var/lib/apt/lists/*
