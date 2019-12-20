@@ -816,82 +816,15 @@ During the setup process you will be prompted for inputs to configure your new L
 ### 5.02 Jackett default console login credentials - Ubuntu 18.04
 
 Your default login password was set during the rapid installation process. If you did'nt change the default password here is your console login details.
-
+```
 Username: root
 Password: ahuacate
-
-To change your default root password use the CLI command passwd.
+```
+To change your default root password use the CLI command `passwd`.
 
 ### 5.03 Jackett WebGUI HTTP Access - Ubuntu 18.04
 
-Home Assistant will be available at http://192.168.50.120:9117
-
-
-### 5.01 Install Jackett - Ubuntu 18.04
-This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
-
-Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
-
-```
-sudo apt install python-urllib3 python3-openssl -y &&
-sudo apt install curl -y &&
-cd /opt &&
-sudo curl -L -O $( curl -s https://api.github.com/repos/Jackett/Jackett/releases | grep Jackett.Binaries.LinuxAMDx64.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
-tar zxvf /opt/Jackett.Binaries.LinuxAMDx64.tar.gz &&
-sudo rm /opt/Jackett.Binaries.LinuxAMDx64.tar.gz
-```
-
-### 5.02 Create Jackett Home Folders
-Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
-
-```
-mkdir -m 775 -p /home/media/.config/Jackett &&
-chown 1605:65605 /home/media/.config/Jackett
-```
-
-### 5.02 Create Jackett Service file - Ubuntu 18.04
-Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
-```
-echo -e "[Unit]
-Description=Jackett Daemon
-After=network.target
-
-[Service]
-SyslogIdentifier=jackett
-Restart=always
-RestartSec=5
-Type=simple
-User=media
-Group=medialab
-WorkingDirectory=/opt/Jackett
-ExecStart=/opt/Jackett/jackett --NoRestart
-TimeoutStopSec=20
-
-[Install]
-WantedBy=multi-user.target" > /etc/systemd/system/jackett.service &&
-sleep 2 &&
-sudo systemctl enable jackett &&
-sleep 2 &&
-sudo systemctl start jackett
-```
-### 5.03 Download the latest Jackett Server configuration file & Indexers
-With the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
-```
-# Here we update the Jackett Server configuration file
-sudo systemctl stop jackett &&
-sleep 5 &&
-# Set the API Key
-sed -i 's|"APIKey":.*|"APIKey": "s9tcqkddvjpkmis824pp6ucgpwcd2xnc",|g' /home/media/.config/Jackett/ServerConfig.json
-# Here import other indexers
-mkdir -m 775 -p /home/media/.config/Jackett/Indexers &&
-chown 1605:65605 /home/media/.config/Jackett/Indexers &&
-svn checkout https://github.com/ahuacate/jackett/trunk/Indexers /home/media/.config/Jackett/Indexers &&
-chown 1605:65605 {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak} &&
-sudo systemctl restart jackett
-```
-
-### 5.04 Setup Jackett 
-Browse to http://192.168.30.113:9117 to start using Jackett.
+Jackett will be available at http://192.168.50.120:9117
 
 ---
 
