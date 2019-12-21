@@ -85,12 +85,14 @@ We need to create a `media` user in all media LXC's which require shared data (N
 (A) To create a user without a Home folder
 ```
 groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -M media
+useradd -u 1605 -g medialab -M media &&
+usermod -s /bin/bash media
 ```
 (B) To create a user with a Home folder
 ```
 groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -m media
+useradd -u 1605 -g medialab -m media &&
+usermod -s /bin/bash media
 ```
 Note: We do not need to create a new user group because `users` is a default linux group with GID value 100.
 
@@ -327,6 +329,7 @@ With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell
 # Create username media and group medialab
 groupadd -g 65605 medialab &&
 useradd -u 1605 -g medialab -M media &&
+usermod -s /bin/bash media &&
 # Add jellyfin to medialab
 sudo usermod -a -G medialab jellyfin
 ```
@@ -465,7 +468,8 @@ Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Sh
 ```
 sudo apt-get update &&
 groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -M media
+useradd -u 1605 -g medialab -M media &&
+usermod -s /bin/bash media
 ```
 
 ### 3.07 Install NZBget - Ubuntu 18.04
@@ -665,7 +669,8 @@ Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Sh
 ```
 sudo apt-get update &&
 groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -m media
+useradd -u 1605 -g medialab -m media &&
+usermod -s /bin/bash media
 ```
 Note: This time we create a home folder for user `media` - required by Deluge.
 
@@ -950,7 +955,8 @@ First start LXC 114 (nzbget) with the Proxmox web interface go to `typhoon-01` >
 Then with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -M media
+useradd -u 1605 -g medialab -M media &&
+usermod -s /bin/bash media
 ```
 
 ### 6.07 Configuring Flexget machine locales - Ubuntu 18.04
@@ -1249,7 +1255,8 @@ First start LXC 115 (sonarr) with the Proxmox web interface go to `typhoon-01` >
 Then with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -m media
+useradd -u 1605 -g medialab -m media &&
+usermod -s /bin/bash media
 ```
 Note: This time we create a home folder for user media - required by Sonarr.
 
@@ -1437,7 +1444,8 @@ First start LXC 116 (radarr) with the Proxmox web interface go to `typhoon-01` >
 Then with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -m media
+useradd -u 1605 -g medialab -m media &&
+usermod -s /bin/bash media
 ```
 Note: This time we create a home folder for user media - required by Radarr.
 
@@ -1616,7 +1624,8 @@ First start LXC 117 (lidarr) with the Proxmox web interface go to `typhoon-01` >
 Then with the Proxmox web interface go to `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -m media
+useradd -u 1605 -g medialab -m media &&
+usermod -s /bin/bash media
 ```
 Note: This time we create a home folder for user media - required by Lidarr.
 
@@ -1777,7 +1786,8 @@ First start LXC 118 (lazy) with the Proxmox web interface go to `typhoon-01` > `
 Then with the Proxmox web interface go to `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -M media
+useradd -u 1605 -g medialab -M media &&
+usermod -s /bin/bash media
 ```
 
 ### 11.05 Create Lazylibrarian content folders on your NAS
@@ -1932,7 +1942,8 @@ First start LXC 119 (ombi) with the Proxmox web interface go to `typhoon-01` > `
 Then with the Proxmox web interface go to `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -M media
+useradd -u 1605 -g medialab -M media &&
+usermod -s /bin/bash media
 ```
 
 ### 12.05 Create Ombi content folders on your NAS
