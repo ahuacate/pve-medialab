@@ -185,6 +185,7 @@ pct start $CTID
 msg "Creating new container users and groups..."
 pct exec $CTID -- groupadd -g 65605 medialab
 pct exec $CTID -- useradd -u 1605 -g medialab -m media
+pct exec $CTID -- usermod -s /bin/bash media
 
 # Set Container locale
 msg "Setting container locale..."
