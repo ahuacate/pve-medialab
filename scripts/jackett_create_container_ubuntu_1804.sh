@@ -60,7 +60,7 @@ TEMP_DIR=$(mktemp -d)
 pushd $TEMP_DIR >/dev/null
 
 # Download setup script
-wget -qL https://github.com/ahuacate/proxmox-lxc-media/raw/master/scripts/jackett_setup.sh
+wget -qL https://github.com/ahuacate/proxmox-lxc-media/raw/master/scripts/jackett_setup_ubuntu_1804.sh
 
 # Detect modules and automatically load at boot
 load_module aufs
@@ -214,8 +214,8 @@ pct exec $CTID -- apt-get -qqy upgrade >/dev/null
 
 # Setup container for Software script
 msg "Starting $HOSTNAME software installation script..."
-pct push $CTID jackett_setup.sh /jackett_setup.sh -perms 755
-pct exec $CTID -- bash -c "/jackett_setup.sh"
+pct push $CTID jackett_setup_ubuntu_1804.sh /jackett_setup_ubuntu_1804.sh -perms 755
+pct exec $CTID -- bash -c "/jackett_setup_ubuntu_1804.sh"
 
 # Get network details and show completion message
 IP=$(pct exec $CTID ip a s dev eth0 | sed -n '/inet / s/\// /p' | awk '{print $2}')
