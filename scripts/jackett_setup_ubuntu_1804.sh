@@ -97,4 +97,4 @@ sudo systemctl restart jackett
 
 # Cleanup container
 msg "Cleanup..."
-rm -rf /*_setup.sh /var/{cache,log}/* /var/lib/apt/lists/*
+rm -rf /*_setup_ubuntu_1804.sh /var/{cache,log}/* /var/lib/apt/lists/*
