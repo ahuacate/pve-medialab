@@ -209,7 +209,7 @@ pct exec $CTID -- apt-get update >/dev/null
 pct exec $CTID -- apt-get -qqy upgrade >/dev/null
 
 # Install prerequisites
-msg "Installing prerequisites..."
+#msg "Installing prerequisites..."
 #pct exec $CTID -- apt-get install -y software-properties-common >/dev/null
 
 # Setup container for Software script
