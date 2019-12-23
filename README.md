@@ -1248,11 +1248,23 @@ grep -qxF 'root:65604:100' /etc/subgid || echo 'root:65604:100' >> /etc/subgid &
 grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
 grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
+### 8.04 Ubuntu fix to avoid prompt to restart services during "apt apgrade"
+First start LXC 115 (sonarr) with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `START`.
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
+
+### 8.05 Update container OS
+Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
+```
+apt update &&
+apt upgrade -y
+```
 
 ### 8.04 Create new "media" user - Ubuntu 18.04
-First start LXC 115 (sonarr) with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `START`.
-
-Then with the Proxmox web interface go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
+Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
 useradd -u 1605 -g medialab -m media &&
@@ -1264,20 +1276,30 @@ Note: This time we create a home folder for user media - required by Sonarr.
 Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 
 ```
-sudo apt-get update -y &&
 sudo apt install unzip -y &&
 sudo apt install gnupg ca-certificates -y &&
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
 sudo echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
 sudo apt update -y &&
 sudo apt install mono-devel -y &&
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0xA236C58F409091A18ACA53CBEBFF6B99D9B78493 &&
-echo "deb http://apt.sonarr.tv/ master main" | sudo tee /etc/apt/sources.list.d/sonarr.list &&
-sudo apt update -y &&
-sudo apt install nzbdrone -y &&
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 2009837CBFFD68F45BC180471F4F90DE2A9B4BF8 &&
+echo "deb https://apt.sonarr.tv/ubuntu bionic main" | sudo tee /etc/apt/sources.list.d/sonarr.list &&
+sudo apt-get update -y &&
+sudo apt install sonarr &&
 sudo chown -R 1605:65605 /opt/NzbDrone
 ```
-At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
+During the installation you will prompted for user input.
+*  Do you want to continue? Answer "Y"
+*  You will be asked which user and group Sonarr must run as. It's **important to set these correctly** to avoid permission issues with your media files. Set as follows:
+
+| Sonarr Installation | Value |
+| :---  | :---: |
+| **User required inputs**
+| Sonarr User | `media` |
+| Sonarr Group | `medialab` |
+
+
+
 
 ### 8.06 Create Sonarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
