@@ -1488,6 +1488,8 @@ ExecStart=/usr/bin/mono --debug /opt/Radarr/Radarr.exe -nobrowser
 TimeoutStopSec=20
 KillMode=process
 Restart=on-failure
+# If Radarr does not restart after an update enable next line
+ExecStop=-/usr/bin/mono /tmp/radarr_update/Radarr.Update.exe "ps aux | grep Radarr | grep -v grep | awk '{ print $2 }'" /tmp/radarr_update /opt/Radarr/Radarr.exe
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/radarr.service &&
