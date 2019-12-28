@@ -15,18 +15,76 @@ Other Prerequisites are:
 - [x] pfSense is fully configured on typhoon-01 including both OpenVPN Gateways VPNGATE-LOCAL and VPNGATE-WORLD.
 
 Tasks to be performed are:
-- [ ] 1.00 Unprivileged LXC Containers and file permissions
-- [ ] 2.00 Jellyfin LXC - Ubuntu 18.04
-- [ ] 3.00 NZBget LXC - Ubuntu 18.04
-- [ ] 4.00 Deluge LXC - Ubuntu 18.04
-- [ ] 5.00 Jackett LXC - Ubuntu 18.04
-- [ ] 6.00 Flexget LXC - Ubuntu 18.04
-- [ ] 7.00 FileBot Installation on Deluge LXC - Ubuntu 18.04
-- [ ] 8.00 Sonarr LXC - Ubuntu 18.04
-- [ ] 9.00 Radarr LXC - Ubuntu 18.04
-- [ ] 10.00 Lidarr LXC - Ubuntu 18.04
-- [ ] 11.00 Lazylibrarian LXC - Ubuntu 18.04
-- [ ] 12.00 Ombi LXC - Ubuntu 18.04
+- [About LXC Media Installations](#about-lxc-media-installations)
+- [1.00 Unprivileged LXC Containers and file permissions](#100-unprivileged-lxc-containers-and-file-permissions)
+	- [1.01 Unprivileged container mapping - medialab](#101-unprivileged-container-mapping---medialab)
+	- [1.02 Allow a LXC to perform mapping on the Proxmox host - medialab](#102-allow-a-lxc-to-perform-mapping-on-the-proxmox-host---medialab)
+	- [1.03 Create a newuser `media` in a LXC](#103-create-a-newuser-media-in-a-lxc)
+- [2.00 Jellyfin LXC - Ubuntu 18.04](#200-jellyfin-lxc---ubuntu-1804)
+	- [2.01 Download the Ubuntu LXC template - Ubuntu 18.04](#201-download-the-ubuntu-lxc-template---ubuntu-1804)
+	- [2.02 Create a Ubuntu 18.04 LXC for Jellyfin - Ubuntu 18.04](#202-create-a-ubuntu-1804-lxc-for-jellyfin---ubuntu-1804)
+	- [2.03 Setup Jellyfin Mount Points - Ubuntu 18.04](#203-setup-jellyfin-mount-points---ubuntu-1804)
+	- [2.04 Unprivileged container mapping - Ubuntu 18.04](#204-unprivileged-container-mapping---ubuntu-1804)
+	- [2.05 Configure and Install VAAPI - Ubuntu 18.04](#205-configure-and-install-vaapi---ubuntu-1804)
+	- [2.06 Create a rc.local](#206-create-a-rclocal)
+	- [2.07 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04](#207-grant-jellyfin-lxc-container-access-to-the-proxmox-host-video-device---ubuntu-1804)
+	- [2.08 Ubuntu fix to avoid prompt to restart services during "apt apgrade"](#208-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade)
+	- [2.09 Install Jellyfin - Ubuntu 18.04](#209-install-jellyfin---ubuntu-1804)
+	- [2.10 Create and edit user groups- Ubuntu 18.04](#210-create-and-edit-user-groups--ubuntu-1804)
+	- [2.11 Start Jellyfin - Ubuntu 18.04](#211-start-jellyfin---ubuntu-1804)
+	- [2.12 Setup your Jellyfin Installation](#212-setup-your-jellyfin-installation)
+- [3.00 NZBget LXC - Ubuntu 18.04](#300-nzbget-lxc---ubuntu-1804)
+	- [3.01 Download the Ubuntu LXC template - Ubuntu 18.04](#301-download-the-ubuntu-lxc-template---ubuntu-1804)
+	- [3.02 Create a Ubuntu 18.04 LXC for NZBget - Ubuntu 18.04](#302-create-a-ubuntu-1804-lxc-for-nzbget---ubuntu-1804)
+	- [3.03 Setup NZBget Mount Points - Ubuntu 18.04](#303-setup-nzbget-mount-points---ubuntu-1804)
+	- [3.04 Unprivileged container mapping - Ubuntu 18.04](#304-unprivileged-container-mapping---ubuntu-1804)
+	- [3.05 Create NZBGet download folders on your ZFS typhoon-share - Ubuntu 18.04](#305-create-nzbget-download-folders-on-your-zfs-typhoon-share---ubuntu-1804)
+	- [3.06 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04](#306-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade---ubuntu-1804)
+	- [3.07 Container Update &  Upgrade - Ubuntu 18.04](#307-container-update---upgrade---ubuntu-1804)
+	- [3.07 Create new "media" user - Ubuntu 18.04](#307-create-new-media-user---ubuntu-1804)
+	- [3.07 Install NZBget - Ubuntu 18.04](#307-install-nzbget---ubuntu-1804)
+	- [3.08 Edit NZBget configuration file - Ubuntu 18.04](#308-edit-nzbget-configuration-file---ubuntu-1804)
+	- [3.09 Create NZBget Service file - Ubuntu 18.04](#309-create-nzbget-service-file---ubuntu-1804)
+	- [3.10 Setup NZBget](#310-setup-nzbget)
+- [4.00 Deluge LXC - Ubuntu 18.04](#400-deluge-lxc---ubuntu-1804)
+	- [4.01 Download the Ubuntu LXC template - Ubuntu 18.04](#401-download-the-ubuntu-lxc-template---ubuntu-1804)
+	- [4.02 Create a Ubuntu 18.04 LXC for Deluge - Ubuntu 18.04](#402-create-a-ubuntu-1804-lxc-for-deluge---ubuntu-1804)
+	- [4.03 Setup Deluge & Jacket Mount Points - Ubuntu 18.04](#403-setup-deluge--jacket-mount-points---ubuntu-1804)
+	- [4.04 Unprivileged container mapping - Ubuntu 18.04](#404-unprivileged-container-mapping---ubuntu-1804)
+	- [4.05 Create Deluge download folders on your ZFS typhoon-share - Ubuntu 18.04](#405-create-deluge-download-folders-on-your-zfs-typhoon-share---ubuntu-1804)
+	- [4.06 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04](#406-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade---ubuntu-1804)
+	- [4.07 Container Update &  Upgrade - Ubuntu 18.04](#407-container-update---upgrade---ubuntu-1804)
+	- [4.08 Create new "media" user - Ubuntu 18.04](#408-create-new-media-user---ubuntu-1804)
+	- [4.09 Configuring host machine locales - Ubuntu 18.04](#409-configuring-host-machine-locales---ubuntu-1804)
+	- [4.10 Install Deluge - Ubuntu 18.04](#410-install-deluge---ubuntu-1804)
+	- [4.11 Download Deluge Plugins and settings files - Ubuntu 18.04](#411-download-deluge-plugins-and-settings-files---ubuntu-1804)
+	- [4.12 Create Deluge Service file - Ubuntu 18.04](#412-create-deluge-service-file---ubuntu-1804)
+	- [4.13 Final Configuring of Deluge - Ubuntu 18.04](#413-final-configuring-of-deluge---ubuntu-1804)
+- [User media | Group medialab](#user-media--group-medialab)
+- [Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704](#below-are-our-synology-nas-group-gids-ie-medialab-in-range-from-65604--65704)
+	- [Results ....](#results-)
+- [User media | Group medialab](#user-media--group-medialab-1)
+- [Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704](#below-are-our-synology-nas-group-gids-ie-medialab-in-range-from-65604--65704-1)
+- [Change the path to Radarr or mono here if it is in a different location for you.](#change-the-path-to-radarr-or-mono-here-if-it-is-in-a-different-location-for-you)
+- [User media | Group medialab](#user-media--group-medialab-2)
+- [Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704](#below-are-our-synology-nas-group-gids-ie-medialab-in-range-from-65604--65704-2)
+- [Change the user and group variables here.](#change-the-user-and-group-variables-here)
+- [Change the path to Radarr or mono here if it is in a different location for you.](#change-the-path-to-radarr-or-mono-here-if-it-is-in-a-different-location-for-you-1)
+- [If Radarr does not restart after an update enable next line](#if-radarr-does-not-restart-after-an-update-enable-next-line)
+- [User media | Group medialab](#user-media--group-medialab-3)
+- [Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704](#below-are-our-synology-nas-group-gids-ie-medialab-in-range-from-65604--65704-3)
+- [Change the user and group variables here.](#change-the-user-and-group-variables-here-1)
+- [Change the path to Radarr or mono here if it is in a different location for you.](#change-the-path-to-radarr-or-mono-here-if-it-is-in-a-different-location-for-you-2)
+- [User media | Group medialab](#user-media--group-medialab-4)
+- [Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704](#below-are-our-synology-nas-group-gids-ie-medialab-in-range-from-65604--65704-4)
+- [User media | Group medialab](#user-media--group-medialab-5)
+- [Below are our Synology NAS Group GID's (i.e medialab) in range from 65604 > 65704](#below-are-our-synology-nas-group-gids-ie-medialab-in-range-from-65604--65704-5)
+- [Update](#update)
+- [Install gnupg](#install-gnupg)
+- [Add the apt repository to the apt sources list](#add-the-apt-repository-to-the-apt-sources-list)
+- [Install Ombi keys](#install-ombi-keys)
+- [Update and Install Ombi](#update-and-install-ombi)
+
 
 ## About LXC Media Installations
 CentosOS7 is my preferred linux distribution but for media software Ubuntu seems to be the most supported linux distribution. I have used Ubuntu 18.04 for all media LXC's.
@@ -305,10 +363,16 @@ lxc.cgroup.devices.allow = c 226:0 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/111.conf
 ```
 
-### 2.08 Install Jellyfin - Ubuntu 18.04
-This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`.
+### 2.08 Ubuntu fix to avoid prompt to restart services during "apt apgrade"
+First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
 
-Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
+### 2.09 Install Jellyfin - Ubuntu 18.04
+This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
 sudo apt update -y &&
@@ -320,7 +384,7 @@ sudo apt update -y &&
 sudo apt install jellyfin -y
 ```
 
-### 2.09 Create and edit user groups- Ubuntu 18.04
+### 2.10 Create and edit user groups- Ubuntu 18.04
 Jellyfin installation creates a new username and group: `jellyfin:jellyfin`. By default Jellyfin SW runs under username `jellyfin`. So Jellyfin has library access to our NAS we need to add the user `jellyfin` to the `medialab` group.
 
 With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
@@ -334,14 +398,14 @@ usermod -s /bin/bash media &&
 sudo usermod -a -G medialab jellyfin
 ```
 
-### 2.10 Start Jellyfin - Ubuntu 18.04
+### 2.11 Start Jellyfin - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
 sudo systemctl restart jellyfin
 ```
 
-### 2.11 Setup your Jellyfin Installation
+### 2.12 Setup your Jellyfin Installation
 In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
 
 ---
@@ -461,10 +525,24 @@ mkdir -p {/mnt/pve/cyclone-01-downloads/nzbget/nzb,/mnt/pve/cyclone-01-downloads
 chown -R 1605:65605 {/mnt/pve/cyclone-01-downloads/nzbget,/mnt/pve/cyclone-01-downloads/nzbget/nzb,/mnt/pve/cyclone-01-downloads/nzbget/queue,/mnt/pve/cyclone-01-downloads/nzbget/tmp,/mnt/pve/cyclone-01-downloads/nzbget/intermediate,/mnt/pve/cyclone-01-downloads/nzbget/completed,/mnt/pve/cyclone-01-downloads/nzbget/completed/lazy,/mnt/pve/cyclone-01-downloads/nzbget/completed/series,/mnt/pve/cyclone-01-downloads/nzbget/completed/movies,/mnt/pve/cyclone-01-downloads/nzbget/completed/music}
 ```
 
-### 3.06 Create new "media" user - Ubuntu 18.04
-First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`.
 
-Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
+### 3.06 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
+
+### 3.07 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
+
+### 3.07 Create new "media" user - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 ```
 sudo apt-get update &&
 groupadd -g 65605 medialab &&
@@ -473,9 +551,7 @@ usermod -s /bin/bash media
 ```
 
 ### 3.07 Install NZBget - Ubuntu 18.04
-This is easy. First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`.
-
-Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
+This is easy. First start LXC 112 (nzbget) with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `112 (nzbget)` > `>_ Shell` and type the following:
 
 ```
 wget https://nzbget.net/download/nzbget-latest-bin-linux.run -P /tmp &&
@@ -660,11 +736,23 @@ mkdir -m 775 -p {/mnt/pve/cyclone-01-downloads/deluge/incomplete,/mnt/pve/cyclon
 chown -R 1605:65605 {/mnt/pve/cyclone-01-downloads/deluge,/mnt/pve/cyclone-01-downloads/deluge/incomplete,/mnt/pve/cyclone-01-downloads/deluge/complete,/mnt/pve/cyclone-01-downloads/deluge/complete/lazy,/mnt/pve/cyclone-01-downloads/deluge/complete/movies,/mnt/pve/cyclone-01-downloads/deluge/complete/series,/mnt/pve/cyclone-01-downloads/deluge/complete/music,/mnt/pve/cyclone-01-downloads/deluge/autoadd}
 ```
 
-### 4.06 Create new "media" user - Ubuntu 18.04
+### 4.06 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
 
-First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
+### 4.07 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
 
-Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+### 4.08 Create new "media" user - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
 sudo apt-get update &&
@@ -675,7 +763,7 @@ usermod -s /bin/bash media
 Note: This time we create a home folder for user `media` - required by Deluge.
 
 
-### 4.07 Configuring host machine locales - Ubuntu 18.04
+### 4.09 Configuring host machine locales - Ubuntu 18.04
 The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
@@ -686,10 +774,8 @@ sudo reboot
 ```
 Your `113 (deluge)`container will reboot. So you will have to re-login into machine `113 (deluge)` to continue.
 
-### 4.08 Install Deluge - Ubuntu 18.04
-This is easy. First start LXC 113 (deluge) with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `START`.
-
-Then with the Proxmox web interface go to `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
+### 4.10 Install Deluge - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 
 ```
 sudo apt-get update &&
@@ -704,7 +790,7 @@ You will receive the following prompts:
 ~At the prompt `As the maintainer of this PPA, you can now support me on Patreon` press `[ENTER]`.~
 At the prompt `Configuring libssl1.1:amd64` select `<Yes>`.
 
-### 4.09 Download Deluge Plugins and settings files - Ubuntu 18.04
+### 4.11 Download Deluge Plugins and settings files - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 systemctl daemon-reload &&
@@ -723,7 +809,7 @@ wget  https://raw.githubusercontent.com/ahuacate/deluge/master/autoremoveplus.co
 chown 1605:65605 {/home/media/.config/deluge/label.conf,/home/media/.config/deluge/execute.conf,/home/media/.config/deluge/autoremoveplus.conf,/home/media/.config/deluge/plugins/*.egg}
 ```
 
-### 4.10 Create Deluge Service file - Ubuntu 18.04
+### 4.12 Create Deluge Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -751,7 +837,7 @@ sleep 2 &&
 sudo systemctl start deluge
 ```
 
-### 4.11 Final Configuring of Deluge - Ubuntu 18.04
+### 4.13 Final Configuring of Deluge - Ubuntu 18.04
 Here we are going to use the deluge-console commands to configure Deluge Preferences and enable some Deluge Plugins.
 
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
@@ -773,7 +859,7 @@ sleep 2 &&
 sudo systemctl restart deluge
 ````
 
-### 4.12 Create Deluge WebGUI Service file - Ubuntu 18.04
+### 4.14 Create Deluge WebGUI Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `113 (deluge)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -800,7 +886,7 @@ sleep 2 &&
 sudo systemctl start deluge-web
 ```
 
-### 4.13 Setup Deluge 
+### 4.15 Setup Deluge 
 Browse to http://192.168.30.113:8112 to start using Deluge. Your Deluge default login details are password:deluge. Instructions to complete the setup of Deluge is [HERE]
 
 ---
@@ -949,34 +1035,50 @@ mkdir -p {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video
 chown 1605:65605 {/mnt/pve/cyclone-01-video/documentary/series,/mnt/pve/cyclone-01-video/documentary/movies,/mnt/pve/cyclone-01-video/documentary/unsorted}
 ```
 
-### 6.06 Create new "media" user - Ubuntu 18.04
-First start LXC 114 (nzbget) with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `START`.
+### 6.06 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 114 (flexget) with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
 
-Then with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+### 6.08 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
+
+### 6.09 Create new "media" user - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
 useradd -u 1605 -g medialab -M media &&
 usermod -s /bin/bash media
 ```
 
-### 6.07 Configuring Flexget machine locales - Ubuntu 18.04
+### 6.10 Configuring Flexget machine locales - Ubuntu 18.04
 The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 
 ```
-echo -e "LANG=en_US.UTF-8
-LC_ALL=en_US.UTF-8" > /etc/default/locale &&
-sudo locale-gen en_US.UTF-8 &&
-sudo reboot
+sed -i "/$LANG/ s/\(^# \)//" /etc/locale.gen &&
+locale-gen
+
+#echo -e "LANG=en_US.UTF-8
+#LC_ALL=en_US.UTF-8" > /etc/default/locale &&
+#sudo locale-gen en_US.UTF-8 &&
+#sudo reboot
 ```
 
-### 6.08 Create Flexget `Home` Folder - Ubuntu 18.04
+### 6.11 Create Flexget `Home` Folder - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 mkdir -m 775 -p /home/media/flexget &&
 sudo chown -R 1605:65605 /home/media/flexget
 ```
 
-### 6.09 Install Flexget - Ubuntu 18.04
+### 6.12 Install Flexget - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 
 ```
@@ -1001,7 +1103,7 @@ So with the Proxmox web interface go to `typhoon-01` > `114 (flexget)` > `>_ She
 sudo apt-get -y install python python-twisted python-openssl python-setuptools intltool python-xdg python-chardet geoip-database python-libtorrent python-notify python-pygame python-glade2 librsvg2-common xdg-utils python-mako 
 ```
 
-### 6.10 Download the Flexget YAML Configuration Files
+### 6.13 Download the Flexget YAML Configuration Files
 Your Flexget configuration files are pre-built and working. There are x files to download.
 
 Download the Flexget YAML configuration file from GitHub. Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
@@ -1015,7 +1117,7 @@ chown 1605:65605 /home/media/flexget/*.yml
 ```
 The `secrets.yml` file requires you to enter your private user credentials and instructions are [HERE](https://github.com/ahuacate/flexget).
 
-### 6.11 Create Flexget Service file - Ubuntu 18.04
+### 6.14 Create Flexget Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `114 (flexget)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -1039,7 +1141,7 @@ sudo systemctl enable flexget &&
 sudo systemctl start flexget
 ```
 
-### 6.12 Setup Flexget 
+### 6.15 Setup Flexget 
 Instructions to setup Flexget are [HERE](https://github.com/ahuacate/flexget#flexget-build) .
 
 ---
@@ -1263,7 +1365,7 @@ apt update &&
 apt upgrade -y
 ```
 
-### 8.04 Create new "media" user - Ubuntu 18.04
+### 8.06 Create new "media" user - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
@@ -1272,7 +1374,7 @@ usermod -s /bin/bash media
 ```
 Note: This time we create a home folder for user media - required by Sonarr.
 
-### 8.05 Install Sonarr
+### 8.07 Install Sonarr
 Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 
 ```
@@ -1298,10 +1400,7 @@ During the installation you will prompted for user input.
 | Sonarr User | `media` |
 | Sonarr Group | `medialab` |
 
-
-
-
-### 8.06 Create Sonarr Service file - Ubuntu 18.04
+### 8.08 Create Sonarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
 ```
 sudo echo -e "[Unit]
@@ -1326,7 +1425,7 @@ sudo systemctl enable sonarr.service &&
 sudo systemctl start sonarr.service
 ```
 
-### 8.07 Install sonarr-episode-trimmer
+### 8.09 Install sonarr-episode-trimmer
 A script for use with Sonarr that allows you to set the number of episodes of a show that you would like to keep.
 Useful for aily shows. The script sorts the episodes you have for a show by the season and episode number, and then deletes the oldest episodes past the threshold you set.
 ```
@@ -1338,7 +1437,7 @@ chmod +rx /home/media/.config/NzbDrone/custom-scripts/sonarr-episode-trimmer.py 
 chown 1605:65605 /home/media/.config/NzbDrone/custom-scripts/*
 ```
 
-### 8.08 Update the Sonarr configuration base file
+### 8.10 Update the Sonarr configuration base file
 This step near completes the Sonarr preferences settings by downloading a pre-built settings file from Github.
 
 Begin with the Proxmox web interface and go to `typhoon-01` > `115 (sonarr)` > `>_ Shell` and type the following:
@@ -1356,7 +1455,7 @@ sudo systemctl restart sonarr.service
 
 Thats it. Now go and complete Steps [2.05 Configure Download Clients](https://github.com/ahuacate/sonarr/blob/master/README.md#205-configure-download-clients) and [2.07 Configure General](https://github.com/ahuacate/sonarr/blob/master/README.md#207-configure-general).
 
-### 8.09 Setup Sonarr
+### 8.11 Setup Sonarr
 Browse to http://192.168.50.115:8989 to start using Sonarr.
 
 ---
@@ -1460,7 +1559,22 @@ grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
 grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
-### 9.04 Create new "media" user - Ubuntu 18.04
+### 9.04 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 116 (radarr) with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
+
+### 9.05 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
+
+### 9.06 Create new "media" user - Ubuntu 18.04
 First start LXC 116 (radarr) with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `START`.
 
 Then with the Proxmox web interface go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
@@ -1471,8 +1585,8 @@ usermod -s /bin/bash media
 ```
 Note: This time we create a home folder for user media - required by Radarr.
 
-### 9.05 Install Radarr
-First start your Radarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and insert by cut & pasting the following:
+### 9.07 Install Radarr
+Go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
 
 ```
 sudo apt-get update -y &&
@@ -1489,9 +1603,8 @@ sudo rm *.linux.tar.gz &&
 sudo chown -R 1605:65605 /opt/Radarr &&
 sudo apt-get -y install libmediainfo-dev #Required to patch Mediainfo
 ```
-At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
 
-### 9.06 Create Radarr Service file - Ubuntu 18.04
+### 9.08 Create Radarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -1521,7 +1634,7 @@ sleep 2 &&
 sudo systemctl restart radarr.service
 ```
 
-### 9.07 Update the Radarr configuration base file
+### 9.09 Update the Radarr configuration base file
 This step near completes the Sonarr preferences settings by downloading a pre-built settings file from Github.
 
 Begin with the Proxmox web interface and go to `typhoon-01` > `116 (radarr)` > `>_ Shell` and type the following:
@@ -1536,7 +1649,7 @@ chown 1605:65605 /home/media/.config/Radarr/config.xml &&
 sudo systemctl restart radarr.service
 ```
 
-### 9.08 Setup Radarr
+### 9.10 Setup Radarr
 Browse to http://192.168.50.116:7878 to start using Radarr.
 
 Thats it. Now go and complete Steps [2.03 (B) Configure Indexers](https://github.com/ahuacate/radarr#203-configure-indexers), [2.04 (A) Configure Download Client](https://github.com/ahuacate/radarr#204-configure-download-clients) and [2.06 Configure General](https://github.com/ahuacate/radarr#206-configure-general).
@@ -1622,7 +1735,7 @@ pct set 117 -mp2 /mnt/pve/cyclone-01-backup,mp=/mnt/backup
 pct set 117 -mp3 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
 
-### 9.03 Unprivileged container mapping - Ubuntu 18.04
+### 10.03 Unprivileged container mapping - Ubuntu 18.04
 To change the Lidarr container mapping we change the container UID and GID in the file `/etc/pve/lxc/117.conf`. Simply use Proxmox CLI `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
@@ -1642,10 +1755,23 @@ grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
 grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
-### 10.04 Create new "media" user - Ubuntu 18.04
-First start LXC 117 (lidarr) with the Proxmox web interface go to `typhoon-01` > `117 (lidarr)` > `START`.
+### 10.04 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 117 (lidarr) with the Proxmox web interface go to `typhoon-01` > `117 (lidarr)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
 
-Then with the Proxmox web interface go to `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
+### 10.05 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
+
+### 10.06 Create new "media" user - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
 useradd -u 1605 -g medialab -m media &&
@@ -1653,8 +1779,8 @@ usermod -s /bin/bash media
 ```
 Note: This time we create a home folder for user media - required by Lidarr.
 
-### 10.05 Install Lidarr
-First start your Lidarr LXC and login. Then go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and insert by cut & pasting the following:
+### 10.07 Install Lidarr
+Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following::
 
 ```
 sudo apt-get update -y &&
@@ -1671,9 +1797,8 @@ sudo rm *.linux.tar.gz &&
 sudo chown -R 1605:65605 /opt/Lidarr &&
 sudo apt-get install libchromaprint-tools -y
 ```
-At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
 
-### 10.06 Create Lidarr Service file - Ubuntu 18.04
+### 10.08 Create Lidarr Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
 ```
 echo -e "[Unit]
@@ -1701,7 +1826,7 @@ sleep 2 &&
 sudo systemctl start lidarr.service
 ```
 
-### 10.07 Setup Lidarr
+### 10.09 Setup Lidarr
 Browse to http://192.168.50.117:8686 to start using Lidarr.
 
 ---
@@ -1803,26 +1928,38 @@ grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
 grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
-### 11.04 Create new "media" user - Ubuntu 18.04
-
-First start LXC 118 (lazy) with the Proxmox web interface go to `typhoon-01` > `118 (lazy)` > `START`.
-
-Then with the Proxmox web interface go to `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
-```
-groupadd -g 65605 medialab &&
-useradd -u 1605 -g medialab -M media &&
-usermod -s /bin/bash media
-```
-
-### 11.05 Create Lazylibrarian content folders on your NAS
+### 11.04 Create Lazylibrarian content folders on your NAS
 To create Lazylibrarian content folders on your NAS use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
 ```
 mkdir -p /mnt/pve/cyclone-01-audio/audiobooks &&
 chown 1605:65605 /mnt/pve/cyclone-01-audio/audiobooks
 ```
 
-### 11.06 Install Lazylibrarian
-First start your Lazylibrarian LXC and login. Then go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and insert by cut & pasting the following:
+### 11.05 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 118 (lazy) with the Proxmox web interface go to `typhoon-01` > `118 (lazy)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
+
+### 11.06 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
+
+### 11.07 Create new "media" user - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `117 (lidarr)` > `>_ Shell` and type the following:
+```
+groupadd -g 65605 medialab &&
+useradd -u 1605 -g medialab -M media &&
+usermod -s /bin/bash media
+```
+
+### 11.08 Install Lazylibrarian
+Go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
 
 ```
 sudo apt-get update -y &&
@@ -1835,9 +1972,8 @@ cd /opt &&
 sudo git clone https://gitlab.com/LazyLibrarian/LazyLibrarian.git &&
 sudo chown -R 1605:65605 /opt/LazyLibrarian
 ```
-At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
 
-### 11.07 Create Lazylibrarian Service file - Ubuntu 18.04
+### 11.09 Create Lazylibrarian Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `118 (lazy)` > `>_ Shell` and type the following:
 ```
 sudo echo -e "[Unit]
@@ -1859,7 +1995,7 @@ sleep 2 &&
 sudo systemctl restart lazy.service
 ```
 
-### 11.08 Setup Lazylibrarian
+### 11.10 Setup Lazylibrarian
 Browse to http://192.168.50.118:5299 to start using Lazylibrarian (aka lazy).
 
 Thats it. Now go and complete [LazyLibrarian Build](https://github.com/ahuacate/lazylibrarian/blob/master/README.md#lazylibrarian-build) for your first time build **OR** use the restore instructions [3.00 Restore Lazylibrarian backup](https://github.com/ahuacate/lazylibrarian/blob/master/README.md#300-restore-lazylibrarian-backup).
@@ -1959,35 +2095,50 @@ grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
 grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
-### 12.04 Create new "media" user - Ubuntu 18.04
+### 12.04 Ubuntu fix to avoid prompt to restart services during "apt apgrade" - Ubuntu 18.04
+First start LXC 119 (ombi) with the Proxmox web interface go to `typhoon-01` > `119 (ombi)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
+```
+sudo apt-get -y install debconf-utils &&
+sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
+```
 
-First start LXC 119 (ombi) with the Proxmox web interface go to `typhoon-01` > `119 (ombi)` > `START`.
+### 12.05 Container Update &  Upgrade - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
+```
+apt-get update &&
+apt-get upgrade -y
+```
 
-Then with the Proxmox web interface go to `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
+### 12.06 Create new "media" user - Ubuntu 18.04
+Go to the Proxmox web interface `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
 ```
 groupadd -g 65605 medialab &&
 useradd -u 1605 -g medialab -M media &&
 usermod -s /bin/bash media
 ```
 
-### 12.05 Create Ombi content folders on your NAS
-To create Ombi backup folders on your NAS use the web interface go to Proxmox CLI Datacenter > typhoon-01 > >_ Shell and type the following:
+### 12.07 Create Ombi content folders on your NAS
+To create Ombi backup folders on your NAS use the web interface go to the Proxmox web interface `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
 ```
 mkdir -p /mnt/backup/ombi &&
 chown 1605:65605 /mnt/backup/ombi
 ```
 
-### 12.06 Configuring Ombi machine locales - Ubuntu 18.04
+### 12.08 Configuring Ombi machine locales - Ubuntu 18.04
 The default locale for the system environment must be: en_US.UTF-8. To set the default locale on your machine go to the Proxmox web interface go to `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
 
 ```
-echo -e "LANG=en_US.UTF-8
-LC_ALL=en_US.UTF-8" > /etc/default/locale &&
-sudo locale-gen en_US.UTF-8 &&
-sudo reboot
+sed -i "/$LANG/ s/\(^# \)//" /etc/locale.gen &&
+locale-gen
+
+#echo -e "LANG=en_US.UTF-8
+#LC_ALL=en_US.UTF-8" > /etc/default/locale &&
+#sudo locale-gen en_US.UTF-8 &&
+#sudo reboot
 ```
 
-### 12.06 Install Ombi
+### 12.09 Install Ombi
 Go to the Proxmox web interface `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
 
 ```
@@ -2003,9 +2154,8 @@ wget -qO - https://repo.ombi.turd.me/pubkey.txt | sudo apt-key add - &&
 sudo apt update -y && sudo apt install ombi -y &&
 sudo chown -R 1605:65605 /opt/Ombi
 ```
-At the prompt `Configuring libssl1.1:amd64` and others select `<Yes>`.
 
-### 12.07 Create Ombi Service file - Ubuntu 18.04
+### 12.10 Create Ombi Service file - Ubuntu 18.04
 Go to the Proxmox web interface `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
 ```
 sudo echo -e "[Unit]
@@ -2030,5 +2180,5 @@ sleep 2 &&
 sudo systemctl restart ombi.service
 ```
 
-### 112.08 Setup Ombi
+### 12.11 Setup Ombi
 Browse to http://192.168.50.119:5000 to start using Ombi.
