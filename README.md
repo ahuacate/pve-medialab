@@ -31,6 +31,8 @@ Tasks to be performed are:
 	- [2.08 Ubuntu fix to avoid prompt to restart services during "apt apgrade"](#208-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade)
 	- [2.09 Install Jellyfin - Ubuntu 18.04](#209-install-jellyfin---ubuntu-1804)
 	- [2.10 Create and edit user groups- Ubuntu 18.04](#210-create-and-edit-user-groups--ubuntu-1804)
+		- [2.10a Option A](#210a-option-a)
+		- [2.10b Option B](#210b-option-b)
 	- [2.11 Start Jellyfin - Ubuntu 18.04](#211-start-jellyfin---ubuntu-1804)
 	- [2.12 Setup your Jellyfin Installation](#212-setup-your-jellyfin-installation)
 - [3.00 NZBget LXC - Ubuntu 18.04](#300-nzbget-lxc---ubuntu-1804)
@@ -444,8 +446,25 @@ sudo apt install jellyfin -y
 ```
 
 ### 2.10 Create and edit user groups- Ubuntu 18.04
-Jellyfin installation creates a new username and group: `jellyfin:jellyfin`. By default Jellyfin SW runs under username `jellyfin`. So Jellyfin has library access to our NAS we need to add the user `jellyfin` to the `medialab` group.
+Jellyfin installation creates a new username and group: `jellyfin:jellyfin`. By default Jellyfin SW runs under username `jellyfin`. So Jellyfin has library access to our NAS we need to add the user `jellyfin` to the `medialab` group OR modify the UID and GID of `jellyfin:jellyfin`.
 
+#### 2.10a Option A
+My preference is to edit the UID and GID of `jellyfin:jellyfin` to match `media:medialab` > `1605:65605`. Obviously you do NOT create `media:medialab` user and group.
+
+With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
+```
+systemctl stop jellyfin &&
+sleep 5 &&
+OLDUID=$(id -u jellyfin) &&
+OLDGID=$(id -g jellyfin) &&
+usermod -u 1605 jellyfin && 
+groupmod -g 65605 jellyfin &&
+find / \( -path /mnt \) -prune -o -user "$OLDUID" -exec chown -h 1605 {} \; &&
+find / \( -path /mnt \) -prune -o -group "$OLDGID" -exec chgrp -h 65605 {} \; &&
+systemctl restart jellyfin
+```
+
+#### 2.10b Option B
 With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
