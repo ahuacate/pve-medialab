@@ -459,6 +459,7 @@ OLDUID=$(id -u jellyfin) &&
 OLDGID=$(id -g jellyfin) &&
 usermod -u 1605 jellyfin && 
 groupmod -g 65605 jellyfin &&
+usermod -s /bin/bash jellyfin &&
 find / \( -path /mnt \) -prune -o -user "$OLDUID" -exec chown -h 1605 {} \; &&
 find / \( -path /mnt \) -prune -o -group "$OLDGID" -exec chgrp -h 65605 {} \; &&
 systemctl restart jellyfin
