@@ -2229,10 +2229,12 @@ echo "deb [arch=amd64,armhf] http://repo.ombi.turd.me/stable/ jessie main" | sud
 wget -qO - https://repo.ombi.turd.me/pubkey.txt | sudo apt-key add - &&
 # Update and Install Ombi
 sudo apt update -y && sudo apt install ombi -y &&
-sudo chown -R 1605:65605 /opt/Ombi
+systemctl restart ombi
+# sudo chown -R 1605:65605 /opt/Ombi # Not required if running as root.
 ```
 
 ### 12.10 Create Ombi Service file - Ubuntu 18.04
+** NOT REQUIRED - Ombi uses API to access Jellyfin, Sonarr and Radarr so there are no permission issues **
 Go to the Proxmox web interface `typhoon-01` > `119 (ombi)` > `>_ Shell` and type the following:
 ```
 sudo echo -e "[Unit]
