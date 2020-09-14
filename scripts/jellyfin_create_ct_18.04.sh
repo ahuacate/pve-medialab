@@ -211,7 +211,7 @@ if [ $CTID_IP -lt 100 ]; then
 elif [ $CTID_IP -gt 100 ]; then
   CTID_TEMP=$CTID_IP
 fi
-msg "Attempting to set and match your Jellyfin CT ID with the host section
+msg "Attempting to set and match your ${CT_HOSTNAME^} CT ID with the host section
 value of your CT IP address: $(echo "$CT_IP" | sed  's/\/.*//g' | awk -F "." '{print $1, $2, $3, "\033[1;33m"$4"\033[0m"}' | sed 's/ /./g').
 Attempting to set "${CT_HOSTNAME^}" CT ID as: ${YELLOW}$CTID_TEMP${NC}.
 If CT ID ${YELLOW}$CTID_TEMP${NC} is unavailable a indexed or random CT ID will be assigned."
