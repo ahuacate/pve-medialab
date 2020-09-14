@@ -21,20 +21,21 @@ Tasks to be performed are:
 	- [1.02 Allow a LXC to perform mapping on the Proxmox host - medialab](#102-allow-a-lxc-to-perform-mapping-on-the-proxmox-host---medialab)
 	- [1.03 Create a newuser `media` in a LXC](#103-create-a-newuser-media-in-a-lxc)
 - [2.00 Jellyfin LXC - Ubuntu 18.04](#200-jellyfin-lxc---ubuntu-1804)
-	- [2.01 Download the Ubuntu LXC template - Ubuntu 18.04](#201-download-the-ubuntu-lxc-template---ubuntu-1804)
-	- [2.02 Create a Ubuntu 18.04 LXC for Jellyfin - Ubuntu 18.04](#202-create-a-ubuntu-1804-lxc-for-jellyfin---ubuntu-1804)
-	- [2.03 Setup Jellyfin Mount Points - Ubuntu 18.04](#203-setup-jellyfin-mount-points---ubuntu-1804)
-	- [2.04 Unprivileged container mapping - Ubuntu 18.04](#204-unprivileged-container-mapping---ubuntu-1804)
-	- [2.05 Configure and Install VAAPI - Ubuntu 18.04](#205-configure-and-install-vaapi---ubuntu-1804)
-	- [2.06 Create a rc.local](#206-create-a-rclocal)
-	- [2.07 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04](#207-grant-jellyfin-lxc-container-access-to-the-proxmox-host-video-device---ubuntu-1804)
-	- [2.08 Ubuntu fix to avoid prompt to restart services during "apt apgrade"](#208-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade)
-	- [2.09 Install Jellyfin - Ubuntu 18.04](#209-install-jellyfin---ubuntu-1804)
-	- [2.10 Create and edit user groups- Ubuntu 18.04](#210-create-and-edit-user-groups--ubuntu-1804)
-		- [2.10a Option A](#210a-option-a)
-		- [2.10b Option B](#210b-option-b)
-	- [2.11 Start Jellyfin - Ubuntu 18.04](#211-start-jellyfin---ubuntu-1804)
-	- [2.12 Setup your Jellyfin Installation](#212-setup-your-jellyfin-installation)
+	- [2.01 Turnkey Build Script - RECOMMENDED](#201-turnkey-build-script---recommended)
+	- [2.02 Download the Ubuntu LXC template - Ubuntu 18.04](#202-download-the-ubuntu-lxc-template---ubuntu-1804)
+	- [2.03 Create a Ubuntu 18.04 LXC for Jellyfin - Ubuntu 18.04](#203-create-a-ubuntu-1804-lxc-for-jellyfin---ubuntu-1804)
+	- [2.04 Setup Jellyfin Mount Points - Ubuntu 18.04](#204-setup-jellyfin-mount-points---ubuntu-1804)
+	- [2.05 Unprivileged container mapping - Ubuntu 18.04](#205-unprivileged-container-mapping---ubuntu-1804)
+	- [2.06 Configure and Install VAAPI - Ubuntu 18.04](#206-configure-and-install-vaapi---ubuntu-1804)
+	- [2.07 Create a rc.local](#207-create-a-rclocal)
+	- [2.08 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04](#208-grant-jellyfin-lxc-container-access-to-the-proxmox-host-video-device---ubuntu-1804)
+	- [2.09 Ubuntu fix to avoid prompt to restart services during "apt apgrade"](#209-ubuntu-fix-to-avoid-prompt-to-restart-services-during-apt-apgrade)
+	- [2.10 Install Jellyfin - Ubuntu 18.04](#210-install-jellyfin---ubuntu-1804)
+	- [2.11 Create and edit user groups- Ubuntu 18.04](#211-create-and-edit-user-groups--ubuntu-1804)
+		- [2.11a Option A](#211a-option-a)
+		- [2.11b Option B](#211b-option-b)
+	- [2.12 Start Jellyfin - Ubuntu 18.04](#212-start-jellyfin---ubuntu-1804)
+	- [2.13 Setup your Jellyfin Installation](#213-setup-your-jellyfin-installation)
 - [3.00 NZBget LXC - Ubuntu 18.04](#300-nzbget-lxc---ubuntu-1804)
 	- [3.01 Download the Ubuntu LXC template - Ubuntu 18.04](#301-download-the-ubuntu-lxc-template---ubuntu-1804)
 	- [3.02 Create a Ubuntu 18.04 LXC for NZBget - Ubuntu 18.04](#302-create-a-ubuntu-1804-lxc-for-nzbget---ubuntu-1804)
@@ -218,11 +219,22 @@ Note: We do not need to create a new user group because `users` is a default lin
 
 ## 2.00 Jellyfin LXC - Ubuntu 18.04
 
-Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
+Jellyfin is a Free Software Media System that puts you in control of managing and streaming your media. Jellyfin is an alternative to the proprietary Emby and Plex, to provide media from a dedicated server to end-user devices via multiple apps. 
 
 Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core framework to enable full cross-platform support. There are no strings attached, no premium licenses or features, and no hidden agendas: and at the time of writing this media server software seems like the best available solution (and is free).
 
-### 2.01 Download the Ubuntu LXC template - Ubuntu 18.04
+We RECOMMEND you use our turnkey build script.
+
+### 2.01 Turnkey Build Script - RECOMMENDED
+Take the easy route and create a working Ubuntu Jellyfin CT. Use a Proxmox PVE host (i.e typhoon-01) CLI `>_ Shell` or SSH terminal and type the following:
+
+```
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-lxc-media/master/scripts/jellyfin_create_ct_18.04.sh)"
+```
+
+Nothing more to do than follow the prompts.
+
+### 2.02 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
 
 Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
@@ -230,7 +242,7 @@ Or use a Proxmox typhoon-01 CLI `>_ Shell` and type the following:
 wget  http://download.proxmox.com/images/system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz -P /var/lib/vz/template/cache && gzip -d /var/lib/vz/template/cache/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
 ```
 
-### 2.02 Create a Ubuntu 18.04 LXC for Jellyfin - Ubuntu 18.04
+### 2.03 Create a Ubuntu 18.04 LXC for Jellyfin - Ubuntu 18.04
 Now using the Proxmox web interface `Datacenter` > `Create CT` and fill out the details as shown below (whats not shown below leave as default):
 
 | Create: LXC Container | Value |
@@ -290,8 +302,8 @@ pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch 
 pct create 111 local:vztmpl/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz --arch amd64 --cores 2 --hostname jellyfin --cpulimit 1 --cpuunits 1024 --memory 4096 --net0 name=eth0,bridge=vmbr0,tag=50,firewall=1,gw=192.168.50.5,ip=192.168.50.111/24,type=veth --ostype ubuntu --rootfs typhoon-share:20 --swap 256 --unprivileged 1 --onboot 1 --startup order=2 --password
 ```
 
-### 2.03 Setup Jellyfin Mount Points - Ubuntu 18.04
-If you used **Script (B)** in Section 2.02 then you have no Moint Points.
+### 2.04 Setup Jellyfin Mount Points - Ubuntu 18.04
+If you used **Script (B)** in Section 2.03 then you have no Moint Points.
 
 Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before proceeding.
 
@@ -305,7 +317,7 @@ pct set 111 -mp4 /mnt/pve/cyclone-01-audio,mp=/mnt/audio
 pct set 111 -mp5 /mnt/pve/cyclone-01-books,mp=/mnt/books
 pct set 111 -mp6 /mnt/pve/cyclone-01-public,mp=/mnt/public
 ```
-### 2.04 Unprivileged container mapping - Ubuntu 18.04
+### 2.05 Unprivileged container mapping - Ubuntu 18.04
 To change the Jellyfin container mapping we change the container UID and GID in the file `/etc/pve/lxc/111.conf`. Simply use Proxmox CLI `typhoon-01` > `>_ Shell` and type the following:
 
 ```
@@ -324,7 +336,7 @@ grep -qxF 'root:100:1' /etc/subgid || echo 'root:100:1' >> /etc/subgid &&
 grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 ```
 
-### 2.05 Configure and Install VAAPI - Ubuntu 18.04
+### 2.06 Configure and Install VAAPI - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Jellyfin supports hardware acceleration of video encoding/decoding/transcoding using FFMpeg. Because we are using Linux we will use Intel/AMD VAAPI.
@@ -347,7 +359,7 @@ crw-rw---- 1 root video 226, 128 Jul 26 14:24 renderD128
 
 Now you want to install VAINFO on Proxmox nodes typhoon-01 and typhoon-02. Go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
 ```
-apt install vainfo -y &&
+apt-get install vainfo -y &&
 chmod 666 /dev/dri/renderD128
 ```
 
@@ -394,17 +406,15 @@ vainfo: Supported profile and entrypoints
       VAProfileVP9Profile0            : VAEntrypointEncSlice
       VAProfileVP9Profile2            : VAEntrypointVLD
 ```
-### 2.06 Create a rc.local
+### 2.07 Create a rc.local
 For FFMPEG to work we must create a script to `chmod 666 /dev/dri/renderD128` everytime the Proxmox host reboots. Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01/02` >  `>_ Shell` and type the following:
 ```
-echo '#!/bin/sh -e
-/bin/chmod 666 /dev/dri/renderD128
-exit 0' > /etc/rc.local &&
+echo -e '#!/bin/sh -e\n/bin/chmod 666 /dev/dri/renderD128\nexit 0' > /etc/rc.local &&
 chmod +x /etc/rc.local &&
 bash /etc/rc.local
 ```
 
-### 2.07 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
+### 2.08 Grant Jellyfin LXC Container access to the Proxmox host video device - Ubuntu 18.04
 > This section only applies to Proxmox nodes typhoon-01 and typhoon-02. **DO NOT USE ON TYPHOON-03** or any Synology/NAS Virtual Machine installed node.
 
 Here we edit the LXC configuration file with the line `lxc.cgroup.devices.allow` to declare your hardmetal GPU device to your Jellyfin LXC container so it can access your hosts GPU.
@@ -418,37 +428,36 @@ Please note your Proxmox Jellyfin LXC **MUST BE** in the shutdown state before p
 Now using the web interface go to Proxmox CLI `Datacenter` > `typhoon-01` >  `>_ Shell` and type the following:
 
 ```
-echo -e "lxc.cgroup.devices.allow = c 226:128 rwm
-lxc.cgroup.devices.allow = c 226:0 rwm
+echo -e "lxc.cgroup.devices.allow: c 226:128 rwm
+lxc.cgroup.devices.allow: c 226:0 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file" >> /etc/pve/lxc/111.conf
 ```
 
-### 2.08 Ubuntu fix to avoid prompt to restart services during "apt apgrade"
+### 2.09 Ubuntu fix to avoid prompt to restart services during "apt apgrade"
 First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 ```
-sudo apt-get -y install debconf-utils &&
-sudo debconf-get-selections | grep libssl1.0.0:amd64 &&
+apt-get -y install debconf-utils &&
+debconf-get-selections | grep libssl1.0.0:amd64 &&
 bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
 ```
 
-### 2.09 Install Jellyfin - Ubuntu 18.04
+### 2.10 Install Jellyfin - Ubuntu 18.04
 This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
-sudo apt update -y &&
-sudo apt install apt-transport-https &&
-sudo apt install gnupg gnupg2 gnupg1 -y &&
-wget -O - https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | sudo apt-key add - &&
-#echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/ubuntu $( lsb_release -c -s ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list &&
-echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/$( awk -F'=' '/^ID=/{ print $NF }' /etc/os-release ) $( awk -F'=' '/^VERSION_CODENAME=/{ print $NF }' /etc/os-release ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list &&
-sudo apt update -y &&
-sudo apt install jellyfin -y
+apt-get update -y &&
+apt-get install apt-transport-https &&
+apt-get install gnupg gnupg2 gnupg1 -y &&
+wget -O - https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | apt-key add - &&
+echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/ubuntu $( lsb_release -c -s ) main" | tee /etc/apt/sources.list.d/jellyfin.list &&
+apt-get update -y &&
+apt-get install jellyfin -y
 ```
 
-### 2.10 Create and edit user groups- Ubuntu 18.04
+### 2.11 Create and edit user groups- Ubuntu 18.04
 Jellyfin installation creates a new username and group: `jellyfin:jellyfin`. By default Jellyfin SW runs under username `jellyfin`. So Jellyfin has library access to our NAS we need to add the user `jellyfin` to the `medialab` group OR modify the UID and GID of `jellyfin:jellyfin`.
 
-#### 2.10a Option A
+#### 2.11a Option A
 My preference is to edit the UID and GID of `jellyfin:jellyfin` to match `media:medialab` > `1605:65605`. Obviously you do NOT create `media:medialab` user and group.
 
 With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
@@ -465,7 +474,7 @@ find / \( -path /mnt \) -prune -o -group "$OLDGID" -exec chgrp -h 65605 {} \; &&
 systemctl restart jellyfin
 ```
 
-#### 2.10b Option B
+#### 2.11b Option B
 With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
@@ -474,17 +483,17 @@ groupadd -g 65605 medialab &&
 useradd -u 1605 -g medialab -M media &&
 usermod -s /bin/bash media &&
 # Add jellyfin to medialab
-sudo usermod -a -G medialab jellyfin
+usermod -a -G medialab jellyfin
 ```
 
-### 2.11 Start Jellyfin - Ubuntu 18.04
+### 2.12 Start Jellyfin - Ubuntu 18.04
 With the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
-sudo systemctl restart jellyfin
+systemctl restart jellyfin
 ```
 
-### 2.12 Setup your Jellyfin Installation
+### 2.13 Setup your Jellyfin Installation
 In your web browser type `http://192.168.50.111:8096` and you should see a Jellyfin configuration wizard page.
 
 ---
