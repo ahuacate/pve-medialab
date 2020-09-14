@@ -226,13 +226,13 @@ Jellyfin is descended from Emby's 3.5.2 release and ported to the .NET Core fram
 We RECOMMEND you use our turnkey build script.
 
 ### 2.01 Turnkey Build Script - RECOMMENDED
-Take the easy route and create a working Ubuntu Jellyfin CT. Use a Proxmox PVE host (i.e typhoon-01) CLI `>_ Shell` or SSH terminal and type the following:
+Our turnkey build script will create a working Ubuntu Jellyfin CT. Go to your Proxmox PVE host (i.e typhoon-01) CLI `>_ Shell` or SSH terminal and type the following:
 
 ```
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-lxc-media/master/scripts/jellyfin_create_ct_18.04.sh)"
 ```
 
-Nothing more to do than follow the prompts.
+Nothing more to do than follow the terminal prompts. You can skip the rest of the steps.
 
 ### 2.02 Download the Ubuntu LXC template - Ubuntu 18.04
 First you need to add Ubuntu 18.04 LXC to your Proxmox templates. Now using the Proxmox web interface `Datacenter` > `typhoon-01` >`Local (typhoon-01)` > `Content` > `Templates`  select `ubuntu-18.04-standard` LXC and click `Download`.
