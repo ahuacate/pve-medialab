@@ -148,22 +148,22 @@ Tasks to be performed are:
 
 
 ## About LXC Media Installations
-CentosOS7 is my preferred linux distribution but for media software Ubuntu seems to be the most supported linux distribution. I have used Ubuntu 18.04 for all media LXC's.
+Ubuntu 18.04 is used for all media PVE CT's.
 
-Proxmox itself ships with a set of basic templates and to download a prebuilt OS distribution use the graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `centos-7-default` and `ubuntu-18.04-standard` templates.
+Proxmox itself ships with a set of basic templates and to download a prebuilt OS distribution use the PVE graphical interface `typhoon-01` > `local` > `content` > `templates` and select and download `ubuntu-18.04-standard` template.
 
 ## 1.00 Unprivileged LXC Containers and file permissions
 With unprivileged LXC containers you will have issues with UIDs (user id) and GIDs (group id) permissions with bind mounted shared data. All of the UIDs and GIDs are mapped to a different number range than on the host machine, usually root (uid 0) became uid 100000, 1 will be 100001 and so on.
 
 However you will soon realise that every file and directory will be mapped to "nobody" (uid 65534). This isn't acceptable for host mounted shared data resources. For shared data you want to access the directory with the same - unprivileged - uid as it's using on other LXC machines.
 
-The fix is to change the UID and GID mapping. So in our build we will create a new users/groups:
+The fix is to change the UID and GID mapping. So in our builds we will create a new users/groups:
 
 *  user `media` (uid 1605) and group `medialab` (gid 65605) accessible to unprivileged LXC containers (i.e Jellyfin, NZBGet, Deluge, Sonarr, Radarr, LazyLibrarian, Flexget);
 *  user `storm` (uid 1606) and group `homelab` (gid 65606) accessible to unprivileged LXC containers (i.e Syncthing, Nextcloud, Unifi);
 *  user `typhoon` (uid 1607) and group `privatelab` (gid 65606) accessible to unprivileged LXC containers (i.e all things private).
 
-Also because Synology new Group ID's are in ranges above 65536, outside of Proxmox ID map range, we must pass through our Medialab (gid 65605), Homelab (gid 65606) and Privatelab (gid 65607) Group GID's mapped 1:1.
+Also because of Synology new Group ID's are in ranges above 65536, outside of Proxmox ID map range, we must pass through our Medialab (gid 65605), Homelab (gid 65606) and Privatelab (gid 65607) Group GID's mapped 1:1.
 
 This is achieved in three parts during the course of creating your new media LXC's.
 
@@ -181,6 +181,9 @@ lxc.idmap: g 101 100101 65435
 lxc.idmap: u 65604 65604 100
 lxc.idmap: g 65604 65604 100" >> /etc/pve/lxc/container-id.conf
 ```
+
+This is done during the course of creating your new media LXC's.
+
 ### 1.02 Allow a LXC to perform mapping on the Proxmox host - medialab
 Next we have to allow the LXC to actually do the mapping on the host. Since LXC creates the container using root, we have to allow root to use these new uids in the container.
 
@@ -197,6 +200,7 @@ grep -qxF 'root:1605:1' /etc/subuid || echo 'root:1605:1' >> /etc/subuid
 
 The above code adds a ID map range from 65604 > 65704 on the container to the same range on the host. Next ID maps gid100 (default linux users group) and uid1605 (username media) on the container to the same range on the host.
 
+Again, this is done during the course of creating your new media LXC's.
 
 ### 1.03 Create a newuser `media` in a LXC
 We need to create a `media` user in all media LXC's which require shared data (NFS NAS shares). After logging into the LXC container type the following:
@@ -214,6 +218,8 @@ useradd -u 1605 -g medialab -m media &&
 usermod -s /bin/bash media
 ```
 Note: We do not need to create a new user group because `users` is a default linux group with GID value 100.
+
+Again, this is done during the course of creating your new media LXC's.
 
 ---
 
