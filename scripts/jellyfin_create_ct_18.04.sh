@@ -275,7 +275,7 @@ echo
 #### Checking media access availability ####
 section "${CT_HOSTNAME^} CT - Create ${CT_HOSTNAME^} CT bind mount points."
 
-box_out '#### PLEASE READ CAREFULLY ####' '' 'Bind mounts allow you to access arbitrary directories from your' 'Proxmox VE host inside your new Jellyfin CT. In order to proceed you must' 'have available mount points on your Proxmox VE host.' '' '      PROXMOX VE HOST NFS/CIFS MOUNTPOINT' '  --  "hostname"-audio (i.e cyclone-01-audio)' '  --  "hostname"-books (i.e cyclone-01-books)' '  --  "hostname"-music (i.e cyclone-01-music)' '  --  "hostname"-photo (i.e cyclone-01-photo)' '  --  "hostname"-public (i.e cyclone-01-public)' '  --  "hostname"-transcode (i.e cyclone-01-transcode)' '  --  "hostname"-video (i.e cyclone-01-video)'
+box_out '#### PLEASE READ CAREFULLY ####' '' 'Bind mounts allow you to access arbitrary directories from your' 'Proxmox VE host inside your new Jellyfin CT. In order to proceed you must' 'have available mount points on your Proxmox VE host.' '' '      PROXMOX VE HOST NFS/CIFS MOUNTPOINT' '  --  "hostname"-audio (i.e cyclone-01-audio)' '  --  "hostname"-backup (i.e cyclone-01-backup)' '  --  "hostname"-books (i.e cyclone-01-books)' '  --  "hostname"-music (i.e cyclone-01-music)' '  --  "hostname"-photo (i.e cyclone-01-photo)' '  --  "hostname"-public (i.e cyclone-01-public)' '  --  "hostname"-transcode (i.e cyclone-01-transcode)' '  --  "hostname"-video (i.e cyclone-01-video)'
 
 read -p "Have you configured your Proxmox VE host with media bind mount points: [y/n]?: " -n 1 -r
 echo
