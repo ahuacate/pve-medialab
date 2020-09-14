@@ -146,7 +146,7 @@ echo
 
 # Message about setting variables
 section "Setting Variables"
-msg "We need to set some variables. Variables are used to create and setup\nyour Proxmox File Server container. The next steps requires your input.\n\nYou can accept our default values by pressing ENTER on your keyboard.\nOr overwrite the default value by typing in your own value and\npress ENTER to accept/continue."
+msg "We need to set some variables. Variables are used to create and setup\nyour Proxmox Jellyfin container. The next steps requires your input.\n\nYou can accept our default values by pressing ENTER on your keyboard.\nOr overwrite the default value by typing in your own value and\npress ENTER to accept/continue."
 echo
 echo
 
