@@ -317,19 +317,20 @@ done
 set -Eeuo pipefail #Required AFTER menu shell script 
 echo
 
-msg "You have chosen $(cat pvesm_mountpoint_list_var02 | wc -l)x PVE mount points for your ${CT_HOSTNAME^} CT.\nNext confirm the media type for each PVE mount point from the list below.\nAt each prompt enter your selection by entering the corresponding numerical\nvalue (i.e 1-7) for each entry."
+msg "You have chosen $(cat pvesm_mountpoint_list_var02 | wc -l)x PVE mount points for your ${CT_HOSTNAME^} CT.\nNext confirm the media type for each PVE mount point from the list below.\nAt each prompt enter your selection by entering the corresponding numerical\nvalue (i.e 1-8) for each entry."
 echo
 TYPE01="${YELLOW}Audio${NC} - Audiobooks and podcasts."
-TYPE02="${YELLOW}Books${NC} - Ebooks and Magazines."
-TYPE03="${YELLOW}Music${NC} - Music, Albumms and Songs."
-TYPE04="${YELLOW}Photo${NC} - Photographic image collection."
-TYPE05="${YELLOW}Public${NC} - General public storage."
-TYPE06="${YELLOW}Transcode${NC} - Video transcoding disk (A must for transcoding)."
-TYPE07="${YELLOW}Video${NC} - Video - All video libraries (i.e movies, TV, homevideos)."
+TYPE02="${YELLOW}Backup${NC} - CT settings backup storage."
+TYPE03="${YELLOW}Books${NC} - Ebooks and Magazines."
+TYPE04="${YELLOW}Music${NC} - Music, Albums and Songs."
+TYPE05="${YELLOW}Photo${NC} - Photographic image collection."
+TYPE06="${YELLOW}Public${NC} - General public storage."
+TYPE07="${YELLOW}Transcode${NC} - Video transcoding disk (A must for transcoding)."
+TYPE08="${YELLOW}Video${NC} - Video - All video libraries (i.e movies, TV, homevideos)."
 while IFS=, read -r line
 do
   PS3="Select the media type for PVE mount point ${WHITE}$line${NC} (entering numeric) : "
-  select media_type in "$TYPE01" "$TYPE02" "$TYPE03" "$TYPE04" "$TYPE05" "$TYPE06" "$TYPE07"
+  select media_type in "$TYPE01" "$TYPE02" "$TYPE03" "$TYPE04" "$TYPE05" "$TYPE06" "$TYPE07" "$TYPE08"
   do
   echo
   info "PVE mount point ${WHITE}$line${NC} is set as : $(echo $media_type | awk '{print $1}')"
