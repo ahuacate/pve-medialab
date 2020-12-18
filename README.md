@@ -1683,6 +1683,17 @@ Go to the Proxmox web interface `typhoon-01` > `116 (radarr)` > `>_ Shell` and t
 ```
 sudo apt-get update -y &&
 sudo apt-get install -y unzip &&
+cd /opt &&
+sudo curl -L -O $( curl -s https://api.github.com/repos/Radarr/Radarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 ) &&
+sudo tar -xvzf Radarr.master.*.linux.tar.gz &&
+sudo rm *.linux.tar.gz &&
+sudo chown -R 1605:65605 /opt/Radarr &&
+sudo apt-get -y install libmediainfo-dev #Required to patch Mediainfo
+
+
+### Old Version ####
+sudo apt-get update -y &&
+sudo apt-get install -y unzip &&
 sudo apt install gnupg ca-certificates -y &&
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &&
 echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list &&
