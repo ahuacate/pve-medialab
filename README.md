@@ -1722,12 +1722,13 @@ Group=medialab
 Type=simple
 
 # Change the path to Radarr or mono here if it is in a different location for you.
-ExecStart=/usr/bin/mono --debug /opt/Radarr/Radarr.exe -nobrowser
+#ExecStart=/usr/bin/mono --debug /opt/Radarr/Radarr.exe -nobrowser # Old Version
+ExecStart=/opt/Radarr/Radarr
 TimeoutStopSec=20
 KillMode=process
 Restart=on-failure
 # If Radarr does not restart after an update enable next line
-ExecStop=-/usr/bin/mono /tmp/radarr_update/Radarr.Update.exe "ps aux | grep Radarr | grep -v grep | awk '{ print $2 }'" /tmp/radarr_update /opt/Radarr/Radarr.exe
+#ExecStop=-/usr/bin/mono /tmp/radarr_update/Radarr.Update.exe "ps aux | grep Radarr | grep -v grep | awk '{ print $2 }'" /tmp/radarr_update /opt/Radarr/Radarr.exe # Old version
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/radarr.service &&
