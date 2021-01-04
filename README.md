@@ -451,13 +451,23 @@ bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-s
 This is easy. First start LXC 111 (jellyfin) with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `START`. Then with the Proxmox web interface go to `typhoon-01` > `111 (jellyfin)` > `>_ Shell` and type the following:
 
 ```
-apt-get update -y &&
-apt-get install apt-transport-https &&
-apt-get install gnupg gnupg2 gnupg1 -y &&
-wget -O - https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | apt-key add - &&
-echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/ubuntu $( lsb_release -c -s ) main" | tee /etc/apt/sources.list.d/jellyfin.list &&
-apt-get update -y &&
-apt-get install jellyfin -y
+#Old Version
+#apt-get update -y &&
+#apt-get install apt-transport-https &&
+#apt-get install gnupg gnupg2 gnupg1 -y &&
+#wget -O - https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | apt-key add - &&
+#echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/ubuntu $( lsb_release -c -s ) main" | tee /etc/apt/sources.list.d/jellyfin.list &&
+#apt-get update -y &&
+#apt-get install jellyfin -y
+
+#New Version
+rm /etc/apt/sources.list.d/jellyfin.list # Removes old repository
+apt install software-properties-common
+add-apt-repository universe
+wget -O - https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | sudo apt-key add -
+echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/ubuntu $( lsb_release -c -s ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list
+apt update -y
+apt install jellyfin -y
 ```
 
 ### 2.11 Create and edit user groups- Ubuntu 18.04
