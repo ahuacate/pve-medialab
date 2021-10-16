@@ -62,7 +62,9 @@ if [ -f /mnt/pve/nas-*[0-9]-git/${GIT_USER}/developer_settings.git ] && [ -f /mn
   source /mnt/pve/nas-*[0-9]-git/${GIT_USER}/common/bash/source/pve_repo_loader.sh
 else
   # Download Github loader
-  bash -c "$(wget -qLO - https://raw.githubusercontent.com/${GIT_USER}/common/master/bash/source/pve_repo_loader.sh)"
+  wget -qL - https://raw.githubusercontent.com/${GIT_USER}/common/master/bash/source/pve_repo_loader.sh -O ${REPO_TEMP}/pve_repo_loader.sh
+  chmod +x ${REPO_TEMP}/pve_repo_loader.sh
+  source ${REPO_TEMP}/pve_repo_loader.sh
 fi
 
 #---- Body -------------------------------------------------------------------------
