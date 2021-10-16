@@ -174,7 +174,7 @@ pct exec $CTID -- chown -R 1605:65605 /home/media/lazylibrarian/.config
 pct push $CTID ${DIR}/source/pve_medialab_ct_ahuabooks_settings/default_lazylibrarian.ini /home/media/lazylibrarian/.config/lazylibrarian.ini --group 65605 --user 1605
 
 msg "Creating LazyLibrarian system.d file..."
-cat << 'EOF' > $TEMP_DIR/lazy.service
+cat << 'EOF' > ${TEMP_DIR}/lazy.service
 [Unit]
 Description=Lazylibrarian
 
@@ -189,7 +189,7 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 EOF
-pct push $CTID $TEMP_DIR/lazy.service /etc/systemd/system/lazy.service
+pct push $CTID ${TEMP_DIR}/lazy.service /etc/systemd/system/lazy.service
 
 #---- Installing Calibre
 msg "Installing Calibre software (be patient, might take a while)..."
@@ -208,7 +208,7 @@ pct exec $CTID -- touch /home/media/calibre/logs/calibre.log
 pct exec $CTID -- chown -hR 1605:65605 /home/media/calibre/logs/calibre.log
 
 msg "Creating Calibre-server system.d file..."
-cat << 'EOF' > $TEMP_DIR/calibre-server.service
+cat << 'EOF' > ${TEMP_DIR}/calibre-server.service
 [Unit]
 Description=calibre content server
 After=network.target calibre-web.service
@@ -223,7 +223,7 @@ RestartSec=30
 [Install]
 WantedBy=multi-user.target
 EOF
-pct push $CTID $TEMP_DIR/calibre-server.service /etc/systemd/system/calibre-server.service
+pct push $CTID ${TEMP_DIR}/calibre-server.service /etc/systemd/system/calibre-server.service
 
 #---- Installing Calibre-web
 msg "Installing Calibre-web software (be patient, might take a while)..."
@@ -234,7 +234,7 @@ pct exec $CTID -- chown -hR 1605:65605 /opt/calibre-web
 pct exec $CTID -- bash -c 'cd /opt/calibre-web && python3 -m pip install --system --target vendor -r requirements.txt'
 
 msg "Creating Calibre-web system.d file..."
-cat << 'EOF' > $TEMP_DIR/calibre-web.service
+cat << 'EOF' > ${TEMP_DIR}/calibre-web.service
 [Unit]
 Description=Calibre-Web
 After=network.target
@@ -249,7 +249,7 @@ WorkingDirectory=/home/media/calibre-web/
 [Install]
 WantedBy=multi-user.target
 EOF
-pct push $CTID $TEMP_DIR/calibre-web.service /etc/systemd/system/calibre-web.service
+pct push $CTID ${TEMP_DIR}/calibre-web.service /etc/systemd/system/calibre-web.service
 
 #---- Installing Booksonic
 msg "Installing Booksonic software (be patient, might take a while)..."
@@ -259,7 +259,7 @@ pct exec $CTID -- wget https://github.com/popeen/Booksonic-Air/releases/download
 pct exec $CTID -- chown -hR 1605:65605 /opt/booksonic
 
 msg "Creating Booksonic system.d file..."
-cat << 'EOF' > $TEMP_DIR/booksonic.service
+cat << 'EOF' > ${TEMP_DIR}/booksonic.service
 [Unit]
 Description=Booksonic Media Server
 After=remote-fs.target network.target
@@ -321,7 +321,7 @@ ProtectSystem=full
 [Install]
 WantedBy=multi-user.target
 EOF
-pct push $CTID $TEMP_DIR/booksonic.service /etc/systemd/system/booksonic.service
+pct push $CTID ${TEMP_DIR}/booksonic.service /etc/systemd/system/booksonic.service
 
 # Create directory symlink to ffmpeg
 pct exec $CTID -- ln -s /usr/bin/ffmpeg /home/media/booksonic/transcode
@@ -345,7 +345,7 @@ pct exec $CTID -- rm -R /tmp/podgrab
 
 
 # Set environment file
-cat << 'EOF' > $TEMP_DIR/.env
+cat << 'EOF' > ${TEMP_DIR}/.env
 CONFIG=/home/media/podgrab
 DATA=/mnt/audio/podcasts
 CHECK_FREQUENCY = 360
@@ -353,10 +353,10 @@ PASSWORD=
 PORT = 4041
 # test
 EOF
-pct push $CTID $TEMP_DIR/.env /usr/local/bin/podgrab/.env
+pct push $CTID ${TEMP_DIR}/.env /usr/local/bin/podgrab/.env
 
 msg "Creating Podgrab system.d file..."
-cat << 'EOF' > $TEMP_DIR/podgrab.service
+cat << 'EOF' > ${TEMP_DIR}/podgrab.service
 [Unit]
 Description=Podgrab
 After=remote-fs.target network.target
@@ -370,7 +370,7 @@ Group=medialab
 [Install]
 WantedBy=multi-user.target
 EOF
-pct push $CTID $TEMP_DIR/podgrab.service /etc/systemd/system/podgrab.service
+pct push $CTID ${TEMP_DIR}/podgrab.service /etc/systemd/system/podgrab.service
 
 #---- Starting Servers
 msg "Starting Lazylibrarian..."
