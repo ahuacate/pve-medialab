@@ -86,6 +86,10 @@ CT_PASSWORD='0'
 OSTYPE='ubuntu'
 OSVERSION='21.04'
 
+# App default UID/GUID
+APP_USERNAME='media'
+APP_GRPNAME='medialab'
+
 #---- Other Files ------------------------------------------------------------------
 
 # Required PVESM Storage Mounts for CT
@@ -141,7 +145,7 @@ msg "Setting /opt/Lidarr folder permissions..."
 pct exec $CTID -- bash -c 'chown -hR 1605:65605 /opt/Lidarr'
 
 msg "Create lidarr.service system.d file..."
-cat << 'EOF' > $TEMP_DIR/lidarr.service
+cat << 'EOF' > ${TEMP_DIR}/lidarr.service
 [Unit]
 Description=Lidarr Daemon
 After=syslog.target network.target
@@ -159,7 +163,7 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 EOF
-pct push $CTID $TEMP_DIR/lidarr.service /etc/systemd/system/lidarr.service
+pct push $CTID ${TEMP_DIR}/lidarr.service /etc/systemd/system/lidarr.service
 
 msg "Enabling lidarr.service system.d file..."
 pct exec $CTID -- systemctl enable lidarr.service > /dev/null
@@ -173,20 +177,57 @@ if [ $(pct exec $CTID -- systemctl is-active --quiet lidarr.service; echo $?) !=
   sleep 3
   exit 0
 fi
+
+#---- Fix Lidarr API key
+msg "Modifying configuration settings..."
+if [ $(pct exec $CTID -- systemctl is-active lidarr.service) == "active" ]; then
+  pct exec $CTID -- systemctl stop lidarr.service
+  while true; do
+  if [ $(pct exec $CTID -- systemctl is-active lidarr.service) != "active" ]; then
+    break
+  fi
+  sleep 5
+  done
+fi
+pct exec $CTID -- sed -i 's|<ApiKey>.*|<ApiKey>1a0b9fd2dc144ec28141440f72616c74</ApiKey>|g' /home/media/.config/Lidarr/config.xml
+pct exec $CTID -- systemctl daemon-reload > /dev/null
+pct exec $CTID -- systemctl restart lidarr.service > /dev/null
 echo
+
+#---- Copy App settings file to NAS
+if [ -f ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings/${CT_HOSTNAME_VAR}_backup_*_0000.00.00_00.00.00.zip ]; then
+  pct exec $CTID -- runuser ${APP_USERNAME} -c "mkdir -p /mnt/backup/${CT_HOSTNAME_VAR}/manual"
+  # Copy Radarr backup ahuacate base file to NAS
+  BACKUP_FILE=$(find ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings -name *_0000.00.00_00.00.00.zip -type f -exec basename {} 2> /dev/null \;)
+  pct exec $CTID -- runuser ${APP_USERNAME} -c "mkdir -p /home/media/.config/Lidarr/Backups/manual"
+  pct push $CTID ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings/${BACKUP_FILE} /home/media/.config/Lidarr/Backups/manual/${BACKUP_FILE}
+fi
 
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status."
 
 msg "Success. ${CT_HOSTNAME_VAR^} installation has finished. The first start-up of ${CT_HOSTNAME_VAR^} may take a few seconds to be ready so be patient. Web-interface is available on:
 
-  --  ${WHITE}http://$CT_IP:8686${NC}\n
-  --  ${WHITE}http://${CT_HOSTNAME}:8686${NC}
+  --  ${WHITE}http://${CT_IP}:8686${NC}\n
+  --  ${WHITE}http://${CT_HOSTNAME}:8686${NC}\n"
+
+if [ -f ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings/${CT_HOSTNAME_VAR}_backup_*_0000.00.00_00.00.00.zip ]; then
+msg "An out-of-the-box ${CT_HOSTNAME_VAR^} setting preset file is included. Go to ${CT_HOSTNAME_VAR^} WebGUI 'System' > 'Backup' and restore the backup filename:
+
+  --  ${WHITE}${BACKUP_FILE}${NC}
+
+The file includes:
+
+  --  Media Management, Root folders
+  --  Profiles tuned ( 4K tuning, codecs, subs )
+  --  Indexers sets: Jackett
+  --  Download Client sets: Default Deluge and NZBGet
+  --  Tags for 'hevc_only' and 'subs_eng'
+  --  API key set ( so all Ahuacate medialab CTs can communicate )
+  --  Backup set: /mnt/backup/sonarr ( all backups stored on NAS )
+
+We recommend you install our presets because it saves time. Check the server IP addresses of your Download Clients and Indexers, and configure any Usenet Indexers.\n"
+fi
   
-For configuring ${CT_HOSTNAME_VAR^} we have instructions:
-
-  --  ${WHITE}https://github.com/ahuacate/lidarr${NC}"
-echo
-
 # Cleanup
 trap cleanup EXIT

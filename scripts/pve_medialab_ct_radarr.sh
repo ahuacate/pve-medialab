@@ -86,6 +86,10 @@ CT_PASSWORD='0'
 OSTYPE='ubuntu'
 OSVERSION='21.04'
 
+# App default UID/GUID
+APP_USERNAME='media'
+APP_GRPNAME='medialab'
+
 #---- Other Files ------------------------------------------------------------------
 
 # Required PVESM Storage Mounts for CT
@@ -210,18 +214,40 @@ pct exec $CTID -- systemctl daemon-reload > /dev/null
 pct exec $CTID -- systemctl restart radarr.service > /dev/null
 echo
 
+#---- Copy App settings file to NAS
+if [ -f ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings/${CT_HOSTNAME_VAR}_backup_*_0000.00.00_00.00.00.zip ]; then
+  pct exec $CTID -- runuser ${APP_USERNAME} -c "mkdir -p /mnt/backup/${CT_HOSTNAME_VAR}/manual"
+  # Copy Radarr backup ahuacate base file to NAS
+  BACKUP_FILE=$(find ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings -name *_0000.00.00_00.00.00.zip -type f -exec basename {} 2> /dev/null \;)
+  pct exec $CTID -- runuser ${APP_USERNAME} -c "mkdir -p /home/media/.config/Radarr/Backups/manual"
+  pct push $CTID ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings/${BACKUP_FILE} /home/media/.config/Radarr/Backups/manual/${BACKUP_FILE}
+fi
+
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status."
 
 msg "Success. ${CT_HOSTNAME_VAR^} installed into /opt/${CT_HOSTNAME_VAR}. The first start-up of ${CT_HOSTNAME_VAR^} may take a few seconds to be ready so be patient. Web-interface is available on:
 
   --  ${WHITE}http://$CT_IP:7878${NC}\n
-  --  ${WHITE}http://${CT_HOSTNAME}:7878${NC}
-  
-For configuring ${CT_HOSTNAME_VAR^} we have instructions:
+  --  ${WHITE}http://${CT_HOSTNAME}:7878${NC}\n"
 
-  --  ${WHITE}https://github.com/ahuacate/radarr${NC}"
-echo
+if [ -f ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings/${CT_HOSTNAME_VAR}_backup_*_0000.00.00_00.00.00.zip ]; then
+msg "An out-of-the-box ${CT_HOSTNAME_VAR^} setting preset file is included. Go to ${CT_HOSTNAME_VAR^} WebGUI 'System' > 'Backup' and restore the backup filename:
+
+  --  ${WHITE}${BACKUP_FILE}${NC}
+
+The file includes:
+
+  --  Media Management, Root folders
+  --  Profiles tuned ( 4K tuning, codecs, subs )
+  --  Custom Formats: Primarily for audio
+  --  Indexers sets: Jackett
+  --  Download Client sets: Default Deluge and NZBGet
+  --  API key set ( so all Ahuacate medialab CTs can communicate )
+  --  Backup set: /mnt/backup/radarr ( all backups stored on NAS )
+
+We recommend you install our presets because it saves time. Check the server IP addresses of your Download Clients and Indexers, and configure any Usenet Indexers.\n"
+fi
 
 # Cleanup
 trap cleanup EXIT

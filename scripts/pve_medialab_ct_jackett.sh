@@ -101,6 +101,10 @@ CT_PASSWORD='0'
 OSTYPE='ubuntu'
 OSVERSION='21.04'
 
+# App default UID/GUID
+APP_USERNAME='media'
+APP_GRPNAME='medialab'
+
 #---- Other Files ------------------------------------------------------------------
 
 # Required PVESM Storage Mounts for CT
@@ -208,8 +212,7 @@ msg "Success. ${CT_HOSTNAME_VAR^} installed into /opt/${CT_HOSTNAME_VAR}. Web-in
   --  ${WHITE}http://$CT_IP:9117${NC} (password: not set)\n
   --  ${WHITE}http://${CT_HOSTNAME}:9117${NC}
   
-Simply add your torrent indexers."
-echo
+Simply add your torrent indexers.\n"
 
 # Cleanup
 trap cleanup EXIT

@@ -86,6 +86,10 @@ CT_PASSWORD='0'
 OSTYPE='ubuntu'
 OSVERSION='21.04'
 
+# App default UID/GUID
+APP_USERNAME='media'
+APP_GRPNAME='medialab'
+
 #---- Other Files ------------------------------------------------------------------
 
 # Required PVESM Storage Mounts for CT
@@ -158,7 +162,10 @@ msg "Prerequisite - Updating container OS (be patient, might take a while)..."
 pct exec $CTID -- apt-get -qqy update > /dev/null
 
 msg "Installing Sonarr software..."
-pct exec $CTID -- bash -c 'DEBIAN_FRONTEND=noninteractive apt-get install -qqy sonarr > /dev/null'
+pct exec $CTID -- bash -c 'echo "sonarr sonarr/owning_user  string media" | debconf-set-selections'
+pct exec $CTID -- bash -c 'echo "sonarr sonarr/owning_group string medialab" | debconf-set-selections'
+pct exec $CTID -- bash -c 'DEBIAN_FRONTEND=non-interactive apt-get install -yqq sonarr'
+
 if [ $(pct exec $CTID -- dpkg -s sonarr > /dev/null 2>&1; echo $?) != 0 ]; then
   warn "Sonarr installation status: ${RED}Fail${NC}
   Failed to install Mono. User intervention required. Exiting installation script in 3 second."
@@ -167,7 +174,7 @@ if [ $(pct exec $CTID -- dpkg -s sonarr > /dev/null 2>&1; echo $?) != 0 ]; then
 fi
 
 #---- Fix Sonarr UID and GUID & API key
-msg "Modifying sonarr.service UID:GID to Medialab User (1605:65605)..."
+msg "Modifying configuration settings..."
 if [ $(pct exec $CTID -- systemctl is-active sonarr.service) == "active" ]; then
   pct exec $CTID -- systemctl stop sonarr.service
   while true; do
@@ -177,26 +184,45 @@ if [ $(pct exec $CTID -- systemctl is-active sonarr.service) == "active" ]; then
   sleep 5
   done
 fi
-pct exec $CTID -- sed -i 's/User=sonarr/User=media/' /etc/systemd/system/multi-user.target.wants/sonarr.service
-pct exec $CTID -- sed -i 's/Group=sonarr/Group=medialab/' /etc/systemd/system/multi-user.target.wants/sonarr.service
-msg "Modifying Sonarr API key..."
 pct exec $CTID -- sed -i 's|<ApiKey>.*|<ApiKey>1a0b9fd2dc144ec28141440f72616c74</ApiKey>|g' /var/lib/sonarr/config.xml
 pct exec $CTID -- systemctl daemon-reload > /dev/null
 pct exec $CTID -- systemctl restart sonarr.service > /dev/null
 echo
 
+#---- Copy App settings file to NAS
+if [ -f ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings/${CT_HOSTNAME_VAR}_backup_*_0000.00.00_00.00.00.zip ]; then
+  pct exec $CTID -- runuser ${APP_USERNAME} -c "mkdir -p /mnt/backup/${CT_HOSTNAME_VAR}/manual"
+  # Copy Sonarr backup ahuacate base file to NAS
+  BACKUP_FILE=$(find ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings -name *_0000.00.00_00.00.00.zip -type f -exec basename {} 2> /dev/null \;)
+  pct exec $CTID -- runuser ${APP_USERNAME} -c "mkdir -p /var/lib/sonarr/Backups/manual"
+  pct push $CTID ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings/${BACKUP_FILE} /var/lib/sonarr/Backups/manual/${BACKUP_FILE}
+fi
+
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status."
 
-msg "Success. ${CT_HOSTNAME_VAR^} installation has finished. The first start-up of ${CT_HOSTNAME_VAR^} may take a few seconds to get ready so be patient. Web-interface is available on:
+msg "Success. ${CT_HOSTNAME_VAR^} installation has finished. The first start-up may take a few seconds so be patient. Web-interface is available on:
 
   --  ${WHITE}http://$CT_IP:8989${NC}\n
-  --  ${WHITE}http://${CT_HOSTNAME}:8989${NC}
-  
-For configuring ${CT_HOSTNAME_VAR^} we have instructions:
+  --  ${WHITE}http://${CT_HOSTNAME}:8989${NC}\n"
 
-  --  ${WHITE}https://github.com/ahuacate/sonarr${NC}"
-echo
+if [ -f ${DIR}/source/pve_medialab_ct_${CT_HOSTNAME_VAR}_settings/${CT_HOSTNAME_VAR}_backup_*_0000.00.00_00.00.00.zip ]; then
+msg "An out-of-the-box ${CT_HOSTNAME_VAR^} setting preset file is included. Go to ${CT_HOSTNAME_VAR^} WebGUI 'System' > 'Backup' and restore the backup filename:
+
+  --  ${WHITE}${BACKUP_FILE}${NC}
+
+The file includes:
+
+  --  Media Management, Root folders
+  --  Profiles tuned ( 4K tuning, codecs, subs )
+  --  Indexers sets: Jackett
+  --  Download Client sets: Default Deluge and NZBGet
+  --  Tags for 'hevc_only' and 'subs_eng'
+  --  API key set ( so all Ahuacate medialab CTs can communicate )
+  --  Backup set: /mnt/backup/sonarr ( all backups stored on NAS )
+
+We recommend you install our presets because it saves time. Check the server IP addresses of your Download Clients and Indexers, and configure any Usenet Indexers.\n"
+fi
 
 # Cleanup
 trap cleanup EXIT

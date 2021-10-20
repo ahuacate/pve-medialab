@@ -89,6 +89,10 @@ CT_PASSWORD='0'
 OSTYPE='ubuntu'
 OSVERSION='21.04'
 
+# App default UID/GUID
+APP_USERNAME='media'
+APP_GRPNAME='medialab'
+
 
 #---- Other Files ------------------------------------------------------------------
 
@@ -143,9 +147,9 @@ pct exec $CTID -- mkdir -p /home/media/podgrab
 pct exec $CTID -- chown -hR 1605:65605 /home/media
 
 msg "Creating storage folders..."
-pct exec $CTID -- runuser media -c 'mkdir -p /mnt/books/{ebooks,comics,magazines}'
-pct exec $CTID -- runuser media -c 'mkdir -p /mnt/audio/{audiobooks,podcasts}'
-pct exec $CTID -- runuser media -c 'mkdir -p /mnt/public/autoadd/direct_import/lazylibrarian'
+pct exec $CTID -- runuser ${APP_USERNAME} -c 'mkdir -p /mnt/books/{ebooks,comics,magazines}'
+pct exec $CTID -- runuser ${APP_USERNAME} -c 'mkdir -p /mnt/audio/{audiobooks,podcasts}'
+pct exec $CTID -- runuser ${APP_USERNAME} -c 'mkdir -p /mnt/public/autoadd/direct_import/lazylibrarian'
 
 msg "Installing prerequisites (be patient, might take a while)..."
 pct exec $CTID -- apt-get install git xdg-utils xvfb python3-pip libnss3 python3-openssl python3-oauth libffi-dev imagemagick rename id3v2 id3tool unzip ffmpeg libgl1-mesa-glx unrar -y
@@ -199,9 +203,9 @@ set -Eeuo pipefail
 pct exec $CTID -- chown -hR 1605:65605 /opt/calibre
 
 msg "Creating the Calibre database (by adding a dummy book)...."
-pct exec $CTID -- wget http://www.gutenberg.org/ebooks/219.epub.noimages -O /mnt/public/autoadd/direct_import/lazylibrarian/heart.epub
-pct exec $CTID -- runuser media -c 'xvfb-run calibredb add /mnt/public/autoadd/direct_import/lazylibrarian/heart.epub --library-path /mnt/books/ebooks'
-pct exec $CTID -- rm /mnt/public/autoadd/direct_import/lazylibrarian/heart.epub
+pct exec $CTID -- runuser ${APP_USERNAME} -c 'wget http://www.gutenberg.org/ebooks/219.epub.noimages -O /mnt/public/autoadd/direct_import/lazylibrarian/heart.epub'
+pct exec $CTID -- runuser ${APP_USERNAME} -c 'xvfb-run calibredb add /mnt/public/autoadd/direct_import/lazylibrarian/heart.epub --library-path /mnt/books/ebooks'
+pct exec $CTID -- runuser ${APP_USERNAME} -c 'rm /mnt/public/autoadd/direct_import/lazylibrarian/heart.epub'
 
 msg "Creating a Calibre log file...."
 pct exec $CTID -- touch /home/media/calibre/logs/calibre.log
@@ -471,6 +475,9 @@ elif [ $(pct exec $CTID -- bash -c '[ -d "/mnt/downloads" ]'; echo $?) = 0 ]; th
   done
 fi
 
+#---- Create App settings backup folder on NAS
+pct exec $CTID -- runuser ${APP_USERNAME} -c "mkdir -p /mnt/backup/${CT_HOSTNAME_VAR}"
+
 
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status."
@@ -493,8 +500,7 @@ Podgrab
   --  ${WHITE}http://$CT_IP:4041${NC} ( password:none set )\n
   --  ${WHITE}http://${CT_HOSTNAME}:4041${NC}
 
-For configuring all Ahuabooks applications we have instructions: ${WHITE}https://github.com/ahuacate/ahuabooks${NC}"
-echo
+For configuring all Ahuabooks applications read our instructions: ${WHITE}https://github.com/ahuacate/ahuabooks${NC}"
 
 # Cleanup
 trap cleanup EXIT

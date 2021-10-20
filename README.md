@@ -2,9 +2,9 @@
 
 This guide will help you create a suite of PVE CT's and applications for building a Home Media solution.
 
-As with all our guides we have a Easy Script to automate CT creation through to the installation of software.
+As with all our guides, we have an Easy Script to automate CT creation through to the installation of software.
 
-But first step is to check your network and hardware prerequisite requirements before running our Easy Script. Its important you first read and follow our prerequisite guide.
+But the first step is to check your network and hardware prerequisite requirements before running our Easy Script. It's important you first read and follow our prerequisite guide.
 
 **Prerequisites**
 
@@ -25,7 +25,7 @@ PVE Host Prerequisites:
 	You must have a running network File Server (NAS) with ALL of the above NFS and/or CIFS backend share points configured on your PVE host pve-01.
 
 Optional Prerequisites:
-- [ ] pfSense is fully configured including working OpenVPN Gateways VPNGATE-LOCAL and VPNGATE-WORLD.
+- [ ] pfSense with working OpenVPN Gateways VPNGATE-LOCAL (VLAN30) and VPNGATE-WORLD (VLAN40).
 
 <h4>Easy Scripts</h4>
 Easy Scripts are based on bash scripting. Simply `Cut & Paste` our Easy Script command into your terminal window, press `Enter` and follow the prompts and terminal instructions. But PLEASE first read our guide so you fully understand the input requirements.
@@ -67,10 +67,10 @@ Our Easy Scripts assumes your network is VLAN ready. If not, simply decline the 
     - [7.3. Radarr LXC](#73-radarr-lxc)
     - [7.4. Installation](#74-installation)
     - [7.5. Setup Radarr](#75-setup-radarr)
-- [8. Lidarr](#8-lidarr)
+- [8. Lidarr LXC](#8-lidarr-lxc)
     - [8.1. Installation](#81-installation)
     - [8.2. Setup Lidarr](#82-setup-lidarr)
-- [9. Ahuabooks](#9-ahuabooks)
+- [9. Ahuabooks LXC](#9-ahuabooks-lxc)
     - [9.1. Installation](#91-installation)
     - [9.2. Setup Ahuabooks](#92-setup-ahuabooks)
 
@@ -81,11 +81,16 @@ All our MediaLab PVE CTs are built using the PVE Ubuntu 20.10 template.
 
 Shared storage (NAS) is via CT bind mounts with your PVE host(s). All our MediaLab CT applications use our custom Linux User `media` and Group `medialab`.
 
+For the Radarr, Sonarr, and Lidarr an out-of-the-box setting preset file is included. Go to the application WebGUI `System` > `Backup` and restore the backup filename:
+
+> radarr_backup_v3.2.2.0000_0000.00.00_00.00.00.zip
+
+Always test IP connectivity after installing all the Medialab Apps. The API should all be valid and working.
 
 ## 1.1. Unprivileged CTs and File Permissions
-With unprivileged CT containers you will have issues with UIDs (user id) and GUIDs (group id) permissions with bind mounted shared data. In Proxmox UIDs and GUIDs are mapped to a different number range than on the host machine, usually root (uid 0) became uid 100000, 1 will be 100001 and so on.
+With unprivileged CT containers, you will have issues with UIDs (user id) and GUIDs (group id) permissions with bind-mounted shared data. In Proxmox UIDs and GUIDs are mapped to a different number range than on the host machine, usually, root (uid 0) became uid 100000, 1 will be 100001 and so on.
 
-This means every CT file and directory will be mapped to "nobody" (uid 65534). This isn't acceptable for host mounted shared data resources. For shared data we want to access the directory with the same, unprivileged, UID as is being used on all other CTs under the same user name.
+This means every CT file and directory will be mapped to "nobody" (uid 65534). This isn't acceptable for host mounted shared data resources. For shared data, we want to access the directory with the same, unprivileged, UID as is being used on all other CTs under the same user name.
 
 Our default PVE Users (UID) and Groups (GUID) in all our MediaLab, HomeLab and PrivateLab CTs are common.
 
@@ -98,7 +103,7 @@ Our default PVE Users (UID) and Groups (GUID) in all our MediaLab, HomeLab and P
 Our fix is done in three stages in our Easy Scripts when you create any new MediaLab application CT.
 
 ### 1.1.1. Unprivileged Container Mapping - medialab GUID
-To change a PVE containers mapping we change the PVE container UID and GUID in the file `/etc/pve/lxc/container-id.conf` after our Easy Script creates all new MediaLab application CT.
+To change a PVE containers mapping we change the PVE container UID and GUID in the file `/etc/pve/lxc/container-id.conf` after our Easy Script creates a new MediaLab application CT.
 ```
 # Our CT mapping in /etc/pve/lxc/container-id.conf
 
@@ -132,7 +137,7 @@ root:65604:100
 root:100:1
 ```
 
-The above edits adds a ID map range from 65604 > 65704 in the container to the same range on the PVE host. Next ID maps GUID 100 (default linux users group) and UID 1605 (username media) on the container to the same range on the host.
+The above edits add an ID map range from 65604 > 65704 in the container to the same range on the PVE host. Next ID maps GUID 100 (default Linux users group) and UID 1605 (username media) on the container to the same range on the host.
 
 The above edit is done automatically in our Easy Script.
 
@@ -147,7 +152,7 @@ groupadd -g 65605 medialab
 useradd -u 1605 -g medialab -M media
 usermod -s /bin/bash media
 ```
-(B) User mediar with a Home folder
+(B) User media with a Home folder
 ```
 groupadd -g 65605 medialab
 useradd -u 1605 -g medialab -m media
@@ -171,7 +176,7 @@ Our Easy Script will create your Ubuntu Jellyfin CT. Go to your Proxmox PVE host
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_ct_jellyfin_installer.sh)"
 ```
 
-Simply follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
 
 
 ## 2.2. Setup Jellyfin
@@ -180,7 +185,7 @@ In your web browser URL type `http://192.168.50.111:8096` and the applications c
 ---
 
 # 3. NZBget LXC
-NZBGet is a binary downloader, which downloads files from Usenet based on information given in nzb-files.
+NZBGet is a binary downloader, which downloads files from Usenet based on the information given in nzb-files.
 
 NZBGet is written in C++ and is known for its extraordinary performance and efficiency.
 
@@ -191,15 +196,15 @@ Our Easy Script will create your Ubuntu Jellyfin CT. Go to your Proxmox PVE host
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_ct_nzbget_installer.sh)"
 ```
 
-Simply follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
 
 ## 3.2. Setup NZBget
-In your web browser URL type `http://192.168.30.112:6789` and the applications web frontend will appear. Detailed configuration instructions are available [here](https://github.com/ahuacate/nzbget).
+In your web browser URL type, `http://192.168.30.112:6789` and the application's web frontend will appear. Detailed configuration instructions are available [here](https://github.com/ahuacate/nzbget).
 
 ---
 
 # 4. Deluge LXC
-Deluge is a lightweight, free software, cross-platform BitTorrent client.
+Deluge is lightweight, free software, cross-platform BitTorrent client.
 
 ## 4.1. Installation
 Our Easy Script will create your Ubuntu Deluge CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
@@ -208,15 +213,15 @@ Our Easy Script will create your Ubuntu Deluge CT. Go to your Proxmox PVE host (
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_ct_deluge_installer.sh)"
 ```
 
-Simply follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
 
 ## 4.2. Setup Deluge
-In your web browser URL type `http://192.168.30.113:8112` and the applications web frontend page will appear. Detailed configuration instructions are available [here](https://github.com/ahuacate/deluge).
+In your web browser URL type `http://192.168.30.113:8112` and the application's web frontend page will appear. Detailed configuration instructions are available [here](https://github.com/ahuacate/deluge).
 
 ---
 
 # 5. Jackett LXC
-Jackett works as a proxy server: it translates queries from apps (Sonarr, Radarr, Lidarr etc) into tracker-site-specific http queries, parses the html response, then sends results back to the requesting software. This allows for getting recent uploads (like RSS) and performing searches. Jackett is a single repository of maintained indexer scraping & translation logic - removing the burden from other apps.
+Jackett works as a proxy server: it translates queries from apps (Sonarr, Radarr, Lidarr etc) into tracker-site-specific HTTP queries, parses the HTML response, then sends results back to the requesting software. This allows for getting recent uploads (like RSS) and performing searches. Jackett is a single repository of maintained indexer scraping & translation logic - removing the burden from other apps.
 
 ## 5.1. Installation
 Our Easy Script will create your Ubuntu Jackett CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
@@ -225,10 +230,10 @@ Our Easy Script will create your Ubuntu Jackett CT. Go to your Proxmox PVE host 
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_ct_jackett_installer.sh)"
 ```
 
-Simply follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
 
 ## 5.2. Setup Jackett
-In your web browser URL type `http://192.168.50.120:9117` and the applications web frontend will appear. Detailed configuration instructions are available [here](https://github.com/ahuacate/jackett).
+In your web browser URL type `http://192.168.50.120:9117` and the application's web frontend will appear. Detailed configuration instructions are available [here](https://github.com/ahuacate/jackett).
 
 ---
 
@@ -357,7 +362,7 @@ FileBot works inconjunction with Flexget. So instructions to setup FileBot are [
 ---
 
 # 7. Sonarr LXC
-Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
+Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favourite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
 ## 7.1. Installation
 Our Easy Script will create your Ubuntu Sonarr CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
@@ -366,15 +371,19 @@ Our Easy Script will create your Ubuntu Sonarr CT. Go to your Proxmox PVE host (
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_ct_sonarr_installer.sh)"
 ```
 
-Simply follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
 
 ## 7.2. Setup Sonarr
-In your web browser URL type `http://192.168.50.115:8989` and the applications web frontend will appear. Detailed configuration instructions are available [here](https://github.com/ahuacate/sonarr).
+In your web browser URL type `http://192.168.50.115:8989`. The Sonarr WebGUI will appear.
+
+An out-of-the-box Sonarr setting preset file is included. Go to Sonarr WebGUI `System` > `Backup` and restore the backup filename ( use the restore icon to the right of the backup file ):
+
+*  *sonarr_backup_vX.X.X.0000_0000.00.00_00.00.00.zip*
 
 ---
 
 ## 7.3. Radarr LXC
-Radarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
+Radarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favourite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
 ## 7.4. Installation
 Our Easy Script will create your Ubuntu Radarr CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
@@ -383,15 +392,19 @@ Our Easy Script will create your Ubuntu Radarr CT. Go to your Proxmox PVE host (
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_ct_radarr_installer.sh)"
 ```
 
-Simply follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
 
 ## 7.5. Setup Radarr
-In your web browser URL type `http://192.168.50.116:7878 ` and the applications web frontend will appear. Detailed configuration instructions are available [here](https://github.com/ahuacate/radarr).
+In your web browser URL type `http://192.168.50.116:7878 `. The Radarr WebGUI will appear.
+
+An out-of-the-box Radarr setting preset file is included. Go to Radarr WebGUI `System` > `Backup` and restore the backup filename ( use the restore icon to the right of the backup file ):
+
+*  *radarr_backup_vX.X.X.0000_0000.00.00_00.00.00.zip*
 
 ---
 
-# 8. Lidarr
-Lidarr is a music collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new tracks from your favorite artists and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
+# 8. Lidarr LXC
+Lidarr is a music collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new tracks from your favourite artists and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
 ## 8.1. Installation
 Our Easy Script will create your Ubuntu Lidarr CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following (cut & paste):
@@ -400,14 +413,18 @@ Our Easy Script will create your Ubuntu Lidarr CT. Go to your Proxmox PVE host (
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_ct_lidarr_installer.sh)"
 ```
 
-Simply follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
 
 ## 8.2. Setup Lidarr
-In your web browser URL type `http://192.168.50.117:8686` and the applications web frontend will appear. Detailed configuration instructions are available [here](https://github.com/ahuacate/lidarr).
+In your web browser URL type `http://192.168.50.117:8686`. The Lidarr WebGUI will appear.
+
+An out-of-the-box Lidarr setting preset file is included. Go to Lidarr WebGUI `System` > `Backup` and restore the backup filename ( use the restore icon to the right of the backup file ):
+
+*  *lidarr_backup_vX.X.X.0000_0000.00.00_00.00.00.zip*
 
 ---
 
-# 9. Ahuabooks
+# 9. Ahuabooks LXC
 Ahuabooks is a suite of software for managing your ebook, audiobook, podcast and magazine requirements.
 
 The software suite includes:
@@ -423,7 +440,7 @@ Our Easy Script will create your Ubuntu Ahuabooks CT. Go to your Proxmox PVE hos
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_ct_ahuabooks_installer.sh)"
 ```
 
-Simply follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
 
 ## 9.2. Setup Ahuabooks
 In your web browser URL type to connect and the applications web frontend will appear.

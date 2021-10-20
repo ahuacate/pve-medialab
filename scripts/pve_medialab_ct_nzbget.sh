@@ -222,7 +222,7 @@ msg "Success. ${CT_HOSTNAME_VAR^} installed into /opt/${CT_HOSTNAME_VAR}. Web-in
       ( login: nzbget and password: tegbzn6789 )\n
   --  ${WHITE}http://${CT_HOSTNAME}:6789${NC}
   
-For configuring ${CT_HOSTNAME_VAR^} we have instructions:
+More information about configuring ${CT_HOSTNAME_VAR^} is available here:
 
   --  ${WHITE}https://github.com/ahuacate/nzbget${NC}"
 echo

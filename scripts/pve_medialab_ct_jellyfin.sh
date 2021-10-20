@@ -101,6 +101,10 @@ OSVERSION='20.04'
 # CT SSH Port
 SSH_PORT_VAR='22' # Best not use default port 22
 
+# App default UID/GUID
+APP_USERNAME='media'
+APP_GRPNAME='medialab'
+
 
 #---- Other Files ------------------------------------------------------------------
 
@@ -195,6 +199,9 @@ info "Jellyfin UID is set: ${YELLOW}$(pct exec $CTID -- id -u jellyfin)${NC}"
 info "Jellyfin GUID is set: ${YELLOW}$(pct exec $CTID -- id -g jellyfin)${NC}"
 echo
 
+#---- Create App settings backup folder on NAS
+pct exec $CTID -- runuser ${APP_USERNAME} -c "mkdir -p /mnt/backup/${CT_HOSTNAME_VAR}"
+
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status."
 
@@ -203,7 +210,7 @@ msg "Success. ${CT_HOSTNAME_VAR^} installation has completed. Web-interface is a
   --  ${WHITE}http://$CT_IP:8096/${NC}\n
   --  ${WHITE}http://${CT_HOSTNAME}:8096/${NC}
   
-Our ${CT_HOSTNAME_VAR^} setup instructions are available here:
+More information about configuring ${CT_HOSTNAME_VAR^} is available here:
 
   --  ${WHITE}https://github.com/ahuacate/jellyfin${NC}"
 echo
