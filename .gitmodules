@@ -1,0 +1,4 @@
+[submodule "common"]
+	path = common
+	url = //192.168.1.10/git/ahuacate/common
+	branch = master
