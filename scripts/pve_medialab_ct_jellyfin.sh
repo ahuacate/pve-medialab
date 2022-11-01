@@ -96,7 +96,7 @@ CT_STARTUP='2'
 CT_PASSWORD='0'
 # PVE Container OS (Not supported on 21.04)
 OSTYPE='ubuntu'
-OSVERSION='20.04'
+OSVERSION='22.04'
 
 # CT SSH Port
 SSH_PORT_VAR='22' # Best not use default port 22
@@ -155,10 +155,12 @@ msg "Prerequisite - Installing HTTPS transport for APT..."
 pct exec $CTID -- apt-get install apt-transport-https -qqy >/dev/null
 
 msg "Prerequisite - Importing the GPG signing key (signed by the Jellyfin Team)..."
-pct exec $CTID -- bash -c 'wget -qO - https://repo.jellyfin.org/jellyfin_team.gpg.key | sudo tee /usr/share/keyrings/jellyfin_team-archive-keyring.gpg.key >/dev/null'
+# pct exec $CTID -- bash -c 'wget -qO - https://repo.jellyfin.org/jellyfin_team.gpg.key | sudo tee /usr/share/keyrings/jellyfin_team-archive-keyring.gpg.key >/dev/null'
+pct exec $CTID -- bash -c 'curl -fsSL https://repo.jellyfin.org/ubuntu/jellyfin_team.gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/jellyfin.gpg'
 
 msg "Prerequisite - Adding a Jellyfin repository list..."
 pct exec $CTID -- bash -c 'echo "deb [arch=$( dpkg --print-architecture ) signed-by=/usr/share/keyrings/jellyfin_team-archive-keyring.gpg.key] https://repo.jellyfin.org/$(cat /etc/os-release | grep '^ID=.*' | sed 's/^ID=//') $(cat /etc/os-release | grep '^VERSION_CODENAME=.*' | sed 's/^VERSION_CODENAME=//') main" | sudo tee /etc/apt/sources.list.d/jellyfin.list >/dev/null'
+# pct exec $CTID -- bash -c 'echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/$( awk -F'=' '/^ID=/{ print $NF }' /etc/os-release ) $( awk -F'=' '/^VERSION_CODENAME=/{ print $NF }' /etc/os-release ) main" | sudo tee /etc/apt/sources.list.d/jellyfin.list'
 
 msg "Prerequisite - Updating container OS (be patient, might take a while)..."
 pct exec $CTID -- apt-get -qqy update >/dev/null

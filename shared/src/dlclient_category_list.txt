@@ -1,0 +1,15 @@
+# This file is for NZB downloader only.
+# Keep description length to less than 20 chracters
+# CATEGORY DESTDIR WATCHDIR ALIASES
+radarr-movies:/mnt/downloads/${dl_type}/complete/movies:/mnt/public/autoadd/${dl_type}/movies:Movies*,*Movies:
+sonarr-series:/mnt/downloads/${dl_type}/complete/series:/mnt/public/autoadd/${dl_type}/series:TV*:
+lidarr-music:/mnt/downloads/${dl_type}/complete/music:/mnt/public/autoadd/${dl_type}/music:Music,Audio,Audio-mp3,Audio-Lossless,Audio-Other:
+whisparr-pron:/mnt/downloads/${dl_type}/complete/pron:/mnt/public/autoadd/${dl_type}/pron:XXX,XXX*,adult*,porn:
+readarr-books:/mnt/downloads/${dl_type}/complete/books:/mnt/public/autoadd/${dl_type}/books:Books*,Audio-Audiobook:
+lazy-books:/mnt/downloads/${dl_type}/complete/books::Books*,Audio-Audiobook:
+flexget-documentary:/mnt/downloads/${dl_type}/complete/flexget-documentary:/mnt/public/autoadd/${dl_type}/flexget-documentary:Flexget-documentary*:
+flexget-movies:/mnt/downloads/${dl_type}/complete/flexget-movies:/mnt/public/autoadd/${dl_type}/flexget-movies:Flexget-movies*:
+flexget-series:/mnt/downloads/${dl_type}/complete/flexget-series:/mnt/public/autoadd/${dl_type}/flexget-series:Flexget-series*:
+documentary:/mnt/downloads/${dl_type}/complete/documentary:/mnt/public/autoadd/${dl_type}/documentary:TV-Documentary,TV-Other:
+pron:/mnt/downloads/${dl_type}/complete/pron::XXX,XXX*,adult*,porn:
+unsorted:/mnt/downloads/${dl_type}/complete/unsorted:/mnt/public/autoadd/${dl_type}/unsorted:Unsorted*:

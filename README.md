@@ -1,17 +1,17 @@
 <h1>PVE Medialab</h1>
 
-This guide will help you create a suite of PVE CT's and applications for building a Home Media solution.
+Medialab is for all things to do with building a Home Media solution. This guide includes a suite of PVE CT's and applications like Sonarr, Radarr, Jellyfin and more.
 
-As with all our guides, we have an Easy Script to automate CT creation through to the installation of software.
+All our guides include an 'Easy Script' to automate CT creation through to the installation of all software.
 
 But the first step is to check your network and hardware prerequisite requirements before running our Easy Script. It's important you first read and follow our prerequisite guide.
 
-**Prerequisites**
+<h2>Prerequisites</h2>
 
-Network Prerequisites:
+**Network Prerequisites**
 - [ ] Layer 2/3 Network Switches
 
-PVE Host Prerequisites:
+**PVE Host Prerequisites**
 - [x] PVE Host is configured to our [build](https://github.com/ahuacate/pve-host-setup)
 - [x] PVE Host Backend Storage mounted to your NAS
 	- nas-0X-backup
@@ -19,12 +19,13 @@ PVE Host Prerequisites:
 	- nas-0X-downloads
 	- nas-0X-music
 	- nas-0X-photo
+    - nas-0X-public
 	- nas-0X-transcode
 	- nas-0X-video
 	
 	You must have a running network File Server (NAS) with ALL of the above NFS and/or CIFS backend share points configured on your PVE host pve-01.
 
-Optional Prerequisites:
+**Optional Prerequisites**
 - [ ] pfSense with working OpenVPN Gateways VPNGATE-LOCAL (VLAN30) and VPNGATE-WORLD (VLAN40).
 
 <h4>Easy Scripts</h4>
@@ -37,6 +38,7 @@ Our Easy Scripts assumes your network is VLAN ready. If not, simply decline the 
 <!-- TOC -->
 
 - [1. About our MediaLab CT Applications](#1-about-our-medialab-ct-applications)
+    - [1.1. Storage Folder Structure](#11-storage-folder-structure)
     - [1.1. Unprivileged CTs and File Permissions](#11-unprivileged-cts-and-file-permissions)
         - [1.1.1. Unprivileged Container Mapping - medialab GUID](#111-unprivileged-container-mapping---medialab-guid)
         - [1.1.2. Allow a CT to perform mapping on your PVE host](#112-allow-a-ct-to-perform-mapping-on-your-pve-host)
@@ -73,6 +75,9 @@ Our Easy Scripts assumes your network is VLAN ready. If not, simply decline the 
 - [9. Ahuabooks LXC](#9-ahuabooks-lxc)
     - [9.1. Installation](#91-installation)
     - [9.2. Setup Ahuabooks](#92-setup-ahuabooks)
+- [10. Vidcoderr LXC](#10-vidcoderr-lxc)
+    - [10.1. Installation](#101-installation)
+    - [10.2. Setup Vidcoderr](#102-setup-vidcoderr)
 
 <!-- /TOC -->
 <hr>
@@ -87,6 +92,78 @@ For the Radarr, Sonarr, and Lidarr an out-of-the-box setting preset file is incl
 > radarr_backup_v3.2.2.0000_0000.00.00_00.00.00.zip
 
 Always test IP connectivity after installing all the Medialab Apps. The API should all be valid and working.
+
+## 1.1. Storage Folder Structure
+All Medialab Apps require our standard folder or directory structure. Before creating any Medialab CT make sure your PVE Host Backend Storage mounts ( NAS ) include the following folder structure.
+
+```
+/mnt/pve/
+├── nas-0X-audio
+│   ├── audiobooks
+│   └── podcasts
+├── nas-0X-backup
+├── nas-0X-books
+│   ├── comics
+│   ├── ebooks
+│   └── magazines
+├── nas-0X-cloudstorage
+├── nas-0X-docker
+├── nas-0X-downloads
+├── nas-0X-music
+├── nas-0X-photo
+├── nas-0X-public
+│   └── autoadd
+│       ├── direct_import
+│       │   └── lazylibrarian
+│       ├── torrent
+│       │   ├── documentary
+│       │   ├── flexget-movies
+│       │   ├── flexget-series
+│       │   ├── lazy
+│       │   ├── movies
+│       │   ├── music
+│       │   ├── pron
+│       │   ├── series
+│       │   └── unsorted
+│       ├── usenet
+│       │   ├── documentary
+│       │   ├── flexget-movies
+│       │   ├── flexget-series
+│       │   ├── lazy
+│       │   ├── movies
+│       │   ├── music
+│       │   ├── pron
+│       │   ├── series
+│       │   └── unsorted
+│       └── vidcoderr
+│           ├── in_homevideo
+│           ├── in_stream
+│           │   ├── documentary
+│           │   ├── movies
+│           │   ├── musicvideo
+│           │   ├── pron
+│           │   └── series
+│           ├── in_unsorted
+│           └── out_unsorted
+├── nas-0X-transcode
+└── nas-0X-video
+    ├── cctv
+    ├── documentary
+    ├── homevideo
+    ├── images
+    ├── movies
+    ├── musicvideo
+    ├── pron
+    ├── series
+    ├── stream
+    │   ├── documentary
+    │   ├── movies
+    │   ├── musicvideo
+    │   ├── pron
+    │   └── series
+    └── transcode
+```
+
 
 ## 1.1. Unprivileged CTs and File Permissions
 With unprivileged CT containers, you will have issues with UIDs (user id) and GUIDs (group id) permissions with bind-mounted shared data. In Proxmox UIDs and GUIDs are mapped to a different number range than on the host machine, usually, root (uid 0) became uid 100000, 1 will be 100001 and so on.
@@ -446,9 +523,62 @@ Follow our Easy Script installation prompts. We recommend you accept our default
 ## 9.2. Setup Ahuabooks
 In your web browser URL type to connect and the applications web frontend will appear.
 > **Lazylibrarian** `http://192.168.50.118:5299`
+> Credentials: none set
 > **Calibre-web** `http://192.168.50.118:8083`
-> **Booksonic** `http://192.168.50.118:4040`
+> Credentials: admin|admin123
+> **Booksonic** `http://192.168.50.118:4040/booksonic`
+> Credentials: admin|admin
+> **Podgrab** `http://192.168.50.118:4041`
+> Credentials: none set
 
-Detailed configuration instructions are available [here](https://github.com/ahuacate/ahuabooks).
+---
+
+# 10. Vidcoderr LXC
+Vidcoderr is for transcoding video files, such as home videos, movies and TV series, into smaller HEVC video files. The encoding engine is [Don Meltons](https://github.com/donmelton/other_video_transcoding) work.
+
+Vidcoderr has the option to automatically create HEVC video files of your video library collection ( movies, series, documentary ). You can select a video bitrate and audio stream quality. Vidcoderr also processes any subtitle files.
+
+The default HEVC output video container format is Matroska ( MKV ). The exception is with MKV input files then the output video container is MP4.
+
+**Manual Encodes**
+Copy your video file, including its movie or series labelled sub-folders, into the matching categorized 'vidcoderr input' folder type on your NAS: `/public/autoadd/vidcoderr/<categorized folder>`. Vidcoderr does NOT scrape video metadata so first rename any series or movie content with its proper formatted name.
+
+Examples of what to copy, including labelled sub-folders, is shown:
+> Series Input: /public/autoadd/vidcoderr/in_stream/series
+> `../The Great/Season 2/The Great - S02E01 - Heads It's Me - [2160p h265 EAC3 5.1 ].mkv`
+>
+> Movie Input: /public/autoadd/vidcoderr/in_stream/movies
+> `.../Silent Night (2021)/Silent Night (2021) [2160p DTS-HD MA-5.1 X265].mkv`
+
+For unsorted or incorrectly named content always use the input folder `/public/autoadd/vidcoderr/in_unsorted`. Then use Sonarr's or Radarr's interactive import function to post process any new HEVC encoded videos from `/public/autoadd/vidcoderr/out_unsorted` folder.
+
+For home video content always use the input folder `/public/autoadd/vidcoderr/in_homevideo`. A HEVC encoded file will be stored in your main library home video folder: `/video/homevideo`.
+
+> Always use the 'copy command' because Vidcoderr will automatically delete the input file ( does not apply to main library videos ).
+
+**Auto Encodes** ( Optional )
+The User has the option to enable automatic encoding of your entire video library. This option only works on newly added library video files. All HEVC encoded files are stored in their associated video stream folder: `/video/stream/<categorized folder>`
+
+## 10.1. Installation
+Our Easy Script will create your Ubuntu Vidcoderr CT. Go to your Proxmox PVE host (i.e pve-01) management WebGUI CLI `>_ Shell` or SSH terminal and type the following ( cut & paste ):
+
+```
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_ct_vidcoderr_installer.sh)"
+```
+
+Follow our Easy Script installation prompts. We recommend you accept our defaults and application settings to create a fully compatible Medialab build suite.
+
+## 10.2. Setup Vidcoderr
+A Vidcoderr toolbox is available. Tasks include:
+* Run our Vidcoderr 'Setup Assistant'
+* Update Vidcoderr (includes Vidcoderr software updates, host LXC updates and any patches)
+
+```
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_ct_vidcoderr_toobox.sh)"
+```
+
+The User can modify, tweak or change any Vidcoderr settings within the configuration file: `/usr/local/bin/vidcoderr/vidcoderr.ini` ( Vidcoderr requires a restart after editing ).
+
+There is no Vidcoderr WebGUI frontend.
 
 ---

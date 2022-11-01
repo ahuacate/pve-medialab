@@ -1,0 +1,11 @@
+[Unit]
+Description=Simple HTTP Server With Upload
+
+[Service]
+User=media
+Group=medialab
+ExecStart=/usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.sh
+Restart=Always
+
+[Install]
+WantedBy=multi-user.target

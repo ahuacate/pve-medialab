@@ -1,0 +1,3 @@
+*.partial~
+#recycle
+.foo_protect
