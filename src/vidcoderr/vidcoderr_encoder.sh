@@ -11,20 +11,22 @@
 source /usr/local/bin/vidcoderr/vidcoderr.ini
 
 # Check for queue file
-if ! [ -f ${QUEUE_FILE} ]; then
+if ! [ -f "$QUEUE_FILE" ]
+then
   echo "Fail: ${QUEUE}Usage: $0 cmd ..."
   exit -1;
 fi
 
 #---- Static Variables -------------------------------------------------------------
 
-OTHER_EXT_FILTER=$(cat ${APP_HOME}/other_format_filter.txt | sed -e '/log$/d' | sed '/^$/d')
+OTHER_EXT_FILTER=$(cat $APP_HOME/other_format_filter.txt | sed -e '/log$/d' | sed '/^$/d')
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
 
-while [ -s ${QUEUE_FILE} ]; do
+while [ -s "$QUEUE_FILE "]
+do
 # ---- Read queue file and set ARGS
   # Set encoder ARGS
   IFS=';' read -r ARG1 ARG2 ARG3 ARG4 ARG5 ARG6 ARG7 <<< read line < ${QUEUE_FILE}
@@ -34,39 +36,40 @@ while [ -s ${QUEUE_FILE} ]; do
   SRC_CATEGORY="$ARG4"
   ENCODE_OUTPUT_FILENAME="$ARG5"
   DST_DIR="$ARG6"
-  ENCODE_ENABLED="${ARG7}"
+  ENCODE_ENABLED="$ARG7"
 
   # Validate SRC file ( delete queue entry if not valid)
-  if ! [[ -f "${SRC_FILE}" ]]; then
-    sed -i "1 d" ${QUEUE_FILE}
+  if ! [ -f "$SRC_FILE" ]
+  then
+    sed -i "1 d" $QUEUE_FILE
     continue
   fi
 
-
   #---- Encode enabled
-  if [ ${ENCODE_ENABLED} == '1' ]; then
+  if [ "$ENCODE_ENABLED" = '1' ]
+  then
     # Make encoder dir
-    mkdir -p "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}" # required for stream source media
+    mkdir -p "$TRANSCODE_DIR/$SRC_CATEGORY/$SRC_MID_DIR" # required for stream source media
 
     # Run Other-transcode
-    cd "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}" && other-transcode ${ENCODE_ARGS} "${SRC_FILE}"
+    cd "$TRANSCODE_DIR/$SRC_CATEGORY/$SRC_MID_DIR" && other-transcode ${ENCODE_ARGS} "$SRC_FILE"
     sleep 1
 
     #---- Post-process encoded files
-    cd "${TRANSCODE_DIR}"
+    cd "$TRANSCODE_DIR"
     # DST Video filename
     ENCODE_OUTPUT_FILENAME_EXT="${ENCODE_OUTPUT_FILENAME##*.}"
     # ENCODE_OUTPUT_FILENAME_SHORT="$(echo ${ENCODE_OUTPUT_FILENAME} | sed -e 's/([^()]*)//g' | sed 's/\[[^][]*\]//g' | sed -e 's/ \.\([a-z0-9]*\)$/\.\1/' | sed -e 's/\(.[a-z0-9]*$\)//')"
-    ENCODE_OUTPUT_FILENAME_SHORT="$(echo ${ENCODE_OUTPUT_FILENAME} | sed -e 's/\(.[a-z0-9]*$\)//' | sed 's/\(.*\)\[.*\]/\1/')"
+    ENCODE_OUTPUT_FILENAME_SHORT="$(echo "$ENCODE_OUTPUT_FILENAME" | sed -e 's/\(.[a-z0-9]*$\)//' | sed 's/\(.*\)\[.*\]/\1/')"
 
     # Delete old matching files from destination folder
     rm -r -f "${DST_DIR}${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME_SHORT}"* &>/dev/null
 
     # Video meta
-    VIDEO_CODEC=$(mediainfo --Inform="Video;%Format%" "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}")
-    AUDIO_CODEC=$(mediainfo --Inform="Audio;%Format%" "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}" | sed 's/[-]//g')
-    AUDIO_CHANNELS=$(ffprobe -v error -show_entries stream=channel_layout -of default=nk=1:nw=1 "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}" 2> /dev/null)
-    HEIGHT_VAR=$(mediainfo --Inform="Video;%Height%" "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}")
+    VIDEO_CODEC=$(mediainfo --Inform="Video;%Format%" "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}")
+    AUDIO_CODEC=$(mediainfo --Inform="Audio;%Format%" "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}" | sed 's/[-]//g')
+    AUDIO_CHANNELS=$(ffprobe -v error -show_entries stream=channel_layout -of default=nk=1:nw=1 "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}" 2> /dev/null)
+    HEIGHT_VAR=$(mediainfo --Inform="Video;%Height%" "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}")
     if [[ "${HEIGHT_VAR}" -ge 1 ]] && [[ "${HEIGHT_VAR}" -le 400 ]]; then
       VIDEO_RES='LOW Q'
     elif [[ "${HEIGHT_VAR}" -ge 401 ]] && [[ "${HEIGHT_VAR}" -le 660 ]]; then
@@ -85,20 +88,20 @@ while [ -s ${QUEUE_FILE} ]; do
 
     # Rename and move files
     while read line; do
-      if [[ $line == "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}" ]]; then
+      if [[ $line == "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}" ]]; then
         # Rename video file
         DST_FILENAME="$(echo ${ENCODE_OUTPUT_FILENAME_SHORT} ${DST_VIDEO_META}.${ENCODE_OUTPUT_FILENAME_EXT})"
-        mv "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}" "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${DST_FILENAME}" 2>/dev/null
+        mv "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME}" "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${DST_FILENAME}" 2>/dev/null
         # Move video file to destination
-        rsync --remove-source-files --relative "${TRANSCODE_DIR}/${SRC_CATEGORY}/./${SRC_MID_DIR}${DST_FILENAME}" "${DST_DIR}"
+        rsync --remove-source-files --relative "$TRANSCODE_DIR/$SRC_CATEGORY/./${SRC_MID_DIR}${DST_FILENAME}" "${DST_DIR}"
       elif [[ "${OTHER_EXT_FILTER[*]}" =~ "${line##*.}" ]]; then
         # Detect subtitle language
         if [ $(echo $line | awk -F'.' '{print $(NF-1)}') == eng ] || [ $(echo $line | awk -F'.' '{print $(NF-1)}') == en ]; then
           # Rename file
           DST_FILENAME="$(echo ${ENCODE_OUTPUT_FILENAME_SHORT} ${DST_VIDEO_META}.eng.${line##*.})"
-          mv "${line}" "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${DST_FILENAME}" 2>/dev/null
+          mv "${line}" "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${DST_FILENAME}" 2>/dev/null
           # Move video file to destination
-          rsync --remove-source-files --relative "${TRANSCODE_DIR}/${SRC_CATEGORY}/./${SRC_MID_DIR}${DST_FILENAME}" "${DST_DIR}"
+          rsync --remove-source-files --relative "$TRANSCODE_DIR/$SRC_CATEGORY/./${SRC_MID_DIR}${DST_FILENAME}" "${DST_DIR}"
         else
           # Detect language
           sleep 5
@@ -108,14 +111,14 @@ while [ -s ${QUEUE_FILE} ]; do
           fi
           # Rename file
           DST_FILENAME="$(echo ${ENCODE_OUTPUT_FILENAME_SHORT} ${DST_VIDEO_META}.${LANGS}.${line##*.})"
-          mv "${line}" "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${DST_FILENAME}" 2>/dev/null
+          mv "${line}" "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${DST_FILENAME}" 2>/dev/null
           # Move video file to destination
-          rsync --remove-source-files --relative "${TRANSCODE_DIR}/${SRC_CATEGORY}/./${SRC_MID_DIR}${DST_FILENAME}" "${DST_DIR}"
+          rsync --remove-source-files --relative "$TRANSCODE_DIR/$SRC_CATEGORY/./${SRC_MID_DIR}${DST_FILENAME}" "${DST_DIR}"
         fi
       fi
       # Delete old files
       rm "${line}" &> /dev/null
-    done < <( ls "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME_SHORT}"* )
+    done < <( ls "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${ENCODE_OUTPUT_FILENAME_SHORT}"* )
 
     # Delete empty folders from base encoder folder
     cd ${TRANSCODE_DIR} && find . -empty -type d -delete 2>/dev/null
@@ -160,13 +163,13 @@ while [ -s ${QUEUE_FILE} ]; do
 
     # Rename and move files
     while read -r line; do
-      if [[ $line == "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${PASS_INPUT_FILENAME}" ]]; then
+      if [[ $line == "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${PASS_INPUT_FILENAME}" ]]; then
         # Rename video file
         DST_FILENAME="$(echo ${PASS_INPUT_FILENAME_SHORT} ${DST_VIDEO_META}.${PASS_INPUT_FILENAME_EXT})"
-        mv "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${PASS_INPUT_FILENAME}" "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${DST_FILENAME}" 2>/dev/null
+        mv "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${PASS_INPUT_FILENAME}" "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${DST_FILENAME}" 2>/dev/null
         # Move video file to destination
-        rsync --remove-source-files --relative "${TRANSCODE_DIR}/${SRC_CATEGORY}/./${SRC_MID_DIR}${DST_FILENAME}" "${DST_DIR}"
-      elif [[ $line == "${SRC_FILE}" ]] && [[ ! $line == "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${PASS_INPUT_FILENAME}" ]]; then
+        rsync --remove-source-files --relative "$TRANSCODE_DIR/$SRC_CATEGORY/./${SRC_MID_DIR}${DST_FILENAME}" "${DST_DIR}"
+      elif [[ $line == "${SRC_FILE}" ]] && [[ ! $line == "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${PASS_INPUT_FILENAME}" ]]; then
         # Move video file to destination
         rsync --relative "${PASS_INPUT_PATH}/./${SRC_MID_DIR}${PASS_INPUT_FILENAME}" "${DST_DIR}"
       elif [[ "${OTHER_EXT_FILTER[*]}" =~ "${line##*.}" ]]; then
@@ -184,9 +187,9 @@ while [ -s ${QUEUE_FILE} ]; do
         if [ $(echo ${line} | grep -w "^${TRANSCODE_DIR}/.*" > /dev/null; echo $?) == 0 ]; then
           # Rename file
           DST_FILENAME="$(echo ${PASS_INPUT_FILENAME_SHORT} ${DST_VIDEO_META}.${LANGS}.${line##*.})"
-          mv "${line}" "${TRANSCODE_DIR}/${SRC_CATEGORY}/${SRC_MID_DIR}${DST_FILENAME}" 2>/dev/null
+          mv "${line}" "$TRANSCODE_DIR/$SRC_CATEGORY/${SRC_MID_DIR}${DST_FILENAME}" 2>/dev/null
           # Move subtitle file to destination
-          rsync --remove-source-files --relative "${TRANSCODE_DIR}/${SRC_CATEGORY}/./${SRC_MID_DIR}${DST_FILENAME}" "${DST_DIR}"
+          rsync --remove-source-files --relative "$TRANSCODE_DIR/$SRC_CATEGORY/./${SRC_MID_DIR}${DST_FILENAME}" "${DST_DIR}"
         else
           # Copy subtitle file to destination
           rsync --relative "${PASS_INPUT_PATH}/./${SRC_MID_DIR}$(basename "${line}")" "${DST_DIR}"

@@ -7,7 +7,7 @@
 #---- Bash command to run script ---------------------------------------------------
 
 #---- Source Github
-# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_installer.sh)"
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/maain/pve_medialab_installer.sh)"
 
 #---- Source local Git
 # /mnt/pve/nas-01-git/ahuacate/pve-medialab/pve_medialab_installer.sh
@@ -175,34 +175,38 @@ EOF
 #---- Body -------------------------------------------------------------------------
 
 #---- Introduction
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_intro.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_intro.sh
 
 #---- Setup PVE CT Variables
 # Ubuntu NAS (all)
-source ${COMMON_PVE_SRC_DIR}/pvesource_set_allvmvars.sh
+source $COMMON_PVE_SRC_DIR/pvesource_set_allvmvars.sh
 
 # Check & create required PVE CT subfolders (all)
-source ${COMMON_DIR}/nas/src/nas_subfolder_installer_precheck.sh
+source $COMMON_DIR/nas/src/nas_subfolder_installer_precheck.sh
 
 #---- Create OS CT
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createvm.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
 
 #---- Pre-Configuring PVE CT
 section "Pre-Configure ${HOSTNAME^} ${VM_TYPE^^}"
 
 # MediaLab CT unprivileged mapping
-if [ ${CT_UNPRIVILEGED} == '1' ]; then
-  source ${COMMON_PVE_SRC_DIR}/pvesource_ct_medialab_ctidmapping.sh
+if [ "$CT_UNPRIVILEGED" = 1 ]
+then
+  source $COMMON_PVE_SRC_DIR/pvesource_ct_medialab_ctidmapping.sh
 fi
 
 # Create CT Bind Mounts
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createbindmounts.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createbindmounts.sh
 
 #---- Configure New CT OS
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntubasics.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 
 #---- Create MediaLab Group and User
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntu_addmedialabuser.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addmedialabuser.sh
+
+#---- Install CT 'auto-updater'
+source $COMMON_PVE_SRC_DIR/pvesource_ct_autoupdater_installer.sh
 
 
 #---- Deluge -----------------------------------------------------------------------
@@ -212,22 +216,22 @@ section "Install ${REPO_PKG_NAME^} software"
 #---- Run SW install
 
 # Deluge SW
-pct push $CTID ${SRC_DIR}/deluge/deluge_sw.sh /tmp/deluge_sw.sh -perms 755
-pct exec $CTID -- bash -c "export REPO_PKG_NAME=${REPO_PKG_NAME} APP_USERNAME=${APP_USERNAME} APP_GRPNAME=${APP_GRPNAME} && /tmp/deluge_sw.sh"
+pct push $CTID $SRC_DIR/deluge/deluge_sw.sh /tmp/deluge_sw.sh -perms 755
+pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/deluge_sw.sh"
 
 #---- Configure SW
 # Copy Deluge plugins
-pct exec $CTID -- bash -c "mkdir -p /home/${APP_USERNAME}/.config/deluge"
-pct push $CTID ${SRC_DIR}/deluge/config/execute.conf /home/${APP_USERNAME}/.config/deluge/execute.conf --group ${APP_GRPNAME} --user ${APP_USERNAME}
-pct push $CTID ${SRC_DIR}/deluge/config/autoremoveplus.conf /home/${APP_USERNAME}/.config/deluge/autoremoveplus.conf --group ${APP_GRPNAME} --user ${APP_USERNAME}
+pct exec $CTID -- bash -c "mkdir -p /home/$APP_USERNAME/.config/deluge"
+pct push $CTID $SRC_DIR/deluge/config/execute.conf /home/$APP_USERNAME/.config/deluge/execute.conf --group $APP_GRPNAME --user $APP_USERNAME
+pct push $CTID $SRC_DIR/deluge/config/autoremoveplus.conf /home/$APP_USERNAME/.config/deluge/autoremoveplus.conf --group $APP_GRPNAME --user $APP_USERNAME
 
 # Copy Post Processing scripts
-pct push $CTID ${SRC_DIR}/deluge/config/deluge-postprocess.sh /home/${APP_USERNAME}/.config/deluge/deluge-postprocess.sh --group ${APP_GRPNAME} --user ${APP_USERNAME} --perms 0775
+pct push $CTID $SRC_DIR/deluge/config/deluge-postprocess.sh /home/$APP_USERNAME/.config/deluge/deluge-postprocess.sh --group $APP_GRPNAME --user $APP_USERNAME --perms 0775
 
 # Deluge Config SW
-pct push $CTID ${SRC_DIR}/deluge/config/deluge_config.sh /tmp/deluge_config.sh -perms 755
-pct push $CTID ${SHARED_DIR}/src/dlclient_category_list.txt /tmp/dlclient_category_list.txt
-pct exec $CTID -- bash -c "export REPO_PKG_NAME=${REPO_PKG_NAME} APP_USERNAME=${APP_USERNAME} APP_GRPNAME=${APP_GRPNAME} && /tmp/deluge_config.sh"
+pct push $CTID $SRC_DIR/deluge/config/deluge_config.sh /tmp/deluge_config.sh -perms 755
+pct push $CTID $SHARED_DIR/src/dlclient_category_list.txt /tmp/dlclient_category_list.txt
+pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/deluge_config.sh"
 
 # Check Install CT SW status (active or abort script)
 pct_check_systemctl "deluged.service"
@@ -239,29 +243,30 @@ section "Completion Status"
 #---- Set display text
 # Get port
 port=8112
-# Get IP type
-if [[ $(pct exec $CTID -- ip addr show eth0  | grep -q dynamic > /dev/null; echo $?) == 0 ]]; then # ip -4 addr show eth0 
-    ip_type='dhcp - best use dhcp IP reservation'
+# Get IP type (ip -4 addr show eth0)
+if [[ $(pct exec $CTID -- ip addr show eth0  | grep -q dynamic > /dev/null; echo $?) == 0 ]]
+then
+  ip_type='dhcp - best use dhcp IP reservation'
 else
-    ip_type='static IP'
+  ip_type='static IP'
 fi
 # Web access URL
-display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):${port}/" )
-display_msg1+=( "http://$(pct exec $CTID -- hostname -I | sed -r 's/\s+//g'):${port}/ (${ip_type})" )
+display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):$port/" )
+display_msg1+=( "http://$(pct exec $CTID -- hostname -I | sed -r 's/\s+//g'):$port/ ($ip_type)" )
 display_msg1+=( "Web access password: 'deluge'" )
 
 msg_box "${REPO_PKG_NAME^} installation was a success. The first start-up may take a few seconds so be patient. Web-interface is available on:
 
 $(printf '%s\n' "${display_msg1[@]}" | indent2)
 
-A ${REPO_PKG_NAME^} is prebuilt with the required plugins and settings for integration into the Medialab suite of applications. The authorisation connect user is 'appconnect and password is 'ahuacate'. 
+A ${REPO_PKG_NAME^} is prebuilt with the required plugins and settings for integration into the Medialab suite of applications. The authorization connect user is 'appconnect and password is 'ahuacate'. 
 
-$(if ! [ -z ${CT_PASSWORD} ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '${CT_PASSWORD}'"; fi)
+$(if ! [ -z "$CT_PASSWORD" ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '${CT_PASSWORD}'"; fi)
 More information here: https://github.com/ahuacate/medialab"
 
 # Display Installation error report
 printf '%s\n' "${display_dir_error_MSG[@]}"
 printf '%s\n' "${display_permission_error_MSG[@]}"
 printf '%s\n' "${display_chattr_error_MSG[@]}"
-source ${COMMON_PVE_SRC_DIR}/pvesource_error_log.sh
+source $COMMON_PVE_SRC_DIR/pvesource_error_log.sh
 #-----------------------------------------------------------------------------------

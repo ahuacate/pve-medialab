@@ -1,0 +1,136 @@
+<html>
+  <head>
+    <title>Kodirsync Installation Package</title>
+    <style>
+      h1 {
+        font-family: 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 13px;
+      }
+      h2 {
+        font-family: 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 12px;
+      }
+      body {
+        font-family: 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 12px;
+      }
+      .codebox {
+        font-family: Courier, monospace, sans-serif;
+        font-size: 11px;
+        color: #333;
+        border: 1px solid #cccccc;
+        width: 100%; max-width: 500px;
+        line-height: 1.5em;
+        padding: 0.5em;
+        margin: 1.5em 0;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  
+<body>
+  <h1>Kodirsync Installation Package</h1>
+  <p>Your new Kodirsync account is active and ready to use.</p>
+  <p>Your connection settings have been pre-set by your Kodirsync server administrator. All connections are made using a private SSH key which is included in your installer package. If you are configured for remote access then you will connect using SSLH or Port Forward protocols.
+    <ol>
+      <li>LAN Connection - Local connectivity
+        <p>LAN is the priority connection protocol whenever your Kodirsync client is connected on the same LAN network as the Kodirsync server.</p>
+      </li>
+      <li>SSLH Connection - Remote connectivity
+        <p>HTTPS SSL 443 provides a additional layer of security for client connection authentication and encrypted data transport. SSLH requires the client to use SSL certificates and keys in addition to your standard SSH key credentials which are included in the installer package.</p>
+      </li>
+      <li>Port Forward - Remote connectivity
+        <p>Port forwarding is a basic method to provide remote access to the Kodirsync server. Connection authentication is with SSH key only.</p>
+      </li>
+    </ol>
+  </p>
+  <p>More information about Kodirsync is available on our <a href="https://github.com/ahuacate" target="_blank">GitHub</a> page.</p>
+
+<hr style="color: grey">
+<br>
+
+<h1>Installation Instructions</h1>
+<p>Installing is a simple procedure. The attached Installer package is preset with all your access credentials. Simply follow our instructions. If you are using USB based storage for Kodirsync always have your client device connected with a USB blank storage device (disk) before running our installer.</p>
+<p>If you are new to SSH and use Windows OS we recommend <a href="https://www.putty.org/">Putty</a> SSH software.
+</p>
+<ol type="1">
+  <li><h2>Copy Installer to client device</h2> </li>
+  <p>Copy the email attachment file '<em>installer.run</em>' to the following folder location on your client device.</p>
+  <ol type="A">
+    <li>CoreElec and LibreElec devices</li>
+      <div class="codebox">
+        ~/backup
+      </div>
+    <li>Other Linux hardware</li>
+      <div class="codebox">
+        /tmp
+      </div>
+  </ol>
+
+  <li><h2>Run the Kodirsync installer</h2></li>
+  <p>SSH into your client device as root (i.e ssh root@coreelec.local and default pwd is 'coreelec'). Type the following command (or copy &amp; paste) including end brackets into your SSH terminal:</p>
+  <ol type="A">
+    <li>CoreElec or LibreElec</li>
+      <div class="codebox">
+        (mkdir -p /tmp/selftar ; cd /tmp/selftar ; ~/backup/installer.run)
+      </div>
+    <li>Other Linux hardware</li>
+      <div class="codebox">
+        (mkdir -p /tmp/selftar ; cd /tmp/selftar ; /tmp/installer.run)
+      </div>
+  </ol>
+  <p>The above command will run our Kodirsync device installer. Follow the prompts.</p>
+</ol>
+<br>
+
+<h1>Uninstall & Remove Kodirsync</h1>
+<p>SSH into your client device as root. Type the following command (or copy &amp; paste) in your SSH terminal and select the uninstall option when prompted.</p>
+<ol type="A">
+  <li>CoreElec or LibreElec</li>
+    <div class="codebox">
+      (mkdir -p /tmp/selftar ; cd /tmp/selftar ; ~/backup/installer.run)
+    </div>
+
+  <li>Other Linux hardware</li>
+    <div class="codebox">
+      (mkdir -p /tmp/selftar ; cd /tmp/selftar ; /tmp/installer.run)
+    </div>
+</ol>
+<br>
+
+<h1>Updating Kodirsync client SW</h1>
+<p>Kodirsync automatically updates its application scripts once a week to our latest GitHub version. Obviously your settings are maintained.</p>
+<p>If you want to perform a manual forced upgrade to the latest version you must run a CLI command. SSH into your Kodirsync client device as root. Type the following command (or copy &amp; paste) in your SSH terminal and press enter.</p>
+<ol type="A">
+  <li>CoreElec or LibreElec</li>
+    <div class="codebox">
+      /storage/kodirsync/kodirsync_clientapp_gitupdater.sh
+    </div>
+
+  <li>Other Linux hardware</li>
+    <div class="codebox">
+      /usr/local/bin/kodirsync/kodirsync_clientapp_gitupdater.sh
+    </div>
+</ol>
+<p>Manually performing a update will kill all running Kodirsync processes. The processes will restart at the next scheduled synchronization of media.</p>
+<br>
+
+<h1>Manual editing of the User configuration file</h1>
+<p>We do not recommend Users make manual Kodirsync changes unless they know what they are doing. Remember, changing a users content source types (i.e movies, series, photos) can only be done at the Kodirsync server.</p>
+<p>Users with basic Linux skills you can make configuration changes in the '<em>kodirsync_clientapp_user.cfg</em>' file. Do NOT edit any other file. Other changes must be performed server-side. Best use nano or vi only.</p>
+<ol type="A">
+  <li>CoreElec and LibreElec</li>
+    <div class="codebox">
+      nano /storage/kodirsync/kodirsync_clientapp_user.cfg
+    </div>
+
+    <li>Other Linux hardware</li>
+    <div class="codebox">
+      nano /usr/local/bin/kodirsync/kodirsync_clientapp_user.cfg
+    </div>
+</ol>
+
+<hr style="color: grey">
+<p>Attached files: '<em>installer.run</em>'</p>
+</body>
+</html>

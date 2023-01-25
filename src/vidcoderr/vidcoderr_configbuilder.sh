@@ -24,41 +24,51 @@ BW_4K_HDR='25'
 # pct pull $CTID /usr/local/bin/vidcoderr/vidcoderr.ini ${TEMP_DIR}/vidcoderr.ini
 
 # Stopping Vidcoderr system.d services 
-if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir.service)" == "active" ]; then
+if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir.service)" = "active" ]
+then
   pct exec $CTID -- systemctl stop vidcoderr_watchdir.service
-  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir.service)" == "inactive" ]]; do
+  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir.service)" == 'inactive' ]]
+  do
     echo -n .
   done
   pct exec $CTID -- systemctl disable vidcoderr_watchdir.service &> /dev/null
 fi
 
-if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_rsync.timer)" == "active" ]; then
+if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_rsync.timer)" = "active" ]
+then
   pct exec $CTID -- systemctl stop vidcoderr_rsync.timer
-  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_rsync.timer)" == "inactive" ]]; do
+  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_rsync.timer)" == 'inactive' ]]
+  do
     echo -n .
   done
   pct exec $CTID -- systemctl disable vidcoderr_rsync.timer &> /dev/null
 fi
 
-if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" == "active" ]; then
+if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" = "active" ]
+then
   pct exec $CTID -- systemctl stop vidcoderr_inotify_rsync.service
-  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" == "inactive" ]]; do
+  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" == 'inactive' ]]
+  do
     echo -n .
   done
   pct exec $CTID -- systemctl disable vidcoderr_inotify_rsync.service &> /dev/null
 fi
 
-if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" == "active" ]; then
+if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" = "active" ]
+then
   pct exec $CTID -- systemctl stop vidcoderr_inotify.service
-  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" == "inactive" ]]; do
+  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" == 'inactive' ]]
+  do
     echo -n .
   done
   pct exec $CTID -- systemctl disable vidcoderr_inotify.service &> /dev/null
 fi
 
-if [ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "active" ]; then
+if [ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" = "active" ]
+then
   pct exec $CTID -- systemctl stop SimpleHTTPServerWithUpload.service
-  while ! [[ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "inactive" ]]; do
+  while ! [[ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == 'inactive' ]]
+  do
     echo -n .
   done
   pct exec $CTID -- systemctl disable SimpleHTTPServerWithUpload.service &> /dev/null
@@ -82,14 +92,16 @@ OPTIONS_LABELS_INPUT=( "Standard Watch Service ( Recommended )" "Inotify Watch S
 makeselect_input2
 singleselect SELECTED "$OPTIONS_STRING"
 
-if [ ${RESULTS} == 'TYPE01' ]; then
+if [ "$RESULTS" = 'TYPE01' ]
+then
   # Set library watch method
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(VIDCODERR_WATCHDIR_TYPE.*\s*=\s*\).*\$#\11#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Vidcoderr watch method: ${YELLOW}standard${NC}"
   VIDCODERR_WATCHDIR_TYPE=1
   echo
-elif [ ${RESULTS} == 'TYPE02' ]; then
+elif [ "$RESULTS" = 'TYPE02' ]
+then
   # Set library watch method
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(VIDCODERR_WATCHDIR_TYPE.*\s*=\s*\).*\$#\12#" /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -101,12 +113,14 @@ fi
 # Select watch folders
 # in_stream dir
 unset display_msg1
-while IFS=',' read -r label media_type src dst encode_str arg; do
+while IFS=',' read -r label media_type src dst encode_str arg
+do
   display_msg1+=( "$(echo $(if [ ${arg} == 1 ]; then printf "${GREEN}enabled${NC}"; else printf "${RED}disabled${NC}"; fi),${src},${dst})" )
 done < <(pct exec $CTID -- cat /usr/local/bin/vidcoderr/vidcoderr.ini | grep -E --color=never '^INPUT_WATCH_IN_STREAM*|^INPUT_WATCH_IN_HOMEVIDEO|INPUT_WATCH_IN_UNSORTED' | sed 's/^.*=//')
 # stream dir
 unset display_msg2
-while IFS=',' read -r label media_type src dst encode_str arg; do
+while IFS=',' read -r label media_type src dst encode_str arg
+do
   display_msg2+=( "$(echo $(if [ ${arg} == 1 ]; then printf "${GREEN}enabled${NC}"; else printf "${RED}disabled${NC}"; fi),${src},${dst})" )
 done < <(pct exec $CTID -- cat /usr/local/bin/vidcoderr/vidcoderr.ini | grep -E --color=never '^INPUT_WATCH_STREAM_*' | sed 's/^.*=//')
 
@@ -125,14 +139,16 @@ OPTIONS_LABELS_INPUT=( "Enable encoding of your main video library files" "Disab
 makeselect_input2
 singleselect SELECTED "$OPTIONS_STRING"
 
-if [ ${RESULTS} == 'TYPE01' ]; then
+if [ "$RESULTS" = 'TYPE01' ]
+then
   # Enable stream encoding
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i 's#^\(INPUT_WATCH_STREAM_.*\s*,\s*\).*[0-9]$#\11#' /usr/local/bin/vidcoderr/vidcoderr.ini
   MAIN_VIDEOLIBRARY=1
   info "Vidcoderr main video library status: ${YELLOW}enabled${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE02' ]; then
+elif [ "$RESULTS" = 'TYPE02' ]
+then
   # Disable stream encoding
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i 's#^\(INPUT_WATCH_STREAM_.*\s*,\s*\).*[0-9]$#\10#' /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -153,37 +169,43 @@ OPTIONS_LABELS_INPUT=( "SD streaming - ${BW_SD} Mbps, low quality" "HD standard 
 makeselect_input2
 singleselect SELECTED "$OPTIONS_STRING"
 
-if [ ${RESULTS} == 'TYPE01' ]; then
+if [ "$RESULTS" = 'TYPE01' ]
+then
   # SD stream speed setting
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_MAXIMUM_BITRATE.*\s*=\s*\).*\$#\1${BW_SD}#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Vidcoderr maximum bitrate for streaming encodes: ${YELLOW}${BW_SD}${NC} Mbps"
   echo
-elif [ ${RESULTS} == 'TYPE02' ]; then
+elif [ "$RESULTS" = 'TYPE02' ]
+then
   # HD stream speed setting
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_MAXIMUM_BITRATE.*\s*=\s*\).*\$#\1${BW_HD_STD}#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Vidcoderr maximum bitrate for streaming encodes: ${YELLOW}${BW_HD_STD}${NC} Mbps"
   echo
-elif [ ${RESULTS} == 'TYPE03' ]; then
+elif [ "$RESULTS" = 'TYPE03' ]
+then
   # HD stream speed setting
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_MAXIMUM_BITRATE.*\s*=\s*\).*\$#\1${BW_HD_PLUS}#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Vidcoderr maximum bitrate for streaming encodes: ${YELLOW}${BW_HD_PLUS}${NC} Mbps"
   echo
-elif [ ${RESULTS} == 'TYPE04' ]; then
+elif [ "$RESULTS" = 'TYPE04' ]
+then
   # 4K stream speed setting
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_MAXIMUM_BITRATE.*\s*=\s*\).*\$#\1${BW_4K}#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Vidcoderr maximum bitrate for streaming encodes: ${YELLOW}${BW_4K}${NC} Mbps"
   echo
-elif [ ${RESULTS} == 'TYPE05' ]; then
+elif [ "$RESULTS" = 'TYPE05' ]
+then
   # 4K HDR stream speed setting
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_MAXIMUM_BITRATE.*\s*=\s*\).*\$#\1${BW_4K_HDR}#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Vidcoderr maximum bitrate for streaming encodes: ${YELLOW}${BW_4K_HDR}${NC} Mbps"
   echo
-elif [ ${RESULTS} == 'TYPE06' ]; then
+elif [ "$RESULTS" = 'TYPE06' ]
+then
   # None
   info "Vidcoderr maximum bitrate for streaming encodes: ${YELLOW}default${NC} Mbps"
   echo
@@ -210,7 +232,8 @@ OPTIONS_LABELS_INPUT=( "4K HDR - full 4K HDR display quality" \
 makeselect_input2
 singleselect SELECTED "$OPTIONS_STRING"
 
-if [ ${RESULTS} == 'TYPE01' ]; then
+if [ "$RESULTS" = 'TYPE01' ]
+then
   # 4K HDR
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(ENCODE_HDR_CONTENT.*\s*=\s*\).*\$#\11#" /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -219,7 +242,8 @@ if [ ${RESULTS} == 'TYPE01' ]; then
   info "HDR input status: ${YELLOW}enabled${NC}"
   info "Maximum video output resolution: ${YELLOW}4K${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE02' ]; then
+elif [ "$RESULTS" = 'TYPE02' ]
+then
   # 4K SDR
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(ENCODE_HDR_CONTENT.*\s*=\s*\).*\$#\11#" /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -229,7 +253,8 @@ elif [ ${RESULTS} == 'TYPE02' ]; then
   info "Maximum video output resolution: ${YELLOW}4K${NC}"
   info "HDR to SDR tone-mapping status: ${YELLOW}enabled${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE03' ]; then
+elif [ "$RESULTS" = 'TYPE03' ]
+then
   # 2K HDR
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(ENCODE_HDR_CONTENT.*\s*=\s*\).*\$#\11#" /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -239,7 +264,8 @@ elif [ ${RESULTS} == 'TYPE03' ]; then
   info "HDR input status: ${YELLOW}enabled${NC}"
   info "Maximum video output resolution: ${YELLOW}2K/1080P${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE04' ]; then
+elif [ "$RESULTS" = 'TYPE04' ]
+then
   # 2K SDR
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(ENCODE_HDR_CONTENT.*\s*=\s*\).*\$#\11#" /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -250,7 +276,8 @@ elif [ ${RESULTS} == 'TYPE04' ]; then
   info "Maximum video output resolution: ${YELLOW}2K/1080P${NC}"
   info "HDR to SDR tone-mapping status: ${YELLOW}enabled${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE05' ]; then
+elif [ "$RESULTS" = 'TYPE05' ]
+then
   # 720P SDR
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(ENCODE_HDR_CONTENT.*\s*=\s*\).*\$#\11#" /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -261,7 +288,8 @@ elif [ ${RESULTS} == 'TYPE05' ]; then
   info "Maximum video output resolution: ${YELLOW}720P${NC}"
   info "HDR to SDR tone-mapping status: ${YELLOW}enabled${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE06' ]; then
+elif [ "$RESULTS" = 'TYPE06' ]
+then
   # 4K SDR limit
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(ENCODE_HDR_CONTENT.*\s*=\s*\).*\$#\10#" /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -270,7 +298,8 @@ elif [ ${RESULTS} == 'TYPE06' ]; then
   info "HDR input status: ${YELLOW}disabled${NC} ( off )"
   info "Maximum video output resolution: ${YELLOW}4K${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE07' ]; then
+elif [ "$RESULTS" = 'TYPE07' ]
+then
   # 2K SDR limit
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(ENCODE_HDR_CONTENT.*\s*=\s*\).*\$#\10#" /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -280,7 +309,8 @@ elif [ ${RESULTS} == 'TYPE07' ]; then
   info "HDR input status: ${YELLOW}disabled${NC} ( off )"
   info "Maximum video output resolution: ${YELLOW}2K/1080P${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE08' ]; then
+elif [ "$RESULTS" = 'TYPE08' ]
+then
   # 720P SDR limit
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(ENCODE_HDR_CONTENT.*\s*=\s*\).*\$#\10#" /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -302,49 +332,56 @@ OPTIONS_LABELS_INPUT=( "Stereo - 96 Kbps - low quality" "Stereo - 128 Kbps - Ave
 makeselect_input2
 singleselect SELECTED "$OPTIONS_STRING"
 
-if [ ${RESULTS} == 'TYPE01' ]; then
+if [ "$RESULTS" = 'TYPE01' ]
+then
   # Audio bitrate / format
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_BITRATE.*\s*=\s*\).*\$#\196#" /usr/local/bin/vidcoderr/vidcoderr.ini
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_CHANNELS.*\s*=\s*\).*\$#\1stereo#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Audio stream encoder set at: ${YELLOW}96 Kbps Stereo${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE02' ]; then
+elif [ "$RESULTS" = 'TYPE02' ]
+then
   # Audio bitrate / format
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_BITRATE.*\s*=\s*\).*\$#\1128#" /usr/local/bin/vidcoderr/vidcoderr.ini
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_CHANNELS.*\s*=\s*\).*\$#\1stereo#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Audio stream encoder set at: ${YELLOW}128 Kbps Stereo${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE03' ]; then
+elif [ "$RESULTS" = 'TYPE03' ]
+then
   # Audio bitrate / format
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_BITRATE.*\s*=\s*\).*\$#\1192#" /usr/local/bin/vidcoderr/vidcoderr.ini
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_CHANNELS.*\s*=\s*\).*\$#\1stereo#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Audio stream encoder set at: ${YELLOW}192 Kbps Stereo${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE04' ]; then
+elif [ "$RESULTS" = 'TYPE04' ]
+then
   # Audio bitrate / format
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_BITRATE.*\s*=\s*\).*\$#\1384#" /usr/local/bin/vidcoderr/vidcoderr.ini
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_CHANNELS.*\s*=\s*\).*\$#\1stereo#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Audio stream encoder set at: ${YELLOW}384 Kbps Stereo${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE05' ]; then
+elif [ "$RESULTS" = 'TYPE05' ]
+then
   # Audio bitrate / format
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_BITRATE.*\s*=\s*\).*\$#\1384#" /usr/local/bin/vidcoderr/vidcoderr.ini
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_CHANNELS.*\s*=\s*\).*\$#\1surround#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Audio stream encoder set at: ${YELLOW}384 Kbps Surround${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE06' ]; then
+elif [ "$RESULTS" = 'TYPE06' ]
+then
   # Audio bitrate / format
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_BITRATE.*\s*=\s*\).*\$#\1448#" /usr/local/bin/vidcoderr/vidcoderr.ini
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_CHANNELS.*\s*=\s*\).*\$#\1surround#" /usr/local/bin/vidcoderr/vidcoderr.ini
   info "Audio stream encoder set at: ${YELLOW}448 Kbps Surround${NC}"
   echo
-elif [ ${RESULTS} == 'TYPE07' ]; then
+elif [ "$RESULTS" = 'TYPE07' ]
+then
   # Audio bitrate / format
   msg "Modifying Vidcoderr.ini settings..."
   pct exec $CTID -- sed -i "s#^\(DST_STREAM_AUDIO_BITRATE.*\s*=\s*\).*\$#\1640#" /usr/local/bin/vidcoderr/vidcoderr.ini
@@ -356,16 +393,19 @@ fi
 #---- Start Systemd ----------------------------------------------------------------
 
 # Start Vidcoderr system.d service 
-if [ ${VIDCODERR_WATCHDIR_TYPE} == '1' ]; then
+if [ "$VIDCODERR_WATCHDIR_TYPE" = '1' ]
+then
   # Standard Watch Service
   msg "Enabling Vidcoderr Standard Watch Services..."
   pct exec $CTID -- systemctl enable --quiet vidcoderr_watchdir_rsync.timer
   pct exec $CTID -- systemctl enable --quiet vidcoderr_inotify_rsync.service
   pct exec $CTID -- systemctl enable --quiet SimpleHTTPServerWithUpload.service
 
-  if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir_rsync.timer)" == "inactive" ]; then
+  if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir_rsync.timer)" = 'inactive' ]
+  then
     pct exec $CTID -- systemctl restart vidcoderr_watchdir_rsync.timer
-    while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir_rsync.timer)" == "active" ]]; do
+    while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir_rsync.timer)" == 'active' ]]
+    do
       echo -n .
     done
     info "Systemd 'vidcoderr_watchdir_rsync.timer' status: ${GREEN}running${NC}"
@@ -373,9 +413,11 @@ if [ ${VIDCODERR_WATCHDIR_TYPE} == '1' ]; then
     info "Systemd 'vidcoderr_watchdir_rsync.timer' status: ${GREEN}running${NC}"
   fi
 
-  if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" == "inactive" ]; then
+  if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" = 'inactive' ]
+  then
     pct exec $CTID -- systemctl restart vidcoderr_inotify_rsync.service
-    while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" == "active" ]]; do
+    while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" == "active" ]]
+    do
       echo -n .
     done
     info "Systemd 'vidcoderr_inotify_rsync.service' status: ${GREEN}running${NC}"
@@ -383,22 +425,27 @@ if [ ${VIDCODERR_WATCHDIR_TYPE} == '1' ]; then
     info "Systemd 'vidcoderr_inotify_rsync.service' status: ${GREEN}running${NC}"
   fi
 
-  if [ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "inactive" ]; then
+  if [ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" = 'inactive' ]
+  then
     pct exec $CTID -- systemctl restart SimpleHTTPServerWithUpload.service
-    while ! [[ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "active" ]]; do
+    while ! [[ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == 'active' ]]
+    do
       echo -n .
     done
     info "Systemd 'SimpleHTTPServerWithUpload.service' status: ${GREEN}running${NC}"
   else
     info "Systemd 'SimpleHTTPServerWithUpload.service' status: ${GREEN}running${NC}"
   fi
-elif [ ${VIDCODERR_WATCHDIR_TYPE} == '2' ]; then
+elif [ "$VIDCODERR_WATCHDIR_TYPE" = '2' ]
+then
   # Inotify Watch Service
   msg "Enabling Vidcoderr Inotify Watch Services..."
   pct exec $CTID -- systemctl enable --quiet vidcoderr_inotify.service
-  if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" == "inactive" ]; then
+  if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" = 'inactive' ]
+  then
     pct exec $CTID -- systemctl restart vidcoderr_inotify.service
-    while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" == "active" ]]; do
+    while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" == 'active' ]]
+    do
       echo -n .
     done
     info "Systemd 'vidcoderr_inotify.service' status: ${GREEN}running${NC}"
@@ -406,9 +453,11 @@ elif [ ${VIDCODERR_WATCHDIR_TYPE} == '2' ]; then
     info "Systemd 'vidcoderr_inotify.service' status: ${GREEN}running${NC}"
   fi
 
-  if [ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "inactive" ]; then
+  if [ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" = 'inactive' ]
+  then
     pct exec $CTID -- systemctl restart SimpleHTTPServerWithUpload.service
-    while ! [[ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "active" ]]; do
+    while ! [[ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == 'active' ]]
+    do
       echo -n .
     done
     info "Systemd 'SimpleHTTPServerWithUpload.service' status: ${GREEN}running${NC}"
@@ -424,15 +473,16 @@ section "Completion Status"
 #---- Set display text
 # Get port
 port=$(pct exec $CTID -- awk -F "=" '/HTTPSERVER_PORT/ {print $2}' /usr/local/bin/vidcoderr/vidcoderr.ini)
-# Get IP type
-if [[ $(pct exec $CTID -- ip addr show eth0  | grep -q dynamic > /dev/null; echo $?) == 0 ]]; then # ip -4 addr show eth0 
-    ip_type='dhcp - best assign a IP reservation'
+# Get IP type (ip -4 addr show eth0)
+if [ "$(pct exec $CTID -- ip addr show eth0  | grep -q dynamic > /dev/null; echo $?)" = '0' ]
+then
+  ip_type='dhcp - best assign a IP reservation'
 else
-    ip_type='static IP'
+  ip_type='static IP'
 fi
 # Web access URL
-display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):${port}/" )
-display_msg1+=( "http://$(pct exec $CTID -- hostname -I | sed -r 's/\s+//g'):${port}/ (${ip_type})" )
+display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):$port/" )
+display_msg1+=( "http://$(pct exec $CTID -- hostname -I | sed -r 's/\s+//g'):$port/ ($ip_type)" )
 # Autoadd dir
 display_msg2=( "in_unsorted:/mnt/public/autoadd/vidcoderr/out_unsorted" )
 display_msg2+=( "in_homevideo:/mnt/video/homevideo" )
@@ -442,12 +492,15 @@ display_msg2+=( "in_stream/musicvideo:/mnt/video/stream/musicvideo" )
 display_msg2+=( "in_stream/pron:/mnt/video/stream/pron" )
 display_msg2+=( "in_stream/series:/mnt/video/stream/series" )
 # Main library
-if [[ -z ${MAIN_VIDEOLIBRARY} ]]; then
+if [[ -z "$MAIN_VIDEOLIBRARY" ]]
+then
 display_msg3_var='unchanged'
 else
-  if [ ${MAIN_VIDEOLIBRARY} == 1 ]; then
+  if [ "$MAIN_VIDEOLIBRARY" = 1 ]
+  then
     display_msg3_var='enabled'
-  elif [ ${MAIN_VIDEOLIBRARY} == 0 ]; then
+  elif [ "$MAIN_VIDEOLIBRARY" == 0 ]
+  then
     display_msg3_var='disabled'
   fi
 fi
@@ -466,7 +519,7 @@ Vidcoderr main library watch status is '${display_msg3_var}'.
 
 More complex tweaks can be made in the configuration file: /usr/local/bin/vidcoderr/vidcoderr.ini (Vidcoderr requires a restart after editing).
 
-$(if ! [ -z ${CT_PASSWORD} ]; then echo -e "The default ${REPO_PKG_NAME^} CT root password is: '${CT_PASSWORD}'"; fi)
+$(if ! [ -z "$CT_PASSWORD "]; then echo -e "The default ${REPO_PKG_NAME^} CT root password is: '$CT_PASSWORD'"; fi)
 More information here: https://github.com/ahuacate/medialab"
 
 # Display Installation error report

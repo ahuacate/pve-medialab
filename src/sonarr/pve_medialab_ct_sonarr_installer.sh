@@ -7,7 +7,7 @@
 #---- Bash command to run script ---------------------------------------------------
 
 #---- Source Github
-# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_installer.sh)"
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/main/pve_medialab_installer.sh)"
 
 #---- Source local Git
 # /mnt/pve/nas-01-git/ahuacate/pve-medialab/pve_medialab_installer.sh
@@ -176,34 +176,38 @@ EOF
 #---- Body -------------------------------------------------------------------------
 
 #---- Introduction
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_intro.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_intro.sh
 
 #---- Setup PVE CT Variables
 # Ubuntu NAS (all)
-source ${COMMON_PVE_SRC_DIR}/pvesource_set_allvmvars.sh
+source $COMMON_PVE_SRC_DIR/pvesource_set_allvmvars.sh
 
 # Check & create required PVE CT subfolders (all)
-source ${COMMON_DIR}/nas/src/nas_subfolder_installer_precheck.sh
+source $COMMON_DIR/nas/src/nas_subfolder_installer_precheck.sh
 
 #---- Create OS CT
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createvm.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
 
 #---- Pre-Configuring PVE CT
 section "Pre-Configure ${HOSTNAME^} ${VM_TYPE^^}"
 
 # MediaLab CT unprivileged mapping
-if [ ${CT_UNPRIVILEGED} == '1' ]; then
-  source ${COMMON_PVE_SRC_DIR}/pvesource_ct_medialab_ctidmapping.sh
+if [ "$CT_UNPRIVILEGED" = '1' ]
+then
+  source $COMMON_PVE_SRC_DIR/pvesource_ct_medialab_ctidmapping.sh
 fi
 
 # Create CT Bind Mounts
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createbindmounts.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createbindmounts.sh
 
 #---- Configure New CT OS
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntubasics.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 
 #---- Create MediaLab Group and User
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntu_addmedialabuser.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addmedialabuser.sh
+
+#---- Install CT 'auto-updater'
+source $COMMON_PVE_SRC_DIR/pvesource_ct_autoupdater_installer.sh
 
 
 #---- Sonarr -----------------------------------------------------------------------
@@ -212,23 +216,27 @@ section "Install ${REPO_PKG_NAME^} software"
 
 #---- Run SW install
 # Mono SW (shared script)
-pct push $CTID ${SHARED_DIR}/src/mono_22.04_sw.sh /tmp/mono_22.04_sw.sh -perms 755
+pct push $CTID $SHARED_DIR/src/mono_22.04_sw.sh /tmp/mono_22.04_sw.sh -perms 755
 pct exec $CTID -- bash -c "/tmp/mono_22.04_sw.sh"
 
 # Sonarr SW
-pct push $CTID ${SRC_DIR}/sonarr/sonarr_sw.sh /tmp/sonarr_sw.sh -perms 755
-pct exec $CTID -- bash -c "export REPO_PKG_NAME=${REPO_PKG_NAME} APP_USERNAME=${APP_USERNAME} APP_GRPNAME=${APP_GRPNAME} && /tmp/sonarr_sw.sh"
+pct push $CTID $SRC_DIR/sonarr/sonarr_sw.sh /tmp/sonarr_sw.sh -perms 755
+pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/sonarr_sw.sh"
 
 # Check Install CT SW status (active or abort script)
 pct_check_systemctl "sonarr.service"
 
 #---- Copy preset settings file to CT and NAS
-if [ -f ${SRC_DIR}/${REPO_PKG_NAME,,}/config/${REPO_PKG_NAME,,}_backup_*_0000.00.00_00.00.00.zip ]; then
-  pct exec $CTID -- runuser ${APP_USERNAME} -c "mkdir -p /mnt/backup/${REPO_PKG_NAME,,}"
-  # Copy App backup ahuacate settings file to NAS
-  BACKUP_FILE=$(find ${SRC_DIR}/${REPO_PKG_NAME,,}/config/ -name *_0000.00.00_00.00.00.zip -type f -exec basename {} 2> /dev/null \;)
-  pct exec $CTID -- runuser ${APP_USERNAME} -c "mkdir -p /var/lib/sonarr/Backups/manual"
-  pct push $CTID ${SRC_DIR}/${REPO_PKG_NAME,,}/config/${BACKUP_FILE} /var/lib/sonarr/Backups/manual/${BACKUP_FILE}
+if [ -f "$SRC_DIR/${REPO_PKG_NAME,,}/config/${REPO_PKG_NAME,,}_backup_*_0000.00.00_00.00.00.zip" ]
+then
+  pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME"
+  pct exec $CTID -- bash -c "su -c 'mkdir -p /mnt/backup/${REPO_PKG_NAME,,}' $APP_USERNAME"
+  pct exec $CTID -- bash -c "su -c 'mkdir -p /var/lib/${REPO_PKG_NAME,,}/Backups/manual' $APP_USERNAME"
+  # Copy App backup ahuacate settings file to CT & NAS
+  backup_file=$(find $SRC_DIR/${REPO_PKG_NAME,,}/config/ -name *_0000.00.00_00.00.00.zip -type f -exec basename {} 2> /dev/null \;)
+  pct push $CTID $SRC_DIR/${REPO_PKG_NAME,,}/config/$backup_file /var/lib/${REPO_PKG_NAME,,}/Backups/manual/$backup_file
+  pct exec $CTID -- chown "${APP_USERNAME}":"${APP_GRPNAME}" /var/lib/${REPO_PKG_NAME,,}/Backups/manual/$backup_file
+  pct exec $CTID -- bash -c "su -c 'cp /var/lib/${REPO_PKG_NAME,,}/Backups/manual/$backup_file /mnt/backup/${REPO_PKG_NAME,,}/$backup_file' $APP_USERNAME"
 fi
 
 #---- Finish Line ------------------------------------------------------------------
@@ -237,24 +245,26 @@ section "Completion Status"
 #---- Set display text
 # Get port
 port=$(pct exec $CTID -- awk -F "[><]" '/\<Port/ { print $3 }' /var/lib/sonarr/config.xml)
-# Get IP type
-if [[ $(pct exec $CTID -- ip addr show eth0  | grep -q dynamic > /dev/null; echo $?) == 0 ]]; then # ip -4 addr show eth0 
-    ip_type='dhcp - best use dhcp IP reservation'
+# Get IP type (ip -4 addr show eth0)
+if [ "$(pct exec $CTID -- ip addr show eth0  | grep -q dynamic > /dev/null; echo $?)" = 0 ]
+then
+  ip_type='dhcp - best use dhcp IP reservation'
 else
-    ip_type='static IP'
+  ip_type='static IP'
 fi
 # Web access URL
-display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):${port}/" )
-display_msg1+=( "http://$(pct exec $CTID -- hostname -I | sed -r 's/\s+//g'):${port}/ (${ip_type})" )
+display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):$port/" )
+display_msg1+=( "http://$(pct exec $CTID -- hostname -I | sed -r 's/\s+//g'):${port}/ ($ip_type)" )
 # Backup preset file
-display_msg2=( "Local: ${BACKUP_FILE}" )
+display_msg2=( "Local: $backup_file" )
 # Backup preset description
 display_msg3=( "--  Media Management (sources)" \
 "--  General setup" \
 "--  Setup Medialab download clients, indexers and Apps" \
 "--  Backup destination: /mnt/backup/${REPO_PKG_NAME^} (preset to use NAS)" )
 # Check CT domain
-if [ ! $(hostname -d) == 'local' ]; then 
+if [ ! "$(hostname -d)" = 'local' ]
+then 
 display_msg3+=( "--  Note: The default preset file uses the '.local' domain." \
 "    User must edit ${REPO_PKG_NAME,,^} app settings to use '.$(hostname -d)'" )
 fi
@@ -278,5 +288,5 @@ More information here: https://github.com/ahuacate/medialab"
 printf '%s\n' "${display_dir_error_MSG[@]}"
 printf '%s\n' "${display_permission_error_MSG[@]}"
 printf '%s\n' "${display_chattr_error_MSG[@]}"
-source ${COMMON_PVE_SRC_DIR}/pvesource_error_log.sh
+source $COMMON_PVE_SRC_DIR/pvesource_error_log.sh
 #-----------------------------------------------------------------------------------

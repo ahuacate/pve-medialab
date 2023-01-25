@@ -10,8 +10,8 @@
 
 # Update these variables as required for your specific instance
 app="${REPO_PKG_NAME,,}"       # App name
-app_uid=${APP_USERNAME}        # App UID
-app_guid=${APP_GRPNAME}        # App GUID
+app_uid="$APP_USERNAME"        # App UID
+app_guid="$APP_GRPNAME"        # App GUID
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
@@ -35,11 +35,14 @@ apt-get update -y
 apt-get install jellyfin -y
 
 # Stop the service
-if [ $(systemctl is-active jellyfin.service) == "active" ]; then
+if [ $(systemctl is-active jellyfin.service) = 'active' ]
+then
   systemctl stop jellyfin.service
   # Wait for service is 'stopped'
-  while true; do
-    if [ $(systemctl is-active jellyfin.service) != "active" ]; then
+  while true
+  do
+    if [ $(systemctl is-active jellyfin.service) != 'active' ]
+    then
       break
     fi
     sleep 2

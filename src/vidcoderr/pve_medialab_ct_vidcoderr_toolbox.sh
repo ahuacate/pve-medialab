@@ -15,13 +15,16 @@ OPTIONS_LABELS_INPUT=( "Setup Assistant - Change Vidcoderr settings" "Upgrade Vi
 makeselect_input2
 singleselect SELECTED "$OPTIONS_STRING"
 
-if [ ${RESULTS} == 'TYPE01' ]; then
+if [ "$RESULTS" = 'TYPE01' ]
+then
   # Setup Assistant
-  source ${SRC_DIR}/vidcoderr/vidcoderr_configbuilder.sh
-elif [ ${RESULTS} == 'TYPE02' ]; then
+  source $SRC_DIR/vidcoderr/vidcoderr_configbuilder.sh
+elif [ "$RESULTS" = 'TYPE02' ]
+then
   # Upgrade Vidcoderr
-  source ${SRC_DIR}/vidcoderr/vidcoderr_updater.sh
-elif [ ${RESULTS} == 'TYPE00' ]; then
+  source $SRC_DIR/vidcoderr/vidcoderr_updater.sh
+elif [ "$RESULTS" = 'TYPE00' ]
+then
   # Exit installation
   msg "You have chosen not to proceed. Aborting. Bye..."
   echo

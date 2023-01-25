@@ -10,8 +10,8 @@
 
 # Update these variables as required for your specific instance
 app="${REPO_PKG_NAME,,}"       # App name
-app_uid=${APP_USERNAME}        # App UID
-app_guid=${APP_GRPNAME}        # App GUID
+app_uid="$APP_USERNAME"        # App UID
+app_guid="$APP_GRPNAME"        # App GUID
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
@@ -31,7 +31,7 @@ apt-get -y update > /dev/null
 apt-get -y install mediainfo
 
 # Install Sonarr software
-echo "sonarr sonarr/owning_user string ${app_uid}" | debconf-set-selections
-echo "sonarr sonarr/owning_group string ${app_guid}" | debconf-set-selections
+echo "sonarr sonarr/owning_user string $app_uid" | debconf-set-selections
+echo "sonarr sonarr/owning_group string $app_guid" | debconf-set-selections
 DEBIAN_FRONTEND=non-interactive apt-get install -y sonarr
 #-----------------------------------------------------------------------------------

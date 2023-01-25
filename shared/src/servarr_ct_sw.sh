@@ -12,7 +12,7 @@
 app="${REPO_PKG_NAME,,}"
 installdir="/opt"              # {Update me if needed} Install Location
 bindir="${installdir}/${app^}" # Full Path to Install Location
-datadir="/var/lib/$app/"       # {Update me if needed} AppData directory to use
+datadir="/var/lib/${app}/"       # {Update me if needed} AppData directory to use
 app_bin=${app^}                # Binary Name of the app
 app_uid=${APP_USERNAME}        # App UID
 app_guid=${APP_GRPNAME}        # App GUID
@@ -49,6 +49,24 @@ fi
 #---- Other Files ------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
 
+#---- Prerequisites
+
+# Stop the App if running
+if service --status-all | grep -Fq "$app"; then
+  systemctl stop $app
+  systemctl disable $app.service
+fi
+
+# Create App Data folders
+mkdir -p "$datadir"
+mkdir -p "$datadir/Backups/manual"
+chown -R "$app_uid":"$app_guid" "$datadir"
+chmod 775 "$datadir"
+
+# Create NAS backup folder
+su -c "mkdir -p /mnt/backup/${app,,}" ${app_uid}
+
+
 #---- Installing App
 
 # Updating container OS
@@ -56,18 +74,6 @@ apt-get update -y
 
 # Install Mediainfo
 apt-get install mediainfo -y
-
-# Stop the App if running
-if service --status-all | grep -Fq "$app"; then
-    systemctl stop $app
-    systemctl disable $app.service
-fi
-
-# Create App Data
-mkdir -p "$datadir"
-mkdir -p "$datadir/Backups/manual"
-chown -R "$app_uid":"$app_guid" "$datadir"
-chmod 775 "$datadir"
 
 # App Pre-requisites
 apt-get install $app_prereq -y

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------------
 # Filename:     pve_medialab_installer.sh
-# Description:  Installer script for Medialab apps
+# Description:  Installer script for PVE Homelab
 # ----------------------------------------------------------------------------------
 
 #---- Bash command to run script ---------------------------------------------------
 
 #---- Source Github
-# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_installer.sh)"
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/main/pve_medialab_installer.sh)"
 
 #---- Source local Git
 # /mnt/pve/nas-01-git/ahuacate/pve-medialab/pve_medialab_installer.sh
 
-#---- Source -----------------------------------------------------------------------
+#---- Installer Vars ---------------------------------------------------------------
 
 # Git server
 GIT_SERVER='https://github.com'
@@ -21,71 +21,81 @@ GIT_USER='ahuacate'
 # Git repository
 GIT_REPO='pve-medialab'
 # Git branch
-GIT_BRANCH='master'
+GIT_BRANCH='main'
 # Git common
 GIT_COMMON='0'
 
-# Set Package Installer Temp Folder
-REPO_TEMP='/tmp'
-cd ${REPO_TEMP}
+# Edit this list to set installer products.
+# vm_LIST=( "name:build:vm_type:desc" )
+# name        ---> name of the main application
+# build_model ---> build model/version of the name (i.e omv build version for a nas)
+# vm_type     ---> 'vm' or 'ct'
+# desc        ---> description of the main application name
+# Sample: vm_LIST=( "pihole:pihole:ct:DNS sinkhole with optional dhcp server"
+# "ddclient:ddclient:ct:dynamic dns updater"
+# "guacamole:guacamole:ct:clientless remote desktop gateway" )
+# Fields must match GIT_APP_SCRIPT dir and filename:
+# i.e .../<build_type>/${GIT_REPO}_<vm_type>_<app_name>_installer.sh '(i.e .../ubuntu/pve_nas_ct_nas_installer.sh')
+vm_LIST=( "#pihole:pihole:ct:DNS sinkhole with optional dhcp server"
+"deluge:deluge:ct:deluge torrent downloader"
+"jellyfin:jellyfin:ct:jellyfin media server"
+"lidarr:lidarr:ct:lidarr music collection manager"
+"nzbget:nzbget:ct:nzbget usenet downloader"
+"prowlarr:prowlarr:ct:prowlarr index manager"
+"radarr:radarr:ct:radarr movie collection manager"
+"readarr:readarr:ct:readarr book collection manager"
+"sonarr:sonarr:ct:sonarr series collection manager"
+"vidcoderr:vidcoderr:ct:video transcoder application"
+"whisparr:whisparr:ct:naughty movie collection manager"
+"kodirsync:kodirsync:ct:remote media library synchronizing tool" )
 
-# Script path variables
-DIR="${REPO_TEMP}/${GIT_REPO}"
-SRC_DIR="${DIR}/src"
-COMMON_DIR="${DIR}/common"
-COMMON_PVE_SRC_DIR="${DIR}/common/pve/src"
-SHARED_DIR="${DIR}/shared"
-TEMP_DIR="${DIR}/tmp"
-
+#-----------------------------------------------------------------------------------
+# NO NOT EDIT HERE DOWN
 #---- Dependencies -----------------------------------------------------------------
 
-# Check for Internet connectivity
-if nc -zw1 google.com 443; then
-  echo
-else
-  echo "Checking for internet connectivity..."
-  echo -e "Internet connectivity status: \033[0;31mDown\033[0m\n\nCannot proceed without a internet connection.\nFix your PVE hosts internet connection and try again..."
-  echo
-  exit 0
-fi
-
-# Installer cleanup
-function installer_cleanup() {
-rm -R ${REPO_TEMP}/${GIT_REPO} &> /dev/null
-if [ -f ${REPO_TEMP}/${GIT_REPO}.tar.gz ]; then
-  rm ${REPO_TEMP}/${GIT_REPO}.tar.gz > /dev/null
-fi
-}
+# Internet connectivity check
+# Checking multiple urls incase one is blocked
+url_check_LIST=(
+  "google.com:443"
+  "github.com:443"
+  )
+# Set a counter to keep track
+cnt=0
+while IFS=':' read -r url port
+do
+  cnt=$((cnt + 1))
+  # Use the nc command to connect to the hostname and port
+  # (0 is UP, other is down)
+  nc -zw1 $url $port 2> /dev/null
+  if [ $? = 1 ]
+  then
+    # Print a fail message if it is the last url
+    if [[ "$cnt" == ${#url_check_LIST[@]} ]]
+    then
+      echo "Checking for internet connectivity..."
+      echo -e "Internet connectivity status: \033[0;31mDown\033[0m\n\nCannot proceed without a internet connection.\nFix your PVE hosts internet connection and try again..."
+      echo
+      exit 0
+    fi
+    # Try another url
+    continue
+  else
+    # Url passes
+    break
+  fi
+done< <( printf '%s\n' "${url_check_LIST[@]}" )
 
 #---- Static Variables -------------------------------------------------------------
+
+#---- Set Package Installer Temp Folder
+REPO_TEMP='/tmp'
+cd ${REPO_TEMP}
 
 #---- Local Repo path (check if local)
 # For local SRC a 'developer_settings.git' file must exist in repo dir
 REPO_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P | sed "s/${GIT_USER}.*/${GIT_USER}/" )"
 
 #---- Other Variables --------------------------------------------------------------
-
-# List of Medialab CT default hostnames. Edit this list to control the available installer CT.
-# First field must match GIT_APP_SCRIPT filename 'pve_medialab_ct_<name>.sh'
-ct_LIST=( "ahuabooks:reading and podcast listening"
-"deluge:torrent client"
-"flexget:multipurpose media automation tool"
-"jackett:bittorrent indexer"
-"jellyfin:media content server"
-"kodisync-server:offline media synctool server for Kodi"
-"kodisync-client:kodisync client toolbox"
-"lidarr:music collection manager"
-"nzbget:binary newsgrabber for nzb files"
-"prowlarr:indexer manager"
-"radarr:movie collection manager"
-"readarr:ebook collection manager"
-"sonarr:series collection manager (TV)"
-"vidcoderr:automated video file transcoder"
-"whisparr:pron collection manager" )
-
-# Easy Script Section Header Body Text
-SECTION_HEAD='PVE Medialab'
-
 #---- Other Files ------------------------------------------------------------------
 
 #---- Package loader
@@ -94,60 +104,14 @@ if [ -f ${REPO_PATH}/common/bash/src/pve_repo_loader.sh ] && [[ $(sed -n 's/^dev
   source ${REPO_PATH}/common/bash/src/pve_repo_loader.sh
 else
   # Download Github loader
-  wget -qL - https://raw.githubusercontent.com/${GIT_USER}/common/master/bash/src/pve_repo_loader.sh -O ${REPO_TEMP}/pve_repo_loader.sh
+  wget -qL - https://raw.githubusercontent.com/${GIT_USER}/common/main/bash/src/pve_repo_loader.sh -O ${REPO_TEMP}/pve_repo_loader.sh
   chmod +x ${REPO_TEMP}/pve_repo_loader.sh
   source ${REPO_TEMP}/pve_repo_loader.sh
 fi
 
 #---- Body -------------------------------------------------------------------------
-# Do not edit here down
-
-#---- Run Bash Header
-source ${COMMON_PVE_SRC_DIR}/pvesource_bash_defaults.sh
 
 #---- Run Installer
-while true; do
-  section "Create a PVE Medialab CT"
+source ${REPO_PATH}/common/bash/src/pve_repo_installer_main.sh
 
-  msg_box "#### SELECT A PRODUCT INSTALLER ####\n\nSelect a installer or service from the list or 'None - Exit this installer' to leave.\n\nAny terminal inactivity is caused by background tasks being run, system updating or downloading of Linux files. So be patient because some tasks can be slow."
-  echo
-  # Create menu list
-  unset OPTIONS_VALUES_INPUT
-  unset OPTIONS_LABELS_INPUT
-  while IFS=':' read NAME DESC; do
-    if [[ $(pct list | awk 'NR > 1 { OFS = ":"; print $3 }' | grep "${NAME,,}$") ]]; then
-      OPTIONS_VALUES_INPUT+=( "${NAME,,}" )
-      OPTIONS_LABELS_INPUT+=( "${NAME^} - ${DESC^} ( '${NAME^} CT' already exists )" )
-    else
-      OPTIONS_VALUES_INPUT+=( "${NAME,,}" )
-      OPTIONS_LABELS_INPUT+=( "${NAME^} - ${DESC^}" ) 
-    fi
-  done < <( printf '%s\n' "${ct_LIST[@]}" )
-  # Add exit option to menu
-  OPTIONS_VALUES_INPUT+=( "TYPE00" )
-  OPTIONS_LABELS_INPUT+=( "None - Exit this installer" ) 
-  # Menu options
-  makeselect_input2
-  singleselect SELECTED "$OPTIONS_STRING"
-
-  # Run the CT installer
-  if [ ${RESULTS} == 'TYPE00' ]; then
-    # Exit installation
-    msg "You have chosen not to proceed. Aborting. Bye..."
-    echo
-    sleep 1
-    break
-  else
-    # Set Installer App script name
-    GIT_APP_SCRIPT="pve_medialab_ct_${RESULTS,,}_installer.sh"
-    #---- Run Installer
-    source ${SRC_DIR}/${RESULTS,,}/${GIT_APP_SCRIPT}
-  fi
-  # Reset Section Head
-  SECTION_HEAD='PVE Medialab'
-done
-
-#---- Finish Line ------------------------------------------------------------------
-
-#---- Cleanup
-installer_cleanup
+#-----------------------------------------------------------------------------------

@@ -10,12 +10,17 @@
 
 # Update these variables as required for your specific instance
 app="${REPO_PKG_NAME,,}"       # App name
-app_uid=${APP_USERNAME}        # App UID
-app_guid=${APP_GRPNAME}        # App GUID
+app_uid="$APP_USERNAME"        # App UID
+app_guid="$APP_GRPNAME"        # App GUID
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
+
+#---- Prerequisites
+
+# Create NAS backup folder
+su -c "mkdir -p /mnt/backup/${app,,}" $app_uid
 
 #---- Installing NZBGet
 # Downloading latest SW
@@ -23,7 +28,7 @@ wget --show-progress https://nzbget.net/download/nzbget-latest-bin-linux.run -P 
 
 # Install SW
 sh /tmp/nzbget-latest-bin-linux.run
-chown -R ${app_uid}:${app_guid} /opt/nzbget
+chown -R "$app_uid":"$app_guid" /opt/nzbget
 
 
 msg "Creating nzbget.service system.d file..."

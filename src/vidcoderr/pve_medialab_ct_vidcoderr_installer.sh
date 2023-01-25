@@ -7,7 +7,7 @@
 #---- Bash command to run script ---------------------------------------------------
 
 #---- Source Github
-# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_installer.sh)"
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/main/pve_medialab_installer.sh)"
 
 #---- Source local Git
 # /mnt/pve/nas-01-git/ahuacate/pve-medialab/pve_medialab_installer.sh
@@ -177,37 +177,38 @@ EOF
 #---- Body -------------------------------------------------------------------------
 
 #---- Introduction
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_intro.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_intro.sh
 
 #---- Setup PVE CT Variables
 # Ubuntu NAS (all)
-source ${COMMON_PVE_SRC_DIR}/pvesource_set_allvmvars.sh
+source $COMMON_PVE_SRC_DIR/pvesource_set_allvmvars.sh
 
 # Check & create required PVE CT subfolders (all)
 source ${COMMON_DIR}/nas/src/nas_subfolder_installer_precheck.sh
 
 #---- Create OS CT
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createvm.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
 
 #---- Pre-Configuring PVE CT
 section "Pre-Configure ${HOSTNAME^} ${VM_TYPE^^}"
 
 # MediaLab CT unprivileged mapping
-if [ ${CT_UNPRIVILEGED} == '1' ]; then
-  source ${COMMON_PVE_SRC_DIR}/pvesource_ct_medialab_ctidmapping.sh
+if [ "$CT_UNPRIVILEGED" = '1' ]
+then
+  source $COMMON_PVE_SRC_DIR/pvesource_ct_medialab_ctidmapping.sh
 fi
 
 # Create CT Bind Mounts
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_createbindmounts.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_createbindmounts.sh
 
 # VA-API Install & Setup for CT
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_medialab_vaapipassthru.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_medialab_vaapipassthru.sh
 
 #---- Configure New CT OS
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntubasics.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 
 #---- Create MediaLab Group and User
-source ${COMMON_PVE_SRC_DIR}/pvesource_ct_ubuntu_addmedialabuser.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addmedialabuser.sh
 
 #---- Vidcoderr --------------------------------------------------------------------
 
@@ -270,46 +271,46 @@ pct exec $CTID -- mkdir -p /usr/local/bin/vidcoderr
 pct exec $CTID -- chown media:medialab /usr/local/bin/vidcoderr
 
 # Copy vidcoderr.ini file
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr.ini /usr/local/bin/vidcoderr/vidcoderr.ini
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr.ini /usr/local/bin/vidcoderr/vidcoderr.ini
 pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr.ini
 # Copy vidcoderr_watchdir.sh script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir.sh
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir.sh
 pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir.sh
 # Copy vidcoderr_watchdir_list.sh script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir_list.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_list.sh
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir_list.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_list.sh
 pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir_list.sh
 # Copy vidcoderr_watchdir_process.sh script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir_process.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_process.sh
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir_process.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_process.sh
 pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir_process.sh
 # Copy vidcoderr_watchdir_prune.sh script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir_prune.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_prune.sh
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir_prune.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_prune.sh
 pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir_prune.sh
 # Copy vidcoderr_encoder.sh script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_encoder.sh /usr/local/bin/vidcoderr/vidcoderr_encoder.sh
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_encoder.sh /usr/local/bin/vidcoderr/vidcoderr_encoder.sh
 pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_encoder.sh
 
 # Copy inotify script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_inotify_rsync.sh /usr/local/bin/vidcoderr/vidcoderr_inotify_rsync.sh
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_inotify_rsync.sh /usr/local/bin/vidcoderr/vidcoderr_inotify_rsync.sh
 pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_inotify_rsync.sh
 
 # Copy SimpleHTTPServerWithUpload scripts
-pct push $CTID ${SRC_DIR}/vidcoderr/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.sh /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.sh
+pct push $CTID $SRC_DIR/vidcoderr/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.sh /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.sh
 pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.sh
 
-pct push $CTID ${DIR}/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.py /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.py
+pct push $CTID $DIR/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.py /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.py
 pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.py
 
 # Copy filters
-pct push $CTID ${SRC_DIR}/vidcoderr/video_format_filter.txt /usr/local/bin/vidcoderr/video_format_filter.txt
-pct push $CTID ${SRC_DIR}/vidcoderr/other_format_filter.txt /usr/local/bin/vidcoderr/other_format_filter.txt
-pct push $CTID ${SRC_DIR}/vidcoderr/rsync_exclude_filter.txt /usr/local/bin/vidcoderr/rsync_exclude_filter.txt
+pct push $CTID $SRC_DIR/vidcoderr/video_format_filter.txt /usr/local/bin/vidcoderr/video_format_filter.txt
+pct push $CTID $SRC_DIR/vidcoderr/other_format_filter.txt /usr/local/bin/vidcoderr/other_format_filter.txt
+pct push $CTID $SRC_DIR/vidcoderr/rsync_exclude_filter.txt /usr/local/bin/vidcoderr/rsync_exclude_filter.txt
 
 
 # Chown media:medialab all txt files
 pct exec $CTID -- bash -c 'chown media:medialab /usr/local/bin/vidcoderr/*.txt'
 
 # Setup vidcoderr_watchdir log
-cat << 'EOF' > ${DIR}/vidcoderr_watchdir
+cat << 'EOF' > $DIR/vidcoderr_watchdir
 /usr/local/bin/vidcoderr/watchdir.log
 {
   rotate daily
@@ -317,7 +318,7 @@ cat << 'EOF' > ${DIR}/vidcoderr_watchdir
   rotate 0
 }
 EOF
-pct push $CTID ${DIR}/vidcoderr_watchdir /etc/logrotate.d/vidcoderr_watchdir
+pct push $CTID $DIR/vidcoderr_watchdir /etc/logrotate.d/vidcoderr_watchdir
 pct exec $CTID -- chmod 644 /etc/logrotate.d/vidcoderr_watchdir
 pct exec $CTID -- chown root:root /etc/logrotate.d/vidcoderr_watchdir
 pct exec $CTID -- touch /usr/local/bin/vidcoderr/vidcoderr_watchdir.log
@@ -325,13 +326,13 @@ pct exec $CTID -- chown -R media:medialab /usr/local/bin/vidcoderr/vidcoderr_wat
 pct exec $CTID -- chown -R media:medialab /etc/logrotate.d/vidcoderr_watchdir
 
 # Copy Systemd services
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir_rsync.service /etc/systemd/system/vidcoderr_watchdir_rsync.service
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir_rsync.timer /etc/systemd/system/vidcoderr_watchdir_rsync.timer
-pct push $CTID ${SRC_DIR}/vidcoderr/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.service /etc/systemd/system/SimpleHTTPServerWithUpload.service
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_inotify_rsync.service /etc/systemd/system/vidcoderr_inotify_rsync.service
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_inotify.service /etc/systemd/system/vidcoderr_inotify.service
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir_rsync.service /etc/systemd/system/vidcoderr_watchdir_rsync.service
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir_rsync.timer /etc/systemd/system/vidcoderr_watchdir_rsync.timer
+pct push $CTID $SRC_DIR/vidcoderr/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.service /etc/systemd/system/SimpleHTTPServerWithUpload.service
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_inotify_rsync.service /etc/systemd/system/vidcoderr_inotify_rsync.service
+pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_inotify.service /etc/systemd/system/vidcoderr_inotify.service
 echo
 
 #---- Configure Vidcoderr
-source ${SRC_DIR}/vidcoderr/vidcoderr_configbuilder.sh
+source $SRC_DIR/vidcoderr/vidcoderr_configbuilder.sh
 #-----------------------------------------------------------------------------------
