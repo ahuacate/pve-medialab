@@ -64,5 +64,5 @@ then
 fi
 
 #----- Create user shares
-source ${DIR}/pve_medialab_ct_kodirsync_user_shares.sh
+source $DIR/pve_medialab_ct_kodirsync_user_shares.sh
 #-----------------------------------------------------------------------------------

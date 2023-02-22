@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------------
-# Filename:     nzbget_sw.sh
-# Description:  Source script for CT SW
+# Filename:     jackett_config.sh
+# Description:  Source script for configuring SW
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
+
+DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+
 #---- Dependencies -----------------------------------------------------------------
+
+# Run Bash Header
+source $DIR/basic_bash_utility.sh
+
 #---- Static Variables -------------------------------------------------------------
 
 # Update these variables as required for your specific instance
@@ -17,45 +24,19 @@ app_guid="$APP_GRPNAME"        # App GUID
 #---- Other Files ------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
 
-#---- Prerequisites
+#---- Configure App
+# Stop Jackett service
+pct_stop_systemctl "jackett.service"
 
-#---- Installing NZBGet
-# Downloading latest SW
-wget --show-progress https://nzbget.net/download/nzbget-latest-bin-linux.run -P /tmp
+# Edit Jacket json config settings
+edit_json_value /home/media/.config/Jackett/ServerConfig.json APIKey "ahuacate"
+edit_json_value /home/media/.config/Jackett/ServerConfig.json BlackholeDir "/mnt/public/autoadd/torrent/unsorted"
+chown "$app_uid":"$app_guid" /home/media/.config/Jackett/ServerConfig.json
 
-# Install SW
-sh /tmp/nzbget-latest-bin-linux.run
-chown -R "$app_uid":"$app_guid" /opt/nzbget
+# Downloading and Installing preconfigured Indexers
+svn checkout https://github.com/ahuacate/pve-medialab/src/jackett/config/Indexers /home/media/.config/Jackett/Indexers
+chown "$app_uid":"$app_guid" {/home/media/.config/Jackett/Indexers/*.json,/home/media/.config/Jackett/Indexers/*.bak}
 
-
-msg "Creating nzbget.service system.d file..."
-cat <<EOF | tee /etc/systemd/system/$app.service >/dev/null
-[Unit]
-Description=NZBGet Daemon
-Documentation=http://nzbget.net/Documentation
-After=network.target
-
-[Service]
-User=$app_uid
-Group=$app_guid
-ExecStart=/opt/nzbget/nzbget -D
-ExecStop=/opt/nzbget/nzbget -Q
-ExecReload=/opt/nzbget/nzbget -O
-Type=forking
-KillMode=process
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Start the App
-systemctl -q daemon-reload
-systemctl enable --now -q "$app"
-
-#---- Create App backup folder on NAS
-if [ -d "/mnt/backup" ]
-then
-  su - $app_uid -c "mkdir -p /mnt/backup/$REPO_PKG_NAME"
-fi
+# Start Jackett service
+pct_start_systemctl "jackett.service"
 #-----------------------------------------------------------------------------------

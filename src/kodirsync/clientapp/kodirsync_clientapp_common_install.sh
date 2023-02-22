@@ -79,10 +79,8 @@ then
   # Print msg display
   msg "Your destination storage option is limited to a storage folder only. The installer could not detect any available disks.\n$(printf '%s\n' "1) $display_msg2" | indent)\n"
   # Menu options
-  build_menu=( 
-    "Folder based - Select a storage folder location on your machine"
-    "Quit- I want to quit and exit this installer"
-    )
+  build_menu=( "Folder based - Select a storage folder location on your machine"
+    "Quit - I want to quit and exit this installer" )
 else
   # Available options include disk and folder based storage
   # Print msg display
@@ -93,7 +91,7 @@ else
   build_menu=( 
     "Disk based - Select a device (SATA, eSATA or USB disk)"
     "Folder based - Select a storage folder location on your machine"
-    "Quit- I want to quit and exit this installer"
+    "Quit- I want to quit and exit this installer" 
     )
 fi
 

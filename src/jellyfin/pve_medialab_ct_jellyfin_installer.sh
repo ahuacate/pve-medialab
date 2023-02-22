@@ -223,17 +223,8 @@ pct push $CTID $SRC_DIR/jellyfin/jellyfin_sw.sh /tmp/jellyfin_sw.sh -perms 755
 pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/jellyfin_sw.sh"
 
 # Check Install CT SW status (active or abort script)
-pct_check_systemctl "${REPO_PKG_NAME,,}.service"
+pct_check_systemctl "${REPO_PKG_NAME}.service"
 
-#---- Copy preset settings file to CT and NAS
-if [ -f "$SRC_DIR/${REPO_PKG_NAME,,}/config/${REPO_PKG_NAME,,}_backup_*_0000.00.00_00.00.00.zip" ]
-then
-  pct exec $CTID -- mkdir -p /mnt/backup/${REPO_PKG_NAME,,}
-  # Copy App backup ahuacate settings file to NAS
-  backup_file=$(find $SRC_DIR/${REPO_PKG_NAME,,}/config/ -name *_0000.00.00_00.00.00.zip -type f -exec basename {} 2> /dev/null \;)
-  pct exec $CTID -- mkdir -p /var/lib/${REPO_PKG_NAME,,}/Backups/manual
-  pct push $CTID $SRC_DIR/${REPO_PKG_NAME,,}/config/$backup_file /var/lib/${REPO_PKG_NAME,,}/Backups/manual/$backup_file
-fi
 
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status"
@@ -242,11 +233,11 @@ section "Completion Status"
 # Get port
 port='8096'
 # Get IP type (ip -4 addr show eth0)
-if [[ $(pct exec $CTID -- ip addr show eth0  | grep -q dynamic > /dev/null; echo $?) == 0 ]]
+if [[ $(pct exec $CTID -- ip addr show eth0 | grep dynamic) ]]
 then
-    ip_type='dhcp - best use dhcp IP reservation'
+  ip_type='dhcp - best use dhcp IP reservation'
 else
-    ip_type='static IP'
+  ip_type='static IP'
 fi
 # Web access URL
 display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):$port/" )
@@ -256,7 +247,7 @@ msg_box "${REPO_PKG_NAME^} installation was a success. The first start-up may ta
 
 $(printf '%s\n' "${display_msg1[@]}" | indent2)
 
-$(if ! [ -z "$CT_PASSWORD" ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '$CT_PASSWORD'"; fi)
+$(if [ ! -z ${CT_PASSWORD+x} ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '$CT_PASSWORD'"; fi)
 More information here: https://github.com/ahuacate/medialab"
 
 # Display Installation error report

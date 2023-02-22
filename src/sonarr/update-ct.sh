@@ -6,7 +6,15 @@
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
+
+DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+
 #---- Dependencies -----------------------------------------------------------------
+
+# Run Bash Header
+source $DIR/basic_bash_utility.sh
+
+#---- Static Variables -------------------------------------------------------------
 #---- Static Variables -------------------------------------------------------------
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
@@ -14,7 +22,8 @@
 # Stop list of systemd services
 # Enter all the SW 'system.d.service' here
 systemd_LIST=()
-while IFS= read -r line; do
+while IFS= read -r line
+do
   [[ "$line" =~ ^\#.*$ ]] && continue
   systemd_LIST+=( "$line" )
 done << EOF
@@ -22,41 +31,6 @@ sonarr.service
 EOF
 
 #---- Functions --------------------------------------------------------------------
-
-# Stop System.d Services
-function pct_stop_systemctl() {
-  # Usage: pct_stop_systemctl "name.service"
-  local service_name="$1"
-  if [ "$(systemctl is-active $service_name)" = 'inactive' ]
-  then
-    # Stop service
-    sudo systemctl stop $service_name
-    # Waiting to hear from service
-    while ! [[ "$(systemctl is-active $service_name)" == 'inactive' ]]
-    do
-      echo -n .
-    done
-  fi
-}
-
-# Start System.d Services
-function pct_start_systemctl() {
-  # Usage: pct_start_systemctl "jellyfin.service"
-  local service_name="$1"
-  # Reload systemd manager configuration
-  sudo systemctl daemon-reload
-  if [ "$(systemctl is-active $service_name)" = 'inactive' ]
-  then
-    # Stop service
-    sudo systemctl start $service_name
-    # Waiting to hear from service
-    while ! [[ "$(systemctl is-active $service_name)" == 'active' ]]
-    do
-      echo -n .
-    done
-  fi
-}
-
 #---- Body -------------------------------------------------------------------------
 
 #---- Stop services

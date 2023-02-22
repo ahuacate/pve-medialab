@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------------
-# Filename:     pve_medialab_ct_deluge_installer.sh
-# Description:  This script is for creating a Proxmox Deluge CT
+# Filename:     pve_medialab_ct_flexget_installer.sh
+# Description:  This script is for creating a Proxmox Flexget CT
 # ----------------------------------------------------------------------------------
 
 #---- Bash command to run script ---------------------------------------------------
 
 #---- Source Github
-# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/maain/pve_medialab_installer.sh)"
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/main/pve_medialab_installer.sh)"
 
 #---- Source local Git
 # /mnt/pve/nas-01-git/ahuacate/pve-medialab/pve_medialab_installer.sh
@@ -17,7 +17,7 @@
 #---- Static Variables -------------------------------------------------------------
 
 # Easy Script Section Head
-SECTION_HEAD='PVE Deluge'
+SECTION_HEAD='PVE Flexget'
 
 # PVE host IP
 PVE_HOST_IP=$(hostname -i)
@@ -50,13 +50,13 @@ SSH_PORT='22'
 
 #----[COMMON_GENERAL_OPTIONS]
 # Hostname
-HOSTNAME='deluge'
+HOSTNAME='flexget'
 # Description for the Container (one word only, no spaces). Shown in the web-interface CT’s summary. 
 DESCRIPTION=''
 # Virtual OS/processor architecture.
 ARCH='amd64'
 # Allocated memory or RAM (MiB).
-MEMORY='1024'
+MEMORY='512'
 # Limit number of CPU sockets to use.  Value 0 indicates no CPU limit.
 CPULIMIT='0'
 # CPU weight for a VM. Argument is used in the kernel fair scheduler. The larger the number is, the more CPU time this VM gets.
@@ -72,7 +72,7 @@ HWADDR=""
 # Controls whether this interface’s firewall rules should be used.
 FIREWALL='1'
 # VLAN tag for this interface (value 0 for none, or VLAN[2-N] to enable).
-TAG='30'
+TAG='50'
 # VLAN ids to pass through the interface
 TRUNKS=""
 # Apply rate limiting to the interface (MB/s). Value "" for unlimited.
@@ -82,24 +82,24 @@ MTU=""
 
 #----[COMMON_NET_DNS_OPTIONS]
 # Nameserver server IP (IPv4 or IPv6) (value "" for none).
-NAMESERVER='192.168.30.5'
+NAMESERVER='192.168.50.5'
 # Search domain name (local domain)
 SEARCHDOMAIN='local'
 
 #----[COMMON_NET_STATIC_OPTIONS]
 # IP address (IPv4). Only works with static IP (DHCP=0).
-IP='192.168.30.113'
+IP='192.168.50.120'
 # IP address (IPv6). Only works with static IP (DHCP=0).
 IP6=''
 # Default gateway for traffic (IPv4). Only works with static IP (DHCP=0).
-GW='192.168.30.5'
+GW='192.168.50.5'
 # Default gateway for traffic (IPv6). Only works with static IP (DHCP=0).
 GW6=''
 
 #---- PVE CT
 #----[CT_GENERAL_OPTIONS]
 # Unprivileged container status 
-CT_UNPRIVILEGED='0'
+CT_UNPRIVILEGED='1'
 # Memory swap
 CT_SWAP='512'
 # OS
@@ -145,7 +145,7 @@ CT_TYPE='veth'
 # OS Version
 CT_OSVERSION='22.04'
 # CTID numeric ID of the given container.
-CTID='113'
+CTID='111'
 
 #----[App_UID_GUID]
 # App user
@@ -155,7 +155,7 @@ APP_GRPNAME='medialab'
 
 #----[REPO_PKG_NAME]
 # Repo package name
-REPO_PKG_NAME='deluge'
+REPO_PKG_NAME='flexget'
 
 #---- Other Files ------------------------------------------------------------------
 
@@ -170,6 +170,7 @@ done << EOF
 backup:CT settings backup storage
 downloads:General downloads storage
 public:General public storage
+video:All video libraries (i.e movies, series, homevideos)
 EOF
 
 #---- Body -------------------------------------------------------------------------
@@ -191,7 +192,7 @@ source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
 section "Pre-Configure ${HOSTNAME^} ${VM_TYPE^^}"
 
 # MediaLab CT unprivileged mapping
-if [ "$CT_UNPRIVILEGED" = 1 ]
+if [ "$CT_UNPRIVILEGED" = '1' ]
 then
   source $COMMON_PVE_SRC_DIR/pvesource_ct_medialab_ctidmapping.sh
 fi
@@ -209,44 +210,30 @@ source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addmedialabuser.sh
 source $COMMON_PVE_SRC_DIR/pvesource_ct_autoupdater_installer.sh
 
 
-#---- Deluge -----------------------------------------------------------------------
+#---- Flexget ----------------------------------------------------------------------
 
 section "Install ${REPO_PKG_NAME^} software"
 
-#---- Run SW install
+# #---- Run SW install
+# # Flexget SW
+# pct push $CTID $COMMON_DIR/bash/src/basic_bash_utility.sh /tmp/basic_bash_utility.sh -perms 755
+# pct push $CTID $SRC_DIR/flexget/flexget_sw.sh /tmp/flexget_sw.sh -perms 755
+# pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/flexget_sw.sh"
 
-# Deluge SW
-pct push $CTID $COMMON_DIR/bash/src/basic_bash_utility.sh /tmp/basic_bash_utility.sh -perms 755
-pct push $CTID $SRC_DIR/deluge/deluge_sw.sh /tmp/deluge_sw.sh -perms 755
-pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/deluge_sw.sh"
+# # #---- Configure SW
+# # pct push $CTID $COMMON_DIR/bash/src/basic_bash_utility.sh /tmp/basic_bash_utility.sh -perms 755
+# # pct push $CTID $SRC_DIR/flexget/config/flexget_config.sh /tmp/flexget_config.sh -perms 755
+# # pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/flexget_config.sh"
 
-#---- Configure SW
-
-# Copy Deluge plugins to CT
-pct push $CTID $SRC_DIR/deluge/config/execute.conf /home/$APP_USERNAME/.config/deluge/execute.conf --group $APP_GRPNAME --user $APP_USERNAME
-pct push $CTID $SRC_DIR/deluge/config/autoremoveplus.conf /home/$APP_USERNAME/.config/deluge/autoremoveplus.conf --group $APP_GRPNAME --user $APP_USERNAME
-
-# Copy scripts to CT
-pct push $CTID $SRC_DIR/deluge/config/deluge-postprocess.sh /home/$APP_USERNAME/.config/deluge/deluge-postprocess.sh --group $APP_GRPNAME --user $APP_USERNAME --perms 0775
-pct push $CTID $COMMON_DIR/bash/src/basic_bash_utility.sh /tmp/basic_bash_utility.sh -perms 755
-pct push $CTID $SRC_DIR/deluge/config/deluge_config.sh /tmp/deluge_config.sh -perms 755
-pct push $CTID $SRC_DIR/deluge/config/make_autoadd.sh /tmp/make_autoadd.sh -perms 755
-pct push $CTID $SRC_DIR/deluge/config/make_label.sh /tmp/make_label.sh -perms 755
-pct push $CTID $SHARED_DIR/src/dlclient_category_list.txt /tmp/dlclient_category_list.txt
-
-# Run Config install
-pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/deluge_config.sh"
-
-# Check Install CT SW status (active or abort script)
-pct_check_systemctl "deluged.service"
-
+# # Check Install CT SW status (active or abort script)
+# pct_check_systemctl "${REPO_PKG_NAME}.service"
 
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status"
 
 #---- Set display text
 # Get port
-port=8112
+port='9117'
 # Get IP type (ip -4 addr show eth0)
 if [[ $(pct exec $CTID -- ip addr show eth0 | grep dynamic) ]]
 then
@@ -257,23 +244,14 @@ fi
 # Web access URL
 display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):$port/" )
 display_msg1+=( "http://$(pct exec $CTID -- hostname -I | sed -r 's/\s+//g'):$port/ ($ip_type)" )
-display_msg1+=( "Web login password: 'deluge'" )
-
-# Third party App connect
-display_msg2=( "Host: '$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d)'" )
-display_msg2+=( "Port: '$port'" )
-display_msg2+=( "User: 'appconnect'" )
-display_msg2+=( "Password: 'ahuacate'" )
 
 msg_box "${REPO_PKG_NAME^} installation was a success. The first start-up may take a few seconds so be patient. Web-interface is available on:
 
 $(printf '%s\n' "${display_msg1[@]}" | indent2)
 
-A ${REPO_PKG_NAME^} is prebuilt with the required plugins and settings for integration into the Medialab suite of applications. The credentials for third party application connections are:
+The credentials for third party application connectivity are shown in the ${REPO_PKG_NAME^} application Web-interface.
 
-$(printf '%s\n' "${display_msg2[@]}" | indent2)
-
-$(if ! [ -z ${CT_PASSWORD+x} ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '$CT_PASSWORD'"; fi)
+$(if [ ! -z ${CT_PASSWORD+x} ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '$CT_PASSWORD'"; fi)
 More information here: https://github.com/ahuacate/medialab"
 
 # Display Installation error report

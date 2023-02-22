@@ -5,17 +5,29 @@
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
+
+DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+
 #---- Dependencies -----------------------------------------------------------------
+
+# Run Bash Header
+source $DIR/basic_bash_utility.sh
+
 #---- Static Variables -------------------------------------------------------------
 
 # Update these variables as required for your specific instance
-app="${REPO_PKG_NAME,,}"       # App name
-app_uid=${APP_USERNAME}        # App UID
-app_guid=${APP_GRPNAME}        # App GUID
+app="${REPO_PKG_NAME,,}"    # App name
+app_uid="$APP_USERNAME"     # App UID
+app_guid="$APP_GRPNAME"     # App GUID
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
+
+#---- Prerequisites
+
+# Create Deluge plugins folder
+su - $app_uid -c "mkdir -p /home/$app_uid/.config/deluge"
 
 #---- Installing Deluge
 
@@ -68,4 +80,10 @@ EOF
 systemctl -q daemon-reload
 systemctl enable --now -q deluged.service
 systemctl enable --now -q deluge-web.service
+
+#---- Create App backup folder on NAS
+if [ -d "/mnt/backup" ]
+then
+ su - $app_uid -c "mkdir -p /mnt/backup/$REPO_PKG_NAME"
+fi
 #-----------------------------------------------------------------------------------

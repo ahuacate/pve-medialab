@@ -125,71 +125,72 @@ source ${COMMON_PVE_SOURCE}/pvesource_ct_ubuntubasics.sh
 #---- Create MediaLab Group and User
 source ${COMMON_PVE_SOURCE}/pvesource_ct_ubuntu_addmedialabuser.sh
 
+
 #---- Flexget ----------------------------------------------------------------------
 
 section "Install ${CT_HOSTNAME_VAR^} software"
 
 #---- Prerequisites
-# msg "Creating Flexget working folder & permissions..."
-# pct exec $CTID -- mkdir -m 775 -p /home/media/flexget
-# pct exec $CTID -- chown -hR 1605:65605 /home/media/flexget
-# pct push $CTID ${DIR}/source/pve_medialab_ct_flexget_settings/config.yml.sample /home/media/flexget/config.yml --group 65605 --user 1605
+msg "Creating Flexget working folder & permissions..."
+pct exec $CTID -- mkdir -m 775 -p /home/media/flexget
+pct exec $CTID -- chown -hR 1605:65605 /home/media/flexget
+pct push $CTID ${DIR}/source/pve_medialab_ct_flexget_settings/config.yml.sample /home/media/flexget/config.yml --group 65605 --user 1605
 
-# msg "Downloading prerequisites (be patient, might take a while)..."
-# pct exec $CTID -- apt-get install python3.8-venv -y > /dev/null
-# pct exec $CTID -- python3 -m venv ~/flexget/
+msg "Downloading prerequisites (be patient, might take a while)..."
+pct exec $CTID -- apt-get install python3.8-venv -y > /dev/null
+pct exec $CTID -- python3 -m venv ~/flexget/
 
-# #---- Installing Flexget
-# msg "Installing ${CT_HOSTNAME_VAR^} software (be patient, might take a while)..."
-# pct exec $CTID -- bash -c 'cd ~/flexget/; bin/pip install flexget'
-# pct exec $CTID -- bash -c 'source ~/flexget/bin/activate'
+#---- Installing Flexget
+msg "Installing ${CT_HOSTNAME_VAR^} software (be patient, might take a while)..."
+pct exec $CTID -- bash -c 'cd ~/flexget/; bin/pip install flexget'
+pct exec $CTID -- bash -c 'source ~/flexget/bin/activate'
 
-# #---- Apply Flexget settings
-# section "Apply ${CT_HOSTNAME_VAR^} Easy Script application settings"
-# if [ $ES_AUTO = 0 ]; then
-#   msg "Applying ${CT_HOSTNAME_VAR^} Easy Script application settings..."
-#   source ${DIR}/source/pve_medialab_ct_flexget_settings/pve_medialab_ct_flexget_settings.sh
-#   echo
-# elif [ $(pct exec $CTID -- bash -c '[ -d "/mnt/downloads" ]'; echo $?) = 0 ]; then
-#   msg_box "#### PLEASE READ CAREFULLY ####\n
-#   You have the option to configure ${CT_HOSTNAME_VAR^} with our Easy Script application settings. Your ${CT_HOSTNAME_VAR^} software will then be fully configured to work with our suite of PVE Medialab CT's and applications."
-#   sleep 2
-#   echo
-#   while true; do
-#     read -p "Proceed to apply our ${CT_HOSTNAME_VAR^} application settings (Recommended) [y/n]? " -n 1 -r YN
-#     echo
-#     case $YN in
-#       [Yy]*)
-#         msg "Applying ${CT_HOSTNAME_VAR^} Easy Script application settings..."
-#         source ${DIR}/source/pve_medialab_ct_flexget_settings/pve_medialab_ct_flexget_settings.sh
-#         echo
-#         break
-#         ;;
-#       [Nn]*)
-#         info "You have chosen to skip this step. Your ${CT_HOSTNAME_VAR^} application settings are software defaults."
-#         echo
-#         break
-#         ;;
-#       *)
-#         warn "Error! Entry must be 'y' or 'n'. Try again..."
-#         echo
-#         ;;
-#     esac
-#   done
-# fi
+#---- Apply Flexget settings
+section "Apply ${CT_HOSTNAME_VAR^} Easy Script application settings"
+if [ $ES_AUTO = 0 ]; then
+  msg "Applying ${CT_HOSTNAME_VAR^} Easy Script application settings..."
+  source ${DIR}/source/pve_medialab_ct_flexget_settings/pve_medialab_ct_flexget_settings.sh
+  echo
+elif [ $(pct exec $CTID -- bash -c '[ -d "/mnt/downloads" ]'; echo $?) = 0 ]; then
+  msg_box "#### PLEASE READ CAREFULLY ####\n
+  You have the option to configure ${CT_HOSTNAME_VAR^} with our Easy Script application settings. Your ${CT_HOSTNAME_VAR^} software will then be fully configured to work with our suite of PVE Medialab CT's and applications."
+  sleep 2
+  echo
+  while true; do
+    read -p "Proceed to apply our ${CT_HOSTNAME_VAR^} application settings (Recommended) [y/n]? " -n 1 -r YN
+    echo
+    case $YN in
+      [Yy]*)
+        msg "Applying ${CT_HOSTNAME_VAR^} Easy Script application settings..."
+        source ${DIR}/source/pve_medialab_ct_flexget_settings/pve_medialab_ct_flexget_settings.sh
+        echo
+        break
+        ;;
+      [Nn]*)
+        info "You have chosen to skip this step. Your ${CT_HOSTNAME_VAR^} application settings are software defaults."
+        echo
+        break
+        ;;
+      *)
+        warn "Error! Entry must be 'y' or 'n'. Try again..."
+        echo
+        ;;
+    esac
+  done
+fi
 
-# #---- Finish Line ------------------------------------------------------------------
-# section "Completion Status."
+#---- Finish Line ------------------------------------------------------------------
+section "Completion Status."
 
-# msg "Success. ${CT_HOSTNAME_VAR^} installation has finished. The first start-up of ${CT_HOSTNAME_VAR^} may take a few seconds to be ready so be patient. Web-interface is available on:
+msg "Success. ${CT_HOSTNAME_VAR^} installation has finished. The first start-up of ${CT_HOSTNAME_VAR^} may take a few seconds to be ready so be patient. Web-interface is available on:
 
-#   --  ${WHITE}http://$CT_IP:8686${NC}\n
-#   --  ${WHITE}http://${CT_HOSTNAME}:8686${NC}
+  --  ${WHITE}http://$CT_IP:8686${NC}\n
+  --  ${WHITE}http://${CT_HOSTNAME}:8686${NC}
   
-# For configuring ${CT_HOSTNAME_VAR^} we have instructions:
+For configuring ${CT_HOSTNAME_VAR^} we have instructions:
 
-#   --  ${WHITE}https://github.com/ahuacate/lidarr${NC}"
-# echo
+  --  ${WHITE}https://github.com/ahuacate/lidarr${NC}"
+echo
 
 # Cleanup
 trap cleanup EXIT

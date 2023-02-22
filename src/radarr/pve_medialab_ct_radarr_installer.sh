@@ -224,16 +224,16 @@ pct_check_systemctl "${REPO_PKG_NAME,,}.service"
 
 
 #---- Copy preset settings file to CT and NAS
-if [ -f "$SRC_DIR/${REPO_PKG_NAME,,}/config/${REPO_PKG_NAME,,}_backup_*_0000.00.00_00.00.00.zip" ]
+if [ -f "$SRC_DIR/$REPO_PKG_NAME/config/${REPO_PKG_NAME}_backup_*_0000.00.00_00.00.00.zip" ]
 then
   pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME"
-  pct exec $CTID -- bash -c "su -c 'mkdir -p /mnt/backup/${REPO_PKG_NAME,,}' $APP_USERNAME"
-  pct exec $CTID -- bash -c "su -c 'mkdir -p /var/lib/${REPO_PKG_NAME,,}/Backups/manual' $APP_USERNAME"
+  pct exec $CTID -- bash -c "su -c 'mkdir -p /mnt/backup/$REPO_PKG_NAME' $APP_USERNAME"
+  pct exec $CTID -- bash -c "su -c 'mkdir -p /var/lib/$REPO_PKG_NAME/Backups/manual' $APP_USERNAME"
   # Copy App backup ahuacate settings file to CT & NAS
-  backup_file=$(find $SRC_DIR/${REPO_PKG_NAME,,}/config/ -name *_0000.00.00_00.00.00.zip -type f -exec basename {} 2> /dev/null \;)
-  pct push $CTID $SRC_DIR/${REPO_PKG_NAME,,}/config/$backup_file /var/lib/${REPO_PKG_NAME,,}/Backups/manual/$backup_file
-  pct exec $CTID -- chown "$APP_USERNAME":"$APP_GRPNAME" /var/lib/${REPO_PKG_NAME,,}/Backups/manual/$backup_file
-  pct exec $CTID -- bash -c "su -c 'cp /var/lib/${REPO_PKG_NAME,,}/Backups/manual/$backup_file /mnt/backup/${REPO_PKG_NAME,,}/$backup_file' $APP_USERNAME"
+  backup_file=$(find $SRC_DIR/$REPO_PKG_NAME/config/ -name *_0000.00.00_00.00.00.zip -type f -exec basename {} 2> /dev/null \;)
+  pct push $CTID $SRC_DIR/$REPO_PKG_NAME/config/$backup_file /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file
+  pct exec $CTID -- chown "$APP_USERNAME":"$APP_GRPNAME" /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file
+  pct exec $CTID -- bash -c "su -c 'cp /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file /mnt/backup/$REPO_PKG_NAME/$backup_file' $APP_USERNAME 2> /dev/null"
 fi
 
 #---- Finish Line ------------------------------------------------------------------
@@ -253,12 +253,19 @@ fi
 display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):$port/" )
 display_msg1+=( "http://$(pct exec $CTID -- hostname -I | sed -r 's/\s+//g'):$port/ ($ip_type)" )
 # Backup preset file
-display_msg2=( "Local: $backup_file" )
+if [ ! -z ${backup_file+x} ]
+then
+  display_msg2=( "Local: $backup_file" )
+else
+  display_msg2=( "Local: 'preset file not available'" )
+fi
 # Backup preset description
 display_msg3=( "--  Media Management (sources)" \
-"--  General setup" \
-"--  Setup Medialab download clients, indexers and Apps" \
-"--  Backup destination: /mnt/backup/${REPO_PKG_NAME^} (preset to use NAS)" )
+"--  General ${REPO_PKG_NAME^} configuration and settings" \
+"--  Includes Ahuacate customization (i.e profiles, quality, formats)" \
+"--  Apps such as Radarr, Sonarr, Lidarr are set to use Prowlarr" \
+"--  Doesn't include 3rd party account details (i.e usenet servers or indexers)" \
+"--  Sets backup destination: /mnt/backup/$REPO_PKG_NAME (preset to use NAS)" )
 # Check CT domain
 if [ ! "$(hostname -d)" = 'local' ]
 then 
@@ -270,15 +277,15 @@ msg_box "${REPO_PKG_NAME^} installation was a success. The first start-up may ta
 
 $(printf '%s\n' "${display_msg1[@]}" | indent2)
 
-A ${REPO_PKG_NAME^} settings preset file is included. Go to ${REPO_PKG_NAME,,^} WebGUI 'System' > 'Backup' and restore the backup filename:
+If the ${REPO_PKG_NAME^} settings preset file is available go to ${REPO_PKG_NAME^} WebGUI 'System' > 'Backup' and restore the backup filename:
 
 $(printf '%s\n' "${display_msg2[@]}" | indent2)
 
-Our setting preset file will configure ${REPO_PKG_NAME,,^} with the following settings:
+The ${REPO_PKG_NAME^} setting preset file configures:
 
 $(printf '%s\n' "${display_msg3[@]}" | indent2)
 
-$(if ! [ -z "$CT_PASSWORD" ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '$CT_PASSWORD'"; fi)
+$(if ! [ -z ${CT_PASSWORD+x} ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '$CT_PASSWORD'"; fi)
 More information here: https://github.com/ahuacate/medialab"
 
 # Display Installation error report

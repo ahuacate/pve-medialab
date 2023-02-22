@@ -27,7 +27,7 @@ do
   [[ "$line" =~ ^\#.*$ ]] && continue
   systemd_LIST+=( "$line" )
 done << EOF
-prowlarr.service
+jackett.service
 EOF
 
 #---- Functions --------------------------------------------------------------------
@@ -48,7 +48,6 @@ apt-get update -y
 apt-get upgrade -y
 
 # Custom software upgrade commands here
-
 
 #---- Restart services
 

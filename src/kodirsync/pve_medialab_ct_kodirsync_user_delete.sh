@@ -64,7 +64,7 @@ do
     done < <( grep "$HOME_BASE/$username" /etc/fstab | awk '{print $2}' )
   fi
   # Deleting existing user name
-  userdel -r ${username} 2>/dev/null
+  userdel -r $username 2>/dev/null
   rm -R "$HOME_BASE/$username" 2>/dev/null
   sed -i "/^${username}/d" $CHROOT/etc/passwd
   info "User name ${WHITE}'$username'${NC} has been deleted."

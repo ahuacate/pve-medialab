@@ -9,36 +9,36 @@
 #---- Static Variables -------------------------------------------------------------
 
 # Update these variables as required for your specific instance
-app="${REPO_PKG_NAME,,}"
-installdir="/opt"              # {Update me if needed} Install Location
-bindir="${installdir}/${app^}" # Full Path to Install Location
-datadir="/var/lib/${app}/"       # {Update me if needed} AppData directory to use
-app_bin=${app^}                # Binary Name of the app
-app_uid=${APP_USERNAME}        # App UID
-app_guid=${APP_GRPNAME}        # App GUID
+app="$REPO_PKG_NAME"
+installdir="/opt"               # {Update me if needed} Install Location
+bindir="$installdir/${app^}"    # Full Path to Install Location
+datadir="/var/lib/$app/"        # {Update me if needed} AppData directory to use
+app_bin="${app^}"               # Binary Name of the app
+app_uid="$APP_USERNAME"         # App UID
+app_guid="$APP_GRPNAME"         # App GUID
 
 # Application selector
-if [ ${app} == 'lidarr' ]; then
+if [ "$app" = 'lidarr' ]; then
     app_port="8686"                                          # Default App Port; Modify config.xml after install if needed
     app_prereq="curl sqlite3 libchromaprint-tools mediainfo" # Required packages
     app_umask="0002"                                         # UMask the Service will run as
     branch="master"                                          # {Update me if needed} branch to install
-elif [ ${app} == 'prowlarr' ]; then
+elif [ "$app" = 'prowlarr' ]; then
     app_port="9696"           # Default App Port; Modify config.xml after install if needed
     app_prereq="curl sqlite3" # Required packages
     app_umask="0002"          # UMask the Service will run as
     branch="develop"          # {Update me if needed} branch to install
-elif [ ${app} == 'radarr' ]; then
+elif [ "$app" = 'radarr' ]; then
     app_port="7878"           # Default App Port; Modify config.xml after install if needed
     app_prereq="curl sqlite3" # Required packages
     app_umask="0002"          # UMask the Service will run as
     branch="master"           # {Update me if needed} branch to install
-elif [ ${app} == 'readarr' ]; then
+elif [ "$app" = 'readarr' ]; then
     app_port="8787"           # Default App Port; Modify config.xml after install if needed
     app_prereq="curl sqlite3" # Required packages
     app_umask="0002"          # UMask the Service will run as
     branch="develop"          # {Update me if needed} branch to install
-elif [ ${app} == 'whisparr' ]; then
+elif [ "$app" = 'whisparr' ]; then
     app_port="6969"           # Default App Port; Modify config.xml after install if needed
     app_prereq="curl sqlite3" # Required packages
     app_umask="0002"          # UMask the Service will run as
@@ -64,7 +64,10 @@ chown -R "$app_uid":"$app_guid" "$datadir"
 chmod 775 "$datadir"
 
 # Create NAS backup folder
-su -c "mkdir -p /mnt/backup/${app,,}" ${app_uid}
+if [ -d "/mnt/backup" ]
+then
+    su - $app_uid -c "mkdir -p /mnt/backup/$app"
+fi
 
 
 #---- Installing App

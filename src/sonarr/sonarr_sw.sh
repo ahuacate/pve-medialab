@@ -9,7 +9,7 @@
 #---- Static Variables -------------------------------------------------------------
 
 # Update these variables as required for your specific instance
-app="${REPO_PKG_NAME,,}"       # App name
+app="$REPO_PKG_NAME"       # App name
 app_uid="$APP_USERNAME"        # App UID
 app_guid="$APP_GRPNAME"        # App GUID
 
@@ -34,4 +34,10 @@ apt-get -y install mediainfo
 echo "sonarr sonarr/owning_user string $app_uid" | debconf-set-selections
 echo "sonarr sonarr/owning_group string $app_guid" | debconf-set-selections
 DEBIAN_FRONTEND=non-interactive apt-get install -y sonarr
+
+#---- Create App backup folder on NAS
+if [ -d "/mnt/backup" ]
+then
+ su - $app_uid -c "mkdir -p /mnt/backup/$REPO_PKG_NAME"
+fi
 #-----------------------------------------------------------------------------------

@@ -5,13 +5,20 @@
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
+
+DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+
 #---- Dependencies -----------------------------------------------------------------
+
+# Run Bash Header
+source $DIR/basic_bash_utility.sh
+
 #---- Static Variables -------------------------------------------------------------
 
 # Update these variables as required for your specific instance
-app="${REPO_PKG_NAME,,}"       # App name
-app_uid="$APP_USERNAME"        # App UID
-app_guid="$APP_GRPNAME"        # App GUID
+app="$REPO_PKG_NAME"        # App name
+app_uid="$APP_USERNAME"     # App UID
+app_guid="$APP_GRPNAME"     # App GUID
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
@@ -35,19 +42,7 @@ apt-get update -y
 apt-get install jellyfin -y
 
 # Stop the service
-if [ $(systemctl is-active jellyfin.service) = 'active' ]
-then
-  systemctl stop jellyfin.service
-  # Wait for service is 'stopped'
-  while true
-  do
-    if [ $(systemctl is-active jellyfin.service) != 'active' ]
-    then
-      break
-    fi
-    sleep 2
-  done
-fi
+pct_start_systemctl "jellyfin.service"
 
 # Edit the Jellyfin UID and GID
 OLDUID=$(id -u jellyfin)
@@ -59,7 +54,13 @@ find / \( -path /mnt \) -prune -o -user "$OLDUID" -exec chown -h 1605 {} \; 2>/d
 find / \( -path /mnt \) -prune -o -group "$OLDGID" -exec chgrp -h 65605 {} \; 2>/dev/null
 
 # Restart Jellyfin service
-# Start the App
 systemctl -q daemon-reload
-systemctl enable --now -q jellyfin.service
+sudo systemctl enable "jellyfin.service"
+pct_start_systemctl "jellyfin.service"
+
+#---- Create App backup folder on NAS
+if [ -d "/mnt/backup" ]
+then
+  su - $app_uid -c "mkdir -p /mnt/backup/$REPO_PKG_NAME"
+fi
 #-----------------------------------------------------------------------------------

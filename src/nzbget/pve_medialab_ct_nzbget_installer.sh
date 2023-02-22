@@ -223,14 +223,13 @@ pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP
 pct_check_systemctl "nzbget.service"
 
 #---- Copy preset settings file to CT and NAS
-if [ -f ${SRC_DIR}/${REPO_PKG_NAME,,}/config/${REPO_PKG_NAME,,}_backup_*_0000.00.00_00.00.00.conf ]; then
-  pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME"
-  pct exec $CTID -- bash -c "su -c 'mkdir -p /mnt/backup/${REPO_PKG_NAME,,}' $APP_USERNAME"
+if [ -f "$SRC_DIR/$REPO_PKG_NAME/config/${REPO_PKG_NAME}_backup_*_0000.00.00_00.00.00.conf" ]
+then
   # Copy App backup ahuacate settings file to CT & NAS
-  backup_file=$(find $SRC_DIR/${REPO_PKG_NAME,,}/config/ -name *_0000.00.00_00.00.00.conf -type f -exec basename {} 2> /dev/null \;)
-  pct push $CTID $SRC_DIR/${REPO_PKG_NAME,,}/config/$backup_file /tmp/$backup_file
+  backup_file=$(find $SRC_DIR/$REPO_PKG_NAME/config/ -name *_0000.00.00_00.00.00.conf -type f -exec basename {} 2> /dev/null \;)
+  pct push $CTID $SRC_DIR/$REPO_PKG_NAME/config/$backup_file /tmp/$backup_file
   pct exec $CTID -- chown "$APP_USERNAME":"$APP_GRPNAME" /tmp/$backup_file
-  pct exec $CTID -- bash -c "su -c 'cp /tmp/$backup_file /mnt/backup/${REPO_PKG_NAME,,}/$backup_file' $APP_USERNAME"
+  pct exec $CTID -- bash -c "su -c 'cp /tmp/$backup_file /mnt/backup/$REPO_PKG_NAME/$backup_file' $APP_USERNAME 2> /dev/null"
 fi
 
 
@@ -241,7 +240,7 @@ section "Completion Status"
 # Get port
 port=$(pct exec $CTID -- awk -F "[><]" '/\<Port/ { print $3 }' /var/lib/nzbget/config.xml)
 # Get IP type (ip -4 addr show eth0)
-if [[ $(pct exec $CTID -- ip addr show eth0  | grep -q dynamic > /dev/null; echo $?) == 0 ]]
+if [[ $(pct exec $CTID -- ip addr show eth0 | grep dynamic) ]]
 then
   ip_type='dhcp - best use dhcp IP reservation'
 else
@@ -251,14 +250,21 @@ fi
 display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):$port/" )
 display_msg1+=( "http://$(pct exec $CTID -- hostname -I | sed -r 's/\s+//g'):$port/ ($ip_type)" )
 # Backup preset file
-display_msg2=( "NAS: /mnt/backup/${REPO_PKG_NAME,,}/$backup_file" )
+if [ ! -z ${backup_file+x} ]
+then
+  display_msg2=( "NAS: $backup_file" )
+else
+  display_msg2=( "Local: 'preset file not available'" )
+fi
 # Backup preset description
 display_msg3=( "--  Media Management (sources)" \
-"--  General setup" \
-"--  Setup Medialab download clients, indexers and Apps" \
-"--  Backup destination: /mnt/backup/${REPO_PKG_NAME^} (preset to use NAS)" )
+"--  General ${REPO_PKG_NAME^} configuration and settings" \
+"--  Includes Ahuacate customization" \
+"--  Doesn't include 3rd party account details (i.e usenet servers or indexers)" \
+"--  Sets backup destination: /mnt/backup/$REPO_PKG_NAME (preset to use NAS)" )
 # Check CT domain
-if [ ! $(hostname -d) == 'local' ]; then 
+if [ ! $(hostname -d) == 'local' ]
+then 
 display_msg3+=( "--  Note: The default preset file uses the '.local' domain." \
 "    User must edit ${REPO_PKG_NAME,,^} app settings to use '.$(hostname -d)'" )
 fi
@@ -267,15 +273,15 @@ msg_box "${REPO_PKG_NAME^} installation was a success. The first start-up may ta
 
 $(printf '%s\n' "${display_msg1[@]}" | indent2)
 
-A ${REPO_PKG_NAME^} settings preset file is included. Go to ${REPO_PKG_NAME,,^} WebGUI 'System' > 'Backup' and restore the backup filename:
+If the ${REPO_PKG_NAME^} settings preset file is available go to ${REPO_PKG_NAME^} WebGUI 'System' > 'Backup' and restore the backup filename:
 
 $(printf '%s\n' "${display_msg2[@]}" | indent2)
 
-Our setting preset file will configure ${REPO_PKG_NAME,,^} with the following settings:
+The ${REPO_PKG_NAME^} setting preset file configures:
 
 $(printf '%s\n' "${display_msg3[@]}" | indent2)
 
-$(if ! [ -z "$CT_PASSWORD" ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '$CT_PASSWORD'"; fi)
+$(if [ ! -z ${CT_PASSWORD+x} ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '$CT_PASSWORD'"; fi)
 More information here: https://github.com/ahuacate/medialab"
 
 # Display Installation error report

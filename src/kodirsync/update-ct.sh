@@ -14,7 +14,8 @@
 # Stop list of systemd services
 # Enter all the SW 'system.d.service' here
 systemd_LIST=()
-while IFS= read -r line; do
+while IFS= read -r line
+do
   [[ "$line" =~ ^\#.*$ ]] && continue
   systemd_LIST+=( "$line" )
 done << EOF
@@ -27,11 +28,13 @@ EOF
 function pct_stop_systemctl() {
   # Usage: pct_stop_systemctl "jellyfin.service"
   local service_name="$1"
-  if [ "$(systemctl is-active ${service_name})" == "active" ]; then
+  if [ "$(systemctl is-active ${service_name})" = 'active' ]
+  then
     # Stop service
-    sudo systemctl stop ${service_name}
+    sudo systemctl stop $service_name
     # Waiting to hear from service
-    while ! [[ "$(systemctl is-active ${service_name})" == "inactive" ]]; do
+    while ! [[ "$(systemctl is-active $service_name)" == "inactive" ]]
+    do
       echo -n .
     done
   fi
@@ -43,11 +46,13 @@ function pct_start_systemctl() {
   local service_name="$1"
   # Reload systemd manager configuration
   sudo systemctl daemon-reload
-  if [ "$(systemctl is-active ${service_name})" == "inactive" ]; then
+  if [ "$(systemctl is-active $service_name)" = 'inactive' ]
+  then
     # Stop service
-    sudo systemctl start ${service_name}
+    sudo systemctl start $service_name
     # Waiting to hear from service
-    while ! [[ "$(systemctl is-active ${service_name})" == "active" ]]; do
+    while ! [[ "$(systemctl is-active $service_name)" == "active" ]]
+    do
       echo -n .
     done
   fi
@@ -58,10 +63,12 @@ function pct_start_systemctl() {
 #---- Stop services
 
 # Stop any running systemd service or applications in order to perform upgrades
-if [ "${#systemd_LIST[@]}" -ge '1' ]; then
-  while read -r line; do
+if [ "${#systemd_LIST[@]}" -ge '1' ]
+then
+  while read -r line
+  do
     # Stop system.d service
-    pct_stop_systemctl "${line}"
+    pct_stop_systemctl "$line"
   done <<< $(printf "%s\n" "${systemd_LIST[@]}")
 fi
 
@@ -76,10 +83,12 @@ apt-get upgrade -y
 
 #---- Restart services
 
-if [ "${#systemd_LIST[@]}" -ge '1' ]; then
-  while read -r line; do
+if [ "${#systemd_LIST[@]}" -ge '1' ]
+then
+  while read -r line
+  do
     # Stop system.d service
-    pct_start_systemctl "${line}"
+    pct_start_systemctl "$line"
   done <<< $(printf "%s\n" "${systemd_LIST[@]}")
 fi
 #-----------------------------------------------------------------------------------

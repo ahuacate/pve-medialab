@@ -184,7 +184,7 @@ source $COMMON_PVE_SRC_DIR/pvesource_ct_intro.sh
 source $COMMON_PVE_SRC_DIR/pvesource_set_allvmvars.sh
 
 # Check & create required PVE CT subfolders (all)
-source ${COMMON_DIR}/nas/src/nas_subfolder_installer_precheck.sh
+source $COMMON_DIR/nas/src/nas_subfolder_installer_precheck.sh
 
 #---- Create OS CT
 source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
