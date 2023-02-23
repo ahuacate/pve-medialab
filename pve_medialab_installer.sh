@@ -53,53 +53,55 @@ vm_LIST=( "deluge:deluge:ct:deluge torrent downloader"
 # NO NOT EDIT HERE DOWN
 #---- Dependencies -----------------------------------------------------------------
 
-# Internet connectivity check
-# Checking multiple urls incase one is blocked
-url_check_LIST=(
-  "google.com:443"
-  "github.com:443"
-  )
-# Set a counter to keep track
-cnt=0
-while IFS=':' read -r url port
+#---- Check for Internet connectivity
+
+# List of well-known websites to test connectivity (in case one is blocked)
+websites=( "google.com 443" "github.com 443" "cloudflare.com 443" "apple.com 443" "amazon.com 443" )
+# Loop through each website in the list
+for website in "${websites[@]}"
 do
-  cnt=$((cnt + 1))
-  # Use the nc command to connect to the hostname and port
-  # (0 is UP, other is down)
-  nc -zw1 $url $port 2> /dev/null
-  if [ $? = 1 ]
+  # Test internet connectivity
+  nc -zw1 $website > /dev/null 2>&1
+  # Check the exit status of the ping command
+  if [ $? = 0 ]
   then
-    # Print a fail message if it is the last url
-    if [[ "$cnt" == ${#url_check_LIST[@]} ]]
-    then
-      echo "Checking for internet connectivity..."
-      echo -e "Internet connectivity status: \033[0;31mDown\033[0m\n\nCannot proceed without a internet connection.\nFix your PVE hosts internet connection and try again..."
-      echo
-      exit 0
-    fi
-    # Try another url
-    continue
-  else
-    # Url passes
+    # Flag to track if internet connection is up
+    connection_up=0
     break
+  else
+  # Flag to track if internet connection is down
+  connection_up=1
   fi
-done< <( printf '%s\n' "${url_check_LIST[@]}" )
+done
+# On connection fail
+if [ "$connection_up" = 1 ]
+then
+  echo "Checking for internet connectivity..."
+  echo -e "Internet connectivity status: \033[0;31mDown\033[0m\n\nCannot proceed without a internet connection.\nFix your PVE hosts internet connection and try again..."
+  echo
+  exit 0
+fi
+
 
 #---- Static Variables -------------------------------------------------------------
 
-#---- Set Package Installer Temp Folder
+#---- Set Package Installer Temp Dir 
+
+# Set 'rep_temp' dir
 REPO_TEMP='/tmp'
-cd "$REPO_TEMP"
+# Change to 'repo temp' dir
+cd $REPO_TEMP
 
 #---- Local Repo path (check if local)
+
 # For local SRC a 'developer_settings.git' file must exist in repo dir
-REPO_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P | sed "s/${GIT_USER}.*/${GIT_USER}/" )"
+REPO_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P | sed "s/${GIT_USER}.*/$GIT_USER/" )"
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
 
 #---- Package loader
-if [ -f "$REPO_PATH/common/bash/src/pve_repo_loader.sh" ] && [[ $(sed -n 's/^dev_git_mount=//p' $REPO_PATH/developer_settings.git 2> /dev/null) == '0' ]]
+if [ -f "$REPO_PATH/common/bash/src/pve_repo_loader.sh" ] && [ "$(sed -n 's/^dev_git_mount=//p' $REPO_PATH/developer_settings.git 2> /dev/null)" = 0 ]
 then
   # Download Local loader (developer)
   source $REPO_PATH/common/bash/src/pve_repo_loader.sh
@@ -113,5 +115,7 @@ fi
 #---- Body -------------------------------------------------------------------------
 
 #---- Run Installer
+
+# Run repo installer (repo product selector)
 source $REPO_PATH/$GIT_REPO/common/bash/src/pve_repo_installer_main.sh
 #-----------------------------------------------------------------------------------
