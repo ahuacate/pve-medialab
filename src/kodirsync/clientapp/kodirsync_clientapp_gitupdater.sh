@@ -13,7 +13,6 @@
 
 #---- Check Auto or manual run
 # Auto run on day 7
-# Manual usage: kodirsync_clientapp_gitupdate.sh "now"
 dow=$(date +%u)
 if [ ! "${dow}" == '7' ] && [ ! -z "$1" ]
 then
@@ -27,22 +26,7 @@ git_dl_user='ahuacate'
 # Git repository
 git_dl_repo='pve-medialab'
 # Git branch
-git_dl_branch='master'
-
-# Set kodirsync app dir
-if [ -z "${app_dir+x}" ]
-then
-  # OS Type
-  ostype=$(awk -F= '$1=="ID" { print $2 ;}' /etc/os-release)
-
-  # Set 'app_dir'
-  if [[ ${ostype} =~ ^.*(\")?(coreelec|libreelec)(\")?.*$ ]]
-  then
-    app_dir='/storage/kodirsync'
-  else
-    app_dir='/usr/local/bin/kodirsync'
-  fi
-fi
+git_dl_branch='main'
 
 # Log files
 now=$(date +"%F")
@@ -54,65 +38,91 @@ logfile="$app_dir/logs/kodirsync-${now}.log"
 # Git Update files
 git_update_LIST=( "kodirsync_clientapp_gitupdater.sh" \
 "kodirsync_clientapp_default.cfg" \
+"kodirsync_clientapp_run.sh" \
 "kodirsync_clientapp_script.sh" \
+"kodirsync_clientapp_prune.sh" \
+"kodirsync_clientapp_list1.sh" \
+"kodirsync_clientapp_node_sync.sh" \
+"kodirsync_clientapp_rsync_throttle.sh" \
+"kodirsync_clientapp_control_list.tmpl" \
 "audio_format_filter.txt" \
 "audiobook_format_filter.txt" \
+"exclude_dir_filter.txt" \
+"exclude_file_filter.txt" \
+"exclude_os_dir_filter.txt" \
 "image_format_filter.txt" \
 "iso_language_codes.txt" \
 "other_format_filter.txt" \
-"video_format_filter.txt" \
-"video_sub_format_filter.txt" )
+"subtitle_format_filter.txt" \
+"video_format_filter.txt" )
 
 #---- Functions --------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
 
-# Start Job log
+#---- Start Job log
 echo -e "#---- GIT SCRIPT UPDATE -------------------------------------------------------------\nStart Time : $(date)\n" >> $logfile
 
+
+#---- Prerequisites
+
 # Get Kodirsync User permissions
-file_perms=$(ls -ld /usr/local/bin/kodirsync | awk '{print $3 ":" $4}')
+file_perms=$(ls -ld $app_dir | awk '{print $3 ":" $4}')
 
 # Make dl dir
 dl_dir=/tmp/dl
 mkdir -p $dl_dir
 
+#---- Get Github update
+
+# DL retry cnt max
+max_retries=3
+
 # Get Github update release
 while IFS='' read -r filename
 do
-  # Download files
-  curl --fail -o $dl_dir/$filename -f https://raw.githubusercontent.com/$git_dl_user/$git_dl_repo/$git_dl_branch/src/kodirsync/clientapp/$filename
+  # Start retry counter
+  retries=0
 
-  # dl status
-  exit_status=$?
+  while [ "$retries" -lt "$max_retries" ]
+  do
+    # Download files
+    curl --fail -o "$dl_dir/$filename" -f "https://raw.githubusercontent.com/$git_dl_user/$git_dl_repo/$git_dl_branch/src/kodirsync/clientapp/$filename"
+
+    # Check if curl command succeeded
+    if [ $? -eq 0 ]
+    then
+      # Set exit status
+      dl_status=0
+      break  # Break out of the retry loop if download succeeded
+    fi
+
+    # On fail increase $retries cnt
+    retries=$((retries + 1))
+    # Set exit status
+    dl_status=1
+    sleep 5  # Wait for 5 seconds before the next retry
+  done
   
-  if [ "$exit_status" != 0 ]
+  if [ "$dl_status" != 0 ]
   then
     #---- Download success (fallback to current local file)
+
     # Create log entry
     error_MSG=( "$(echo -e "#---- WARNING - GIT SCRIPT UPDATE FAIL\nUpdate filename : ${filename}\nDownload issues. Check your internet connection and try again. File not updated.\n")" )
     printf "%s\n" "${error_MSG[@]}" >> $logfile
 
-    # Print display for manual update
-    if [ ! -z "$1" ]
-    then
-      printf "%s\n" "${error_MSG[@]}"
-    fi
     # Delete temporary file
     rm $dl_dir/$filename 2> /dev/null
     # Try next file to dl
     continue
   fi
 
+
   #---- Download success 
+
   # Create log entry
   display_MSG=( "$(echo -e "Start time : $(date)\nUpdated filename : ${filename}\n")" )
   printf "%s\n" "${display_MSG[@]}" >> $logfile
-  # Print display for manual update
-  if [ ! -z "$1" ]
-  then
-    printf "%s\n" "${display_MSG[@]}"
-    echo
-  fi
   
   # Move new file to App dir
   rm "$app_dir/$filename" 2> /dev/null
@@ -125,8 +135,11 @@ do
   fi
 done < <( printf '%s\n' "${git_update_LIST[@]}" )
 
+
+#---- Finish Line ------------------------------------------------------------------
+
 # Remove dl dir
-rm -R $dl_dir
+rm -R "$dl_dir" 2> /dev/null
 
 # Finish Job log
 echo -e "#---- GIT SCRIPT UPDATE FINISHED ---------------------------------------------------\n" >> $logfile
