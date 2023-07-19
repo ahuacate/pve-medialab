@@ -87,6 +87,11 @@ mkdir -p $dl_dir/termux_widget
 # DL retry cnt max
 max_retries=3
 
+#---- Get Github update
+
+# DL retry cnt max
+max_retries=3
+
 # Get Github update release
 while IFS='' read -r filename
 do
