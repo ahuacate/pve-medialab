@@ -1,0 +1,4 @@
+.partial~
+#recycle
+.foo_protect
+@SynoEAStream

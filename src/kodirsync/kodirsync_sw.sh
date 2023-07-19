@@ -15,79 +15,74 @@ SHARED_DIR="$DIR/../../shared"
 #---- Dependencies -----------------------------------------------------------------
 
 # Run Bash Header
-source $COMMON_PVE_SRC_DIR/pvesource_bash_defaults.sh
+source $COMMON_DIR/bash/src/basic_bash_utility.sh
+
+# Read variables
+source /tmp/pve_ct_variables.sh
 
 #---- Static Variables -------------------------------------------------------------
+
+# Update these variables as required for your specific instance
+app="$REPO_PKG_NAME"           # App name
+app_uid="$APP_USERNAME"        # App UID
+app_guid="$APP_GRPNAME"        # App GUID
+
 #---- Other Variables --------------------------------------------------------------
-
-# Easy Script Section Header Body Text
-SECTION_HEAD='PVE Kodirsync'
-
-# Setting Variables
-if [ -f /tmp/pve_ct_variables.sh ]
-then
-  mv /tmp/pve_ct_variables.sh . 2>/dev/null
-  # Import Variables
-  . ./pve_ct_variables.sh
-fi
-
 #---- Other Files ------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
 
 #---- Prerequisites
-section "Performing Prerequisites"
 
-msg "Installing ACL..."
+# Install Crudini
+apt-get install crudini -y
+
+# Install acl
 apt-get install -y acl >/dev/null
-msg "Installing Putty Tools..."
+
+# Install putty tools
 apt-get install -y putty-tools >/dev/null
-msg "Setting default adduser start range for dynamically allocated UIDs..."
+
+# Set default adduser start range for dynamically allocated UIDs
 sed -i "s/^FIRST_UID=.*/FIRST_UID=50000/g" /etc/adduser.conf
 sed -i "s/^UID_MIN.*/UID_MIN                 50000/g" /etc/login.defs
-echo
+
 
 #---- Create SSH Chroot jail Environment
-# bash -c "export PARENT_EXEC_INSTALL_KODI_RSYNC=0 && export SSH_PORT=${SSH_PORT} && source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_installchroot.sh"
 source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_installchroot.sh
-# PARENT_EXEC_INSTALL_KODI_RSYNC=0
-# $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_installchroot.sh
 
 
 #---- Create /root/.ssh folder
+
+# Create .ssh dir
 mkdir -p /root/.ssh
 chmod 700 /root/.ssh
 
 # Removing ForceCommand internal-sftp
 sed -i 's|^[#]*\s*        ForceCommand internal-sftp||g' /etc/ssh/sshd_config
-systemctl restart ssh 2>/dev/null
+pct_restart_systemctl "ssh.service"
 
-#---- Create conf folder
+
+#---- Create server conf folder
+
+# Create conf dir
 mkdir -p /usr/local/bin/kodirsync
-# Create conf file
+
+# Copy 'kodirsync.conf' to '/usr/local/bin/kodirsync'
+cp $DIR/config/kodirsync.conf /usr/local/bin/kodirsync/
+
+# Edit conf file
 local_ip_address="$(hostname -I | sed 's/\s//g')"
 localdomain_address_url="$(hostname).$(hostname -d)"
-printf "%b\n" '# This is the Kodirsync configuration (.conf) settings file' \
-"#" \
-"# Enable remote sslh access. '0' to disable, '1' to enable" \
-"sslh_enable=0" \
-"sslh_port=443" \
-"sslh_address_url=" \
-"# Enable remote port forward (pf) access. '0' to disable, '1' to enable" \
-"pf_enable=0" \
-"pf_port=2222" \
-"pf_address_url=" \
-"# LAN access" \
-"ssh_port=${SSH_PORT}" \
-"local_ip_address=${local_ip_address}" \
-"localdomain_address_url=${localdomain_address_url}" > /usr/local/bin/kodirsync/kodirsync.conf
+crudini --set /usr/local/bin/kodirsync/kodirsync.conf "" ssh_port "$SSH_PORT"
+crudini --set /usr/local/bin/kodirsync/kodirsync.conf "" local_ip_address "$local_ip_address"
+crudini --set /usr/local/bin/kodirsync/kodirsync.conf "" localdomain_address_url "$localdomain_address_url"
 
-#---- Create Rsync Whitelist & Blacklist file
 
-# Run install script
-chmod +x $DIR/config/rsync_control_list.sh
-chown "media":"medialab" $DIR/config/rsync_control_list.sh
-su media -s $DIR/config/rsync_control_list.sh
+#---- Kodirsync Whitelist & Blacklist file
 
+# Copy 'kodirsync_control_list.txt' to video share
+chown "$app_uid:$app_guid" $DIR/config/kodirsync_control_list.tmpl
+sudo -u $app_uid cp $DIR/config/kodirsync_control_list.tmpl /mnt/video/kodirsync_control_list.txt
 
 #---- Install Fail2ban
 source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_installfail2ban.sh

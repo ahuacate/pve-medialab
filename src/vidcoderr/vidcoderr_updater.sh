@@ -5,218 +5,149 @@
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
+
+DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+COMMON_DIR="$DIR/../../common"
+COMMON_PVE_SRC_DIR="$DIR/../../common/pve/src"
+SHARED_DIR="$DIR/../../shared"
+
+#---- Dependencies -----------------------------------------------------------------
+
+# Run Bash Header
+source $COMMON_DIR/bash/src/basic_bash_utility.sh
+
 #---- Dependencies -----------------------------------------------------------------
 #---- Static Variables -------------------------------------------------------------
 
-# Get 'VIDCODERR_WATCHDIR_TYPE' arg
-VIDCODERR_WATCHDIR_TYPE=$(pct exec $CTID -- awk -F "=" '/VIDCODERR_WATCHDIR_TYPE/ {print $2}' /usr/local/bin/vidcoderr/vidcoderr.ini)
+# Update these variables as required for your specific instance
+app_uid="media"        # App UID
+app_guid="medialab"    # App GUID
+
+# Get 'vidcoderr_watchdir_type' arg
+vidcoderr_watchdir_type=$(awk -F "=" '/vidcoderr_watchdir_type/ {print $2}' /usr/local/bin/vidcoderr/vidcoderr.ini)
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
 
 #---- Prerequisites
-# Stopping Vidcoderr system.d services
-msg "Stopping Vidcoderr system.d services..."
-if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir.service)" == "active" ]; then
-  pct exec $CTID -- systemctl stop vidcoderr_watchdir.service
-  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir.service)" == "inactive" ]]; do
-    echo -n .
-  done
-  pct exec $CTID -- systemctl disable vidcoderr_watchdir.service &> /dev/null
-fi
 
-if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_rsync.timer)" == "active" ]; then
-  pct exec $CTID -- systemctl stop vidcoderr_rsync.timer
-  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_rsync.timer)" == "inactive" ]]; do
-    echo -n .
-  done
-  pct exec $CTID -- systemctl disable vidcoderr_rsync.timer &> /dev/null
-fi
+# Stop and disable several services
+services=(
+  vidcoderr_watchdir.service
+  vidcoderr_rsync.timer
+  vidcoderr_inotify_rsync.service
+  vidcoderr_inotify.service
+  SimpleHTTPServerWithUpload.service
+)
 
-if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" == "active" ]; then
-  pct exec $CTID -- systemctl stop vidcoderr_inotify_rsync.service
-  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" == "inactive" ]]; do
-    echo -n .
-  done
-  pct exec $CTID -- systemctl disable vidcoderr_inotify_rsync.service &> /dev/null
-fi
+for service in "${services[@]}"
+do
+  if [ "$(systemctl is-active "$service")" == "active" ]
+  then
+    systemctl stop "$service"
+    while ! [ "$(systemctl is-active "$service")" == "active" ]
+    do
+      echo -n .
+    done
+    systemctl disable "$service" &> /dev/null
+  fi
+done
 
-if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" == "active" ]; then
-  pct exec $CTID -- systemctl stop vidcoderr_inotify.service
-  while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" == "inactive" ]]; do
-    echo -n .
-  done
-  pct exec $CTID -- systemctl disable vidcoderr_inotify.service &> /dev/null
-fi
-
-if [ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "active" ]; then
-  pct exec $CTID -- systemctl stop SimpleHTTPServerWithUpload.service
-  while ! [[ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "inactive" ]]; do
-    echo -n .
-  done
-  pct exec $CTID -- systemctl disable SimpleHTTPServerWithUpload.service &> /dev/null
-fi
 
 #---- Perform OS updates
-section "Perform OS update"
-pct exec $CTID -- apt-get update -y
-pct exec $CTID -- apt-get upgrade -y
+apt-get update -y
+apt-get upgrade -y
+
 
 #---- Perform Prerequisite updates
-section "Perform prerequisite SW updates"
 # Installing Ruby
-msg "Prerequisite - Upgrading Ruby..."
-pct exec $CTID -- apt-get upgrade ruby-full -yqq
+apt-get upgrade ruby-full -y
 
 # Install bc
-msg "Prerequisite - Upgrading bc..."
-pct exec $CTID -- apt-get upgrade bc -yqq
+apt-get upgrade bc -y
 
 # Install MKVToolNix
-msg "Prerequisite - Upgrading MKVToolNix..."
-pct exec $CTID -- apt-get upgrade mkvtoolnix mkvtoolnix-gui -yqq
+apt-get upgrade mkvtoolnix mkvtoolnix-gui -y
 
 # Install FFmpeg
-msg "Prerequisite - Upgrading FFmpeg..."
-pct exec $CTID -- apt-get upgrade ffmpeg -yqq
+apt-get upgrade ffmpeg -y
 
 # Install Mediainfo
-msg "Prerequisite - Upgrading Mediainfo..."
-pct exec $CTID -- apt-get upgrade mediainfo -yqq
+apt-get upgrade mediainfo -y
 
 # Install MPV
-msg "Prerequisite - Upgrading MPV..."
-pct exec $CTID -- apt-get upgrade mpv -yqq
+apt-get upgrade mpv -y
 
 # Install MPV
-msg "Prerequisite - Upgrading Inotify..."
-pct exec $CTID -- apt-get upgrade inotify-tools -yqq
+apt-get upgrade inotify-tools -y
 
 # Install Translate
-msg "Prerequisite - Upgrading Translate Shell..."
-pct exec $CTID -- apt-get upgrade translate-shell -yqq
+apt-get upgrade translate-shell -y
 
 # Install encoder kernels
-pct exec $CTID -- apt-get upgrade i965-va-driver-shaders -yqq
-pct exec $CTID -- apt-get upgrade intel-media-va-driver-non-free -yqq
+apt-get upgrade i965-va-driver-shaders -y
+apt-get upgrade intel-media-va-driver-non-free -y
 
-#---- Install latest Vidcoder scripts
-section "Upgrade Vidcoderr scripts"
-# Copy vidcoderr_watchdir.sh script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir.sh
-# Copy vidcoderr_watchdir_list.sh script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir_list.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_list.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir_list.sh
-# Copy vidcoderr_watchdir_process.sh script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir_process.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_process.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir_process.sh
-# Copy vidcoderr_watchdir_prune.sh script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir_prune.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_prune.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir_prune.sh
-# Copy vidcoderr_encoder.sh script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_encoder.sh /usr/local/bin/vidcoderr/vidcoderr_encoder.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_encoder.sh
+#---- Install latest Vidcoderr scripts
+# Copy config files to /usr/local/bin/vidcoderr
+cp -f $DIR/config/*.sh /usr/local/bin/vidcoderr/
+chmod a+rx /usr/local/bin/vidcoderr/*.sh
 
-# Copy inotify script
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_inotify_rsync.sh /usr/local/bin/vidcoderr/vidcoderr_inotify_rsync.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_inotify_rsync.sh
+# Copy SimpleHTTPServerWithUpload scripts to /usr/local/bin/vidcoderr
+cp -f $DIR/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.sh /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.sh
+chmod a+rx /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.sh
+cp -f $DIR/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.py /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.py
+chmod a+rx /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.py
 
-# Copy SimpleHTTPServerWithUpload scripts
-pct push $CTID ${SRC_DIR}/vidcoderr/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.sh /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.sh
-
-pct push $CTID ${DIR}/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.py /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.py
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.py
-
-# Copy filters
-pct push $CTID ${SRC_DIR}/vidcoderr/video_format_filter.txt /usr/local/bin/vidcoderr/video_format_filter.txt
-pct push $CTID ${SRC_DIR}/vidcoderr/other_format_filter.txt /usr/local/bin/vidcoderr/other_format_filter.txt
-pct push $CTID ${SRC_DIR}/vidcoderr/rsync_exclude_filter.txt /usr/local/bin/vidcoderr/rsync_exclude_filter.txt
-
-# Copy Systemd services
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir_rsync.service /etc/systemd/system/vidcoderr_watchdir_rsync.service
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_watchdir_rsync.timer /etc/systemd/system/vidcoderr_watchdir_rsync.timer
-pct push $CTID ${SRC_DIR}/vidcoderr/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.service /etc/systemd/system/SimpleHTTPServerWithUpload.service
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_inotify_rsync.service /etc/systemd/system/vidcoderr_inotify_rsync.service
-pct push $CTID ${SRC_DIR}/vidcoderr/vidcoderr_inotify.service /etc/systemd/system/vidcoderr_inotify.service
-
+# Copy filters to /usr/local/bin/vidcoderr
+cp -f $DIR/config/video_format_filter.txt /usr/local/bin/vidcoderr/video_format_filter.txt
+cp -f $DIR/config/other_format_filter.txt /usr/local/bin/vidcoderr/other_format_filter.txt
+cp -f $DIR/config/rsync_exclude_filter.txt /usr/local/bin/vidcoderr/rsync_exclude_filter.txt
 # Chown media:medialab all txt files
-pct exec $CTID -- bash -c 'chown media:medialab /usr/local/bin/vidcoderr/*.txt'
+chown $app_uid:$app_guid /usr/local/bin/vidcoderr/*.txt
+
 
 #---- Upgrade Don Meltons Other Video Transcode
-section "Don Meltons packages"
-msg "Upgrading Other-Video package..."
-pct exec $CTID -- bash -c "gem update other_video_transcoding"
+gem update other_video_transcoding
 
 #---- Start Systemd ----------------------------------------------------------------
 
-# Start Vidcoderr system.d service 
-if [ ${VIDCODERR_WATCHDIR_TYPE} == '1' ]; then
-  # Standard Watch Service
-  msg "Enabling Vidcoderr Standard Watch Services..."
-  pct exec $CTID -- systemctl enable --quiet vidcoderr_watchdir_rsync.timer
-  pct exec $CTID -- systemctl enable --quiet vidcoderr_inotify_rsync.service
-  pct exec $CTID -- systemctl enable --quiet SimpleHTTPServerWithUpload.service
+# Start Vidcoderr system.d services
+case "$vidcoderr_watchdir_type" in
+  1)
+    # Standard Watch Service
+    services=(
+      vidcoderr_watchdir_rsync.timer
+      vidcoderr_inotify_rsync.service
+      SimpleHTTPServerWithUpload.service
+    )
+    ;;
+  2)
+    # Inotify Watch Service
+    services=(
+      vidcoderr_inotify.service
+      SimpleHTTPServerWithUpload.service
+    )
+    ;;
+  *)
+    # Unknown watchdir_type
+    echo "Unknown vidcoderr_watchdir_type: $vidcoderr_watchdir_type"
+    exit 1
+    ;;
+esac
 
-  if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir_rsync.timer)" == "inactive" ]; then
-    pct exec $CTID -- systemctl restart vidcoderr_watchdir_rsync.timer
-    while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_watchdir_rsync.timer)" == "active" ]]; do
+# Enable and start services if necessary
+for service in "${services[@]}"
+do
+  if [ "$(systemctl is-active "$service")" == "inactive" ]
+  then
+    systemctl enable --quiet "$service"
+    systemctl restart "$service"
+    while ! [ "$(systemctl is-active "$service")" == "active" ]
+    do
       echo -n .
     done
-    info "Systemd 'vidcoderr_watchdir_rsync.timer' status: ${GREEN}running${NC}"
-  else
-    info "Systemd 'vidcoderr_watchdir_rsync.timer' status: ${GREEN}running${NC}"
   fi
-
-  if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" == "inactive" ]; then
-    pct exec $CTID -- systemctl restart vidcoderr_inotify_rsync.service
-    while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify_rsync.service)" == "active" ]]; do
-      echo -n .
-    done
-    info "Systemd 'vidcoderr_inotify_rsync.service' status: ${GREEN}running${NC}"
-  else
-    info "Systemd 'vidcoderr_inotify_rsync.service' status: ${GREEN}running${NC}"
-  fi
-
-  if [ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "inactive" ]; then
-    pct exec $CTID -- systemctl restart SimpleHTTPServerWithUpload.service
-    while ! [[ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "active" ]]; do
-      echo -n .
-    done
-    info "Systemd 'SimpleHTTPServerWithUpload.service' status: ${GREEN}running${NC}"
-  else
-    info "Systemd 'SimpleHTTPServerWithUpload.service' status: ${GREEN}running${NC}"
-  fi
-elif [ ${VIDCODERR_WATCHDIR_TYPE} == '2' ]; then
-  # Inotify Watch Service
-  msg "Enabling Vidcoderr Inotify Watch Services..."
-  pct exec $CTID -- systemctl enable --quiet vidcoderr_inotify.service
-  if [ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" == "inactive" ]; then
-    pct exec $CTID -- systemctl restart vidcoderr_inotify.service
-    while ! [[ "$(pct exec $CTID -- systemctl is-active vidcoderr_inotify.service)" == "active" ]]; do
-      echo -n .
-    done
-    info "Systemd 'vidcoderr_inotify.service' status: ${GREEN}running${NC}"
-  else
-    info "Systemd 'vidcoderr_inotify.service' status: ${GREEN}running${NC}"
-  fi
-
-  if [ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "inactive" ]; then
-    pct exec $CTID -- systemctl restart SimpleHTTPServerWithUpload.service
-    while ! [[ "$(pct exec $CTID -- systemctl is-active SimpleHTTPServerWithUpload.service)" == "active" ]]; do
-      echo -n .
-    done
-    info "Systemd 'SimpleHTTPServerWithUpload.service' status: ${GREEN}running${NC}"
-  else
-    info "Systemd 'SimpleHTTPServerWithUpload.service' status: ${GREEN}running${NC}"
-  fi
-fi
-echo
-
-#---- Finish Line ------------------------------------------------------------------
-section "Update Status."
-
-msg "Success. Vidcoderr upgrade has finished."
+done
 #-----------------------------------------------------------------------------------

@@ -18,11 +18,16 @@ singleselect SELECTED "$OPTIONS_STRING"
 if [ "$RESULTS" = 'TYPE01' ]
 then
   # Setup Assistant
-  source $SRC_DIR/vidcoderr/vidcoderr_configbuilder.sh
+  source $SRC_DIR/vidcoderr/config/vidcoderr_configbuilder.sh
 elif [ "$RESULTS" = 'TYPE02' ]
 then
-  # Upgrade Vidcoderr
-  source $SRC_DIR/vidcoderr/vidcoderr_updater.sh
+  # Push files to CT
+  pct push $CTID /tmp/${GIT_REPO}.tar.gz /tmp/${GIT_REPO}.tar.gz
+  pct exec $CTID -- tar -zxf /tmp/${GIT_REPO}.tar.gz -C /tmp
+  # Run SW upgrade
+  msg "Running SW upgrade..."
+  pct exec $CTID -- bash -c "/tmp/$GIT_REPO/src/vidcoderr/config/vidcoderr_updater.sh"
+  info "Upgrade complete"
 elif [ "$RESULTS" = 'TYPE00' ]
 then
   # Exit installation

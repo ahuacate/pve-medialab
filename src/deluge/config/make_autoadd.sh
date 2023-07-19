@@ -61,7 +61,7 @@ do
     # add to cnt
     cnt=$(($cnt+1))
   fi
-done <<< $(printf '%s\n' "${dlclient_category_LIST[@]}")
+done < <( printf '%s\n' "${dlclient_category_LIST[@]}" )
 
 # Create autoadd.conf file
 cat /tmp/autoadd.conf | sed -e '1s/^/\{\n  "file": 2,\n  "format": 1\n\}/' > /home/$app_uid/.config/deluge/autoadd.conf

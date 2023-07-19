@@ -68,6 +68,7 @@ function input_kodirsync_username_val() {
 # DEL_USER='1' # Delete existing user set '1', no set '0'
 # CREATE_USER='1' # Create user set '1', no set '0'
 
+
 #---- Create a new user
 while true
 do
@@ -104,6 +105,7 @@ done
 
 #---- Create new user account 
 section "Create new user account"
+
 msg "Creating new user name '$username'..."
 useradd -g $GROUP -m -d $HOME_BASE/"$username" -s /bin/bash "$username"
 msg "Fixing '"$username"' home folder location to '$GROUP' setup..."
@@ -138,12 +140,15 @@ info "User '"$username"' SSH keys have been added to the system."
 #---- Create user shares
 
 # Create user bind mounts
-source ${DIR}/pve_medialab_ct_kodirsync_user_shares.sh
+source $DIR/pve_medialab_ct_kodirsync_user_shares.sh
+
 
 #---- Create installer package
-source ${DIR}/pve_medialab_ct_kodirsync_user_pkg_builder.sh
+source $DIR/pve_medialab_ct_kodirsync_user_pkg_builder.sh
+
 
 #---- Backup User credentials & Installer to NAS
+
 if [ -d "/mnt/backup/kodirsync" ]
 then
   # Create user folder

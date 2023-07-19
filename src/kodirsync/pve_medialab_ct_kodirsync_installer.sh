@@ -108,7 +108,7 @@ GW6=''
 
 #---- PVE CT
 #----[CT_GENERAL_OPTIONS]
-# Unprivileged container status 
+# Unprivileged container. '0' to disable, '1' to enable/yes.
 CT_UNPRIVILEGED='0'
 # Memory swap
 CT_SWAP='512'
@@ -217,29 +217,32 @@ source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 #---- Create MediaLab Group and User
 source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addmedialabuser-nohomedir.sh
 
-#---- Create MediaLab Group and User
-source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addmedialabuser.sh
+# #---- Create MediaLab Group and User
+# source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addmedialabuser.sh
 
 #---- Install CT 'auto-updater'
 source $COMMON_PVE_SRC_DIR/pvesource_ct_autoupdater_installer.sh
 
 #---- Kodi Rsync -------------------------------------------------------------------
 
-#---- Configure Kodirsync CT 
-section "Configure Kodirsync CT"
+#---- Configure Kodirsync CT
+section "Install & setup ${REPO_PKG_NAME^} software"
 
 # Start container
 msg "Starting CT..."
 pct_start_waitloop
 
-# Pushing variables to CT
+# Push variables to CT
 msg "Pushing variables and conf to CT..."
 printf "%b\n" '#!/usr/bin/env bash' \
 "HOSTNAME='${HOSTNAME}'" \
 "SECTION_HEAD='${SECTION_HEAD}'" \
-"SSH_PORT='${SSH_PORT}'" \
-"GIT_REPO='$GIT_REPO'" \
-"APP_NAME='${APP_NAME}'" \
+"SSH_PORT='22'" \
+"GIT_REPO='${GIT_REPO}'" \
+"APP_NAME='kodirsync'" \
+"REPO_PKG_NAME='${REPO_PKG_NAME}'" \
+"APP_USERNAME='${APP_USERNAME}'" \
+"APP_GRPNAME='${APP_GRPNAME}'" \
 "PVE_HOSTNAME='${PVE_HOSTNAME}'" > $TEMP_DIR/pve_ct_variables.sh
 pct push $CTID $TEMP_DIR/pve_ct_variables.sh /tmp/pve_ct_variables.sh -perms 755
 
@@ -249,7 +252,10 @@ pct push $CTID /tmp/$GIT_REPO.tar.gz /tmp/$GIT_REPO.tar.gz
 pct exec $CTID -- tar -zxf /tmp/$GIT_REPO.tar.gz -C /tmp
 echo
 
-#---- Start setup script
+
+#---- Run SW install
+
+# Kodirsync SW
 pct exec $CTID -- bash -c "/tmp/pve-medialab/src/kodirsync/kodirsync_sw.sh"
 
 
@@ -291,7 +297,7 @@ fi
 # Display msg
 msg_box "${HOSTNAME^^} installation was a success. Your default SSH login credentials are user 'root' and password '${CT_PASSWORD}'. Your Kodirsync server details are:.\n\n$(printf '%s\n' "${display_msg1[@]}" | indent2)\n\nYour application software status is:\n\n$(printf '%s\n' "${display_msg2[@]}" | column -s ":" -t -N "APPLICATION,STATUS" | indent2)\n\nFor remote internet connections we recommend you configure pfSense HAProxy to manage inbound remote connections to this Kodirsync server. Or you could configure 'port forwarding' on your WAN gateway device but this is not recommended due to potential security risks.
 
-Kodirsync User Manager is your frontend toolbox to manage and configure new user clients. Kodirsync works with any CoreELEC or LibreELEC Kodi player and Linux hardware. Each new user account is emailed an installer package to prepare their remote device. Kodirsync User Manager is available in our PVE Medialab Toolbox. 
+The Kodirsync User Manager serves as a frontend toolbox specifically developed to manage and configure new user clients. Upon creating a new user account, an installer package is promptly delivered via email to streamline the setup process for their remote device. This installer package is compatible with CoreELEC or LibreELEC Kodi players, as well as Linux hardware. Access to the Kodirsync User Manager is conveniently available through the PVE Medialab Toolbox.
   
 Manage Kodirsync server and clients by running the our PVE Medialab Tool in your primary Proxmox host ssh console or ssh terminal:
 

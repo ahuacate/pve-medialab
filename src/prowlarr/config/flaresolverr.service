@@ -1,0 +1,20 @@
+[Unit]
+Description=FlareSolverr
+After=prowlarr.service
+Requires=prowlarr.service
+
+[Service]
+SyslogIdentifier=FlareSolverr
+
+Environment="CAPTCHA_SOLVER=hcaptcha-solver"
+
+Restart=always
+RestartSec=5
+Type=simple
+User=media
+Group=medialab
+ExecStart=/bin/bash -c 'cd /opt/FlareSolverr/ && . /opt/FlareSolverr/bin/activate && python3 src/flaresolverr.py'
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

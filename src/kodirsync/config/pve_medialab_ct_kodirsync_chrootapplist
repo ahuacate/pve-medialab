@@ -9,4 +9,7 @@
 /bin/mv
 /bin/touch
 /bin/date
+/bin/sort
+/bin/printf
+/usr/bin/find
 /usr/bin/rsync

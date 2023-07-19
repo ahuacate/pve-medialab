@@ -98,8 +98,8 @@ GW6=''
 
 #---- PVE CT
 #----[CT_GENERAL_OPTIONS]
-# Unprivileged container status 
-CT_UNPRIVILEGED='0'
+# Unprivileged container. '0' to disable, '1' to enable/yes.
+CT_UNPRIVILEGED='1'
 # Memory swap
 CT_SWAP='512'
 # OS
@@ -212,127 +212,20 @@ source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addmedialabuser.sh
 
 #---- Vidcoderr --------------------------------------------------------------------
 
-#---- Prerequisites
-section "${HOSTNAME^} Prerequisites"
+section "Install ${REPO_PKG_NAME^} software"
 
-# Installing Ruby
-msg "Prerequisite - Installing Ruby..."
-pct exec $CTID -- apt-get install ruby-full -yqq
-
-# Install bc
-msg "Prerequisite - Installing bc..."
-pct exec $CTID -- apt-get install bc -yqq
-
-# Install MKVToolNix
-msg "Prerequisite - Installing MKVToolNix..."
-pct exec $CTID -- wget -q --show-progress -O /usr/share/keyrings/gpg-pub-moritzbunkus.gpg https://mkvtoolnix.download/gpg-pub-moritzbunkus.gpg
-pct exec $CTID -- apt-get update -yqq
-pct exec $CTID -- apt-get install mkvtoolnix mkvtoolnix-gui -yqq
-
-# Install FFmpeg
-msg "Prerequisite - Installing FFmpeg..."
-pct exec $CTID -- apt-get install ffmpeg -yqq
-
-# Install Mediainfo
-msg "Prerequisite - Installing Mediainfo..."
-pct exec $CTID -- apt-get install mediainfo -yqq
-
-# Install MPV
-msg "Prerequisite - Installing MPV..."
-pct exec $CTID -- apt-get install mpv -yqq
-
-# Install MPV
-msg "Prerequisite - Installing Inotify..."
-pct exec $CTID -- apt-get install inotify-tools -yqq
-
-# Install Translate
-msg "Prerequisite - Installing Translate Shell..."
-pct exec $CTID -- apt-get install translate-shell -yqq
-
-# Install encoder kernels
-pct exec $CTID -- apt-get install i965-va-driver-shaders -yqq
-pct exec $CTID -- apt-get install intel-media-va-driver-non-free -yqq
-
-#---- Install Don Melton Other Video Transcoding
-section "Install Don Melton package"
-msg "Installing Other-Video package..."
-pct exec $CTID -- gem install other_video_transcoding
-pct exec $CTID -- bash -c 'echo "PATH="$PATH:/usr/local/bin/other-transcode"" >> ~/.bashrc'
-pct exec $CTID -- bash -c 'echo "PATH="/usr/local/bin:$PATH"" >> ~/.bashrc'
-
-#---- Install Vidcoderr
-section "Setup Vidcoderr"
-
-# Create Vidcoderr
-msg "Copying Vidcoderr files to CT ( be patient, can take a while )..."
-
-# Create CT vidcoder dir
-pct exec $CTID -- mkdir -p /usr/local/bin/vidcoderr
-pct exec $CTID -- chown media:medialab /usr/local/bin/vidcoderr
-
-# Copy vidcoderr.ini file
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr.ini /usr/local/bin/vidcoderr/vidcoderr.ini
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr.ini
-# Copy vidcoderr_watchdir.sh script
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir.sh
-# Copy vidcoderr_watchdir_list.sh script
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir_list.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_list.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir_list.sh
-# Copy vidcoderr_watchdir_process.sh script
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir_process.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_process.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir_process.sh
-# Copy vidcoderr_watchdir_prune.sh script
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir_prune.sh /usr/local/bin/vidcoderr/vidcoderr_watchdir_prune.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_watchdir_prune.sh
-# Copy vidcoderr_encoder.sh script
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_encoder.sh /usr/local/bin/vidcoderr/vidcoderr_encoder.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_encoder.sh
-
-# Copy inotify script
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_inotify_rsync.sh /usr/local/bin/vidcoderr/vidcoderr_inotify_rsync.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/vidcoderr_inotify_rsync.sh
-
-# Copy SimpleHTTPServerWithUpload scripts
-pct push $CTID $SRC_DIR/vidcoderr/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.sh /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.sh
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.sh
-
-pct push $CTID $DIR/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.py /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.py
-pct exec $CTID -- chmod a+rx /usr/local/bin/vidcoderr/SimpleHTTPServerWithUpload.py
-
-# Copy filters
-pct push $CTID $SRC_DIR/vidcoderr/video_format_filter.txt /usr/local/bin/vidcoderr/video_format_filter.txt
-pct push $CTID $SRC_DIR/vidcoderr/other_format_filter.txt /usr/local/bin/vidcoderr/other_format_filter.txt
-pct push $CTID $SRC_DIR/vidcoderr/rsync_exclude_filter.txt /usr/local/bin/vidcoderr/rsync_exclude_filter.txt
-
-
-# Chown media:medialab all txt files
-pct exec $CTID -- bash -c 'chown media:medialab /usr/local/bin/vidcoderr/*.txt'
-
-# Setup vidcoderr_watchdir log
-cat << 'EOF' > $DIR/vidcoderr_watchdir
-/usr/local/bin/vidcoderr/watchdir.log
-{
-  rotate daily
-  maxsize 1M
-  rotate 0
-}
-EOF
-pct push $CTID $DIR/vidcoderr_watchdir /etc/logrotate.d/vidcoderr_watchdir
-pct exec $CTID -- chmod 644 /etc/logrotate.d/vidcoderr_watchdir
-pct exec $CTID -- chown root:root /etc/logrotate.d/vidcoderr_watchdir
-pct exec $CTID -- touch /usr/local/bin/vidcoderr/vidcoderr_watchdir.log
-pct exec $CTID -- chown -R media:medialab /usr/local/bin/vidcoderr/vidcoderr_watchdir.log
-pct exec $CTID -- chown -R media:medialab /etc/logrotate.d/vidcoderr_watchdir
-
-# Copy Systemd services
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir_rsync.service /etc/systemd/system/vidcoderr_watchdir_rsync.service
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_watchdir_rsync.timer /etc/systemd/system/vidcoderr_watchdir_rsync.timer
-pct push $CTID $SRC_DIR/vidcoderr/SimpleHTTPServerWithUpload/SimpleHTTPServerWithUpload.service /etc/systemd/system/SimpleHTTPServerWithUpload.service
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_inotify_rsync.service /etc/systemd/system/vidcoderr_inotify_rsync.service
-pct push $CTID $SRC_DIR/vidcoderr/vidcoderr_inotify.service /etc/systemd/system/vidcoderr_inotify.service
+# Pushing setup scripts to CT
+msg "Pushing configuration scripts to CT..."
+pct push $CTID /tmp/${GIT_REPO}.tar.gz /tmp/${GIT_REPO}.tar.gz
+pct exec $CTID -- tar -zxf /tmp/${GIT_REPO}.tar.gz -C /tmp
 echo
 
+
+#---- Run SW install
+
+# Vidcoderr SW
+pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/$GIT_REPO/src/vidcoderr/vidcoderr_sw.sh"
+
 #---- Configure Vidcoderr
-source $SRC_DIR/vidcoderr/vidcoderr_configbuilder.sh
+source $SRC_DIR/vidcoderr/config/vidcoderr_configbuilder.sh
 #-----------------------------------------------------------------------------------

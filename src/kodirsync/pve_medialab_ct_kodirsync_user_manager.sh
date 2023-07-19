@@ -23,7 +23,7 @@ then
 fi
 
 # Run Bash Header
-source ${COMMON_PVE_SRC_DIR}/pvesource_bash_defaults.sh
+source $COMMON_PVE_SRC_DIR/pvesource_bash_defaults.sh
 
 #---- Static Variables -------------------------------------------------------------
 
@@ -47,17 +47,17 @@ do
 section "Select a task"
 echo
 msg_box "#### PLEASE READ CAREFULLY ####\n
-Kodirsync User Manager is your frontend toolbox to manage and configure a Linux based device (Kodi media player) to securely connect to your Kodirsync PVE CT server. Kodirsync works with any CoreELEC or LibreELEC Kodi player. Each new user account is emailed a installer package to prepare their remote device. On installation a Kodirsync user can:
+Kodirsync User Manager serves as your frontend toolbox for managing and configuring a Linux-based device, specifically a Kodi media player, to establish a secure connection with your Kodirsync PVE CT server. Kodirsync is compatible with CoreELEC or LibreELEC Kodi players. Upon creating a new user account, an installer package is emailed to the user to prepare their remote device. Once installed, a Kodirsync user can:
 
-  --  Rsync mirror selected media categories (fully managed by the server)
-      (internal or external drives)
-  --  Perform daily synchronization of any new media
-  --  Auto prune the oldest remote media files to fit new media
-  --  Fill your remote device disk to a set data limit (% GB)
-  
-The install procedure involves two parts. The first part involves creating a Kodirsync user account, selecting which NAS media libraries are allowed to be accessed by the new user account, creation of a private ssh ed25519 Rsync access key and packaging a Kodirsync installation package which will be emailed to the new user.
+  --  Rsync mirror selected media categories, which are fully managed by the server.
+  --  Perform daily synchronization of any newly added media.
+  --  Automatically prune the oldest remote media files to accommodate new media.
+  --  Fill the remote device disk up to a specified data limit (% GB).
 
-The second part is running our Kodirsync client installer package on your Linux based Kodi hardware."
+The installation procedure consists of two parts. The first part involves creating a Kodirsync user account, selecting the NAS media libraries accessible to the new user, generating a private ssh ed25519 Rsync access key, and packaging the Kodirsync installation package, which will be emailed to the user.
+
+The second part involves running our Kodirsync client installer package on your Linux-based Kodi hardware"
+
 echo
 msg "Select a Kodirsync toolbox task"
 OPTIONS_VALUES_INPUT=( "TYPE01" "TYPE02" "TYPE03" "TYPE00" )

@@ -39,15 +39,18 @@ GIT_COMMON='0'
 vm_LIST=( "deluge:deluge:ct:deluge torrent downloader"
 "jellyfin:jellyfin:ct:jellyfin media server"
 "lidarr:lidarr:ct:lidarr music collection manager"
-"nzbget:nzbget:ct:nzbget usenet downloader"
+"notifiarr:notifiarr:ct:notifiarr client"
+"nzbget:nzbget:ct:nzbget usenet downloader (depreciated)"
 "prowlarr:prowlarr:ct:prowlarr index manager"
 "radarr:radarr:ct:radarr movie collection manager"
 "readarr:readarr:ct:readarr book collection manager"
-"sonarr:sonarr:ct:sonarr series collection manager"
+"sabnzbd:sabnzbd:ct:sabnzbd usenet downloader"
+"sonarr:sonarr:ct:sonarr v3 series collection manager"
+"sonarr4:sonarr4:ct:sonarr v4 beta series collection manager (recommended)"
 "vidcoderr:vidcoderr:ct:video transcoder application"
 "whisparr:whisparr:ct:naughty movie collection manager"
 "kodirsync:kodirsync:ct:remote media library synchronizing tool"
-"flexget:flexget:ct:flexget & filebot rss downloader (documentary manager)" )
+"geterr:geterr:ct:flexget rss downloader, filebot renamer tool (includes MVGroup recipe)" )
 
 #-----------------------------------------------------------------------------------
 # NO NOT EDIT HERE DOWN

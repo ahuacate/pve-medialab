@@ -98,7 +98,7 @@ GW6=''
 
 #---- PVE CT
 #----[CT_GENERAL_OPTIONS]
-# Unprivileged container status 
+# Unprivileged container. '0' to disable, '1' to enable/yes.
 CT_UNPRIVILEGED='1'
 # Memory swap
 CT_SWAP='512'

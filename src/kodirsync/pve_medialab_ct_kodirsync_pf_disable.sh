@@ -32,6 +32,7 @@ SECTION_HEAD='Kodirsync'
 #---- Body -------------------------------------------------------------------------
 
 #---- Prerequisites
+
 #---- SSLH Clean up
 section "Port Forward (PF) disable"
 
@@ -57,8 +58,7 @@ then
   # PF access
   key=pf_enable
   value=0
-  edit_config_value "$config_file" "$key" "$value"
-
+  crudini --set "$config_file" "" "$key" "$value"
   info "Kodirsync PF status: ${YELLOW}inactive${NC} (LAN only)"
   echo
 elif [ "$RESULTS" = 'TYPE00' ]

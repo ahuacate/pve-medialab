@@ -1,0 +1,41 @@
+# This is the SABnzbd preset file for Crudini App
+# SECTION can be empty ("") or "DEFAULT" in which case, params not
+# in a section, i.e. global parameters are operated on.
+# If 'DEFAULT' is used with --set, an explicit [DEFAULT] section is added.
+#
+# Enter values using ";' separator.
+# section;param;value
+
+# General Tab
+misc;bandwidth_max;100M
+misc;cache_limit;1G
+misc;bandwidth_perc;80
+misc;backup_dir;/mnt/backup/sabnzbd
+
+
+# Folders Tab
+misc;download_dir;/mnt/downloads/usenet/intermediate
+misc;download_free;20G
+misc;complete_dir;/mnt/downloads/usenet/complete
+misc;complete_free;20G
+misc;fulldisk_autoresume;1
+misc;permissions;755
+misc;dirscan_dir;/mnt/public/autoadd/usenet
+misc;dirscan_speed;3600
+misc;script_dir;.sabnzbd/scripts
+misc;email_dir;.sabnzbd/email_tmpl
+misc;nzb_backup_dir;/mnt/downloads/usenet/nzb
+
+# Switches Tab
+misc;fail_hopeless_jobs;1
+misc;no_dupes;4
+misc;no_series_dupes;4
+misc;series_propercheck;1
+misc;pause_on_pwrar;2
+misc;direct_unpack;0
+misc;sfv_check;0
+misc;enable_recursive;1
+misc;flat_unpack;1
+misc;new_nzb_on_failure;1
+misc;deobfuscate_final_filenames;1
+misc;pre_script;clean.py

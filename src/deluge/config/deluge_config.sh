@@ -54,18 +54,17 @@ then
   while IFS=':' read -r category destdir watchdir aliases ext
   do
     # Create destination dir
-    if [ ! -z ${destdir+x} ] && [ "$destdir" != "" ]
+    if [ -n "$destdir" ]
     then
       su - $app_uid -c "mkdir -p $destdir"
     fi
     # Create watch dir
-    if [ ! -z ${watchdir+x} ] && [ "$watchdir" != "" ]
+    if [ -n "$watchdir" ]
     then
       su - $app_uid -c "mkdir -p $watchdir"
     fi
-  done <<< $(printf '%s\n' "${dlclient_category_LIST[@]}")
+  done < <( printf '%s\n' "${dlclient_category_LIST[@]}" )
 fi
-
 
 # Create Deluge plugins folder
 su - $app_uid -c "mkdir -p /home/$app_uid/.config/deluge"
@@ -79,6 +78,7 @@ su - $app_uid -c "wget --content-disposition https://forum.deluge-torrent.org/do
 
 # Set Deluge 3rd party app connectivity credentials/auth
 echo -e "appconnect:ahuacate:10" >> /home/$app_uid/.config/deluge/auth
+echo -e "flexget:ahuacate:10" >> /home/$app_uid/.config/deluge/auth
 
 # Create label.conf file
 source $DIR/make_label.sh
@@ -97,7 +97,7 @@ su -c 'deluge-console "config -s max_active_seeding 20"' $app_uid
 su -c 'deluge-console "config -s max_connections_global 200"' $app_uid
 su -c 'deluge-console "config -s remove_seed_at_ratio true"' $app_uid
 su -c 'deluge-console "config -s stop_seed_at_ratio true"' $app_uid
-su -c 'deluge-console "config -s stop_seed_ratio 1.5"' $app_uid
+su -c 'deluge-console "config -s stop_seed_ratio 1.2"' $app_uid
 su -c 'deluge-console "plugin -e autoremoveplus"' $app_uid
 su -c 'deluge-console "plugin -e label"' $app_uid
 su -c 'deluge-console "plugin -e execute"' $app_uid

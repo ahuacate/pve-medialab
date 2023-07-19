@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Input Parameters & Folder Configuration
-SERIES_INPUT="/mnt/downloads/torrent/complete/flexget-series"
+SERIES_INPUT="/mnt/downloads/torrent/complete/manual-series"
 SERIES_OUTPUT="/mnt/video/documentary/series"
-MOVIES_INPUT="/mnt/downloads/torrent/complete/flexget-movies"
+MOVIES_INPUT="/mnt/downloads/torrent/complete/manual-movies"
 MOVIES_OUTPUT="/mnt/video/documentary/movies"
 UNSORTED_OUTPUT="/mnt/video/documentary/unsorted"
 

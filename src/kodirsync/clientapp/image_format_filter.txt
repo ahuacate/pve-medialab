@@ -1,6 +1,7 @@
 # Add file extension only without a period (.)
 # Example <mpg>bmp
 jpeg
+jpg
 gif
 png
 tiff
@@ -10,3 +11,4 @@ ico
 pcx
 tga
 webp
+bmp

@@ -19,6 +19,9 @@ app_guid="$APP_GRPNAME"        # App GUID
 
 #---- Prerequisites
 
+# Install Crudini
+apt-get install crudini -y
+
 #---- Installing NZBGet
 # Downloading latest SW
 wget --show-progress https://nzbget.net/download/nzbget-latest-bin-linux.run -P /tmp

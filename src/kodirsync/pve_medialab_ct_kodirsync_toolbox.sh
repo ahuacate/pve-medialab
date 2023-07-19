@@ -27,16 +27,19 @@ fi
 msg "Starting CT..."
 pct_start_waitloop
 
-# Pushing variables to CT
-msg "Pushing variables and conf to CT..."
-printf "%b\n" '#!/usr/bin/env bash' \
-"HOSTNAME='${HOSTNAME}'" \
-"SECTION_HEAD='${SECTION_HEAD}'" \
-"SSH_PORT='${SSH_PORT}'" \
-"GIT_REPO='${GIT_REPO}'" \
-"APP_NAME='${APP_NAME}'" \
-"PVE_HOSTNAME='${PVE_HOSTNAME}'" > ${TEMP_DIR}/pve_ct_variables.sh
-pct push $CTID ${TEMP_DIR}/pve_ct_variables.sh /tmp/pve_ct_variables.sh -perms 755
+# # Pushing variables to CT
+# msg "Pushing variables and conf to CT..."
+# printf "%b\n" '#!/usr/bin/env bash' \
+# "HOSTNAME='${HOSTNAME}'" \
+# "SECTION_HEAD='${SECTION_HEAD}'" \
+# "SSH_PORT='${SSH_PORT}'" \
+# "GIT_REPO='${GIT_REPO}'" \
+# "APP_NAME='${APP_NAME}'" \
+# "REPO_PKG_NAME='kodirsync'" \
+# "APP_USERNAME='media'" \
+# "APP_GRPNAME='medialab'" \
+# "PVE_HOSTNAME='${PVE_HOSTNAME}'" > ${TEMP_DIR}/pve_ct_variables.sh
+# pct push $CTID ${TEMP_DIR}/pve_ct_variables.sh /tmp/pve_ct_variables.sh -perms 755
 
 # Pushing setup scripts to CT
 msg "Pushing configuration scripts to CT..."
@@ -44,35 +47,43 @@ pct push $CTID /tmp/${GIT_REPO}.tar.gz /tmp/${GIT_REPO}.tar.gz
 pct exec $CTID -- tar -zxf /tmp/${GIT_REPO}.tar.gz -C /tmp
 echo
 
+
 #---- Check remote access status
+
+# Get remote access status
 ct_ssh_port=$(pct exec $CTID -- egrep --color=no '^(#)?Port' /etc/ssh/sshd_config | sed '/^#/d' | awk '{ print $2 }' | sed 's/\s//g')
 sslh_enable_status=$(pct exec $CTID -- egrep --color=no '^sslh_enable' /usr/local/bin/kodirsync/kodirsync.conf | awk -F'=' '{ print $2 }' | sed 's/\s//g')
 pf_enable_status=$(pct exec $CTID -- egrep --color=no '^pf_enable' /usr/local/bin/kodirsync/kodirsync.conf | awk -F'=' '{ print $2 }' | sed 's/\s//g')
+ct_localdomain_address_url=$(pct exec $CTID -- bash -c 'echo "$(hostname).$(hostname -d)"')
 
-if [ "$sslh_enable_status" = 0 ] && [ "$pf_enable_status" = 0 ]; then
+
+if [ "$sslh_enable_status" = 0 ] && [ "$pf_enable_status" = 0 ]
+then
 section "Kodirsync client connectivity options"
+
 # Select a connection method
 msg_box "#### PLEASE READ CAREFULLY - KODIRSYNC CLIENT CONNECTIVITY ####\n
-Your Kodirsync client global connectivity options are set for Local LAN connectivity only. Remote access is currently not available.
+The current settings of your Kodirsync client restrict its connectivity to the Local LAN only. Remote access is currently unavailable.
 
-We recommend you configure pfSense HAProxy to manage in-bound remote WAN connections to this Kodirsync server. Or you could configure a SSH 'Port Forward' on your WAN gateway device which is the less secure method (potential security risks). 
+We suggest configuring pfSense HAProxy to handle incoming remote WAN connections to this Kodirsync server. Alternatively, you can set up a SSH 'Port Forward' on your WAN gateway device, but please note that this method is less secure and may pose potential security risks.
 
 1) SSLH Connection - Internet access using HTTPS SSL 443
    --  A valid domain URL address forwarded to your HAProxy server
    --  HAProxy configured as per our pfSense HAProxy guide
+   --  HAProxy backend configured: ${ct_localdomain_address_url} port ${ct_ssh_port}
    --  Kodirsync Certificate file: Acmi+SSLH+-+Kodirsync.crt (HAProxy Acmi SSLH)
    --  Kodirsync User key file: Acmi+SSLH+-+Kodirsync.key (HAProxy Acmi SSLH)
 
 2) SSH Port Forward (PF) Connection
    --  Dynamic DNS service provider
    --  Dynamic DNS client updater (ddclient PVE CT)
-   --  WAN Gateway port forwarded to "$(hostname).$(hostname -d):${ct_ssh_port}"
+   --  WAN Gateway port forwarded: ${ct_localdomain_address_url} port ${ct_ssh_port}
 
 2) Local LAN Connection
-   --  Connect to: $(hostname -I | sed 's/\s//g') or $(hostname).$(hostname -d)
+   --  Connect to: ${ct_localdomain_address_url}:${ct_ssh_port}
    --  Local LAN connection only
 
-All Kodirsync clients automatically switch to use a Local LAN connection when connected to your local LAN network."
+When connected to your local LAN network, all Kodirsync clients will automatically switch to using a Local LAN connection."
 fi
 
 
@@ -80,9 +91,9 @@ fi
 section "Select a Kodirsync toolbox option"
 OPTIONS_VALUES_INPUT=( "TYPE01" "TYPE02" "TYPE03" "TYPE04" "TYPE05" "TYPE06" "TYPE00" )
 OPTIONS_LABELS_INPUT=( "Kodirsync User Manager - create, delete & modify user accounts" \
-"Configure remote SSLH access - requires SSLH certificates and keys $(if [ "${sslh_enable_status}" == '1' ]; then echo "( active )"; fi)" \
+"Configure remote SSLH access - requires SSLH certificates and keys $(if [ "$sslh_enable_status" = '1' ]; then echo "( active )"; fi)" \
 "Disable SSLH access - resets to LAN only access" \
-"Configure remote Port Forward access - requires a Dynamic DNS service $(if [ "${pf_enable_status}" == '1' ]; then echo "( active )"; fi)" \
+"Configure remote Port Forward access - requires a Dynamic DNS service $(if [ "$pf_enable_status" = '1' ]; then echo "( active )"; fi)" \
 "Disable Port Forward access - resets to LAN only access" \
 "Update Kodirsync OS and software" \
 "None. Exit this installer" )

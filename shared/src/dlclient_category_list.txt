@@ -1,14 +1,14 @@
 # This file is for NZB downloaders only.
 # Keep description length to less than 20 characters
 # CATEGORY DESTDIR WATCHDIR ALIASES
-radarr-movies:/mnt/downloads/${dl_type}/complete/movies:/mnt/public/autoadd/${dl_type}/movies:Movies*,*Movies:
-sonarr-series:/mnt/downloads/${dl_type}/complete/series:/mnt/public/autoadd/${dl_type}/series:TV*:
-lidarr-music:/mnt/downloads/${dl_type}/complete/music:/mnt/public/autoadd/${dl_type}/music:Music,Audio,Audio-mp3,Audio-Lossless,Audio-Other:
-whisparr-pron:/mnt/downloads/${dl_type}/complete/pron:/mnt/public/autoadd/${dl_type}/pron:XXX,XXX*,adult*,porn:
-readarr-books:/mnt/downloads/${dl_type}/complete/books:/mnt/public/autoadd/${dl_type}/books:Books*,Audio-Audiobook:
-flexget-documentary:/mnt/downloads/${dl_type}/complete/flexget-documentary:/mnt/public/autoadd/${dl_type}/flexget-documentary:Flexget-documentary*:
-flexget-movies:/mnt/downloads/${dl_type}/complete/flexget-movies:/mnt/public/autoadd/${dl_type}/flexget-movies:Flexget-movies*:
-flexget-series:/mnt/downloads/${dl_type}/complete/flexget-series:/mnt/public/autoadd/${dl_type}/flexget-series:Flexget-series*:
-documentary:/mnt/downloads/${dl_type}/complete/documentary:/mnt/public/autoadd/${dl_type}/documentary:TV-Documentary,TV-Other:
-pron:/mnt/downloads/${dl_type}/complete/pron:/mnt/public/autoadd/${dl_type}/pron:XXX,XXX*,adult*,porn:
-unsorted:/mnt/downloads/${dl_type}/complete/unsorted:/mnt/public/autoadd/${dl_type}/unsorted:Unsorted*:
+radarr-movies:/mnt/downloads/${dl_type}/complete/movies:/mnt/public/autoadd/${dl_type}/radarr-movies:Movies*,*Movies,Movie*,*Movie:
+sonarr-series:/mnt/downloads/${dl_type}/complete/series:/mnt/public/autoadd/${dl_type}/sonarr-series:TV*:
+lidarr-music:/mnt/downloads/${dl_type}/complete/music:/mnt/public/autoadd/${dl_type}/lidarr-music:Music,Audio,Audio-mp3,Audio-Lossless,Audio-Other:
+whisparr-pron:/mnt/downloads/${dl_type}/complete/pron:/mnt/public/autoadd/${dl_type}/whisparr-pron:XXX,XXX*,adult*,porn:
+readarr-books:/mnt/downloads/${dl_type}/complete/books:/mnt/public/autoadd/${dl_type}/readarr-books:Books*,Audio-Audiobook:
+manual-documentary-series:/mnt/downloads/${dl_type}/complete/manual/documentary/series:/mnt/public/autoadd/${dl_type}/manual-documentary-series:Manual-documentary-series:
+manual-documentary-movies:/mnt/downloads/${dl_type}/complete/manual/documentary/movies:/mnt/public/autoadd/${dl_type}/manual-documentary-movies:Manual-documentary-movie:
+manual-documentary-unsorted:/mnt/downloads/${dl_type}/complete/unsorted:
+manual-movies:/mnt/downloads/${dl_type}/complete/manual/movies:/mnt/public/autoadd/${dl_type}/manual-movies:Manual-movie*:
+manual-series:/mnt/downloads/${dl_type}/complete/manual/series:/mnt/public/autoadd/${dl_type}/manual-series:Manual-series*:
+manual-unsorted:/mnt/downloads/${dl_type}/complete/unsorted:/mnt/public/autoadd/${dl_type}/manual-unsorted:Manual-unsorted*:

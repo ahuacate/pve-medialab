@@ -98,8 +98,8 @@ GW6=''
 
 #---- PVE CT
 #----[CT_GENERAL_OPTIONS]
-# Unprivileged container status 
-CT_UNPRIVILEGED='0'
+# Unprivileged container. '0' to disable, '1' to enable/yes.
+CT_UNPRIVILEGED='1'
 # Memory swap
 CT_SWAP='512'
 # OS
@@ -223,10 +223,10 @@ pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP
 pct_check_systemctl "nzbget.service"
 
 #---- Copy preset settings file to CT and NAS
-if [ -f "$SRC_DIR/$REPO_PKG_NAME/config/${REPO_PKG_NAME}_backup_*_0000.00.00_00.00.00.conf" ]
+if [ $(find "$SRC_DIR/$REPO_PKG_NAME/config/" -name "${REPO_PKG_NAME}_backup_*.zip" -type f) ]
 then
   # Copy App backup ahuacate settings file to CT & NAS
-  backup_file=$(find $SRC_DIR/$REPO_PKG_NAME/config/ -name *_0000.00.00_00.00.00.conf -type f -exec basename {} 2> /dev/null \;)
+  backup_file=$(find $SRC_DIR/$REPO_PKG_NAME/config/ -name "${REPO_PKG_NAME}_backup_*.zip" -type f -exec basename {} 2> /dev/null \;)
   pct push $CTID $SRC_DIR/$REPO_PKG_NAME/config/$backup_file /tmp/$backup_file
   pct exec $CTID -- chown "$APP_USERNAME":"$APP_GRPNAME" /tmp/$backup_file
   pct exec $CTID -- bash -c "su -c 'cp /tmp/$backup_file /mnt/backup/$REPO_PKG_NAME/$backup_file' $APP_USERNAME 2> /dev/null"

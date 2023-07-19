@@ -16,13 +16,12 @@ COMMON_PVE_SRC_DIR="$DIR/../../common/pve/src"
 source $COMMON_PVE_SRC_DIR/pvesource_bash_defaults.sh
 
 # Check for existing files
-get_config_value "/usr/local/bin/kodirsync/kodirsync.conf" "sslh_enable" 
-sslh_enable="$get_var"
-echo "sslh_enable status: $sslh_enable"
+sslh_enable=$(crudini --get /usr/local/bin/kodirsync/kodirsync.conf "" sslh_enable)
+
 if [ -f "/root/.ssh/sslh.crt" ] && [ -f "/root/.ssh/sslh-kodirsync.key" ] && [ "$sslh_enable" = 1 ]
 then
   msg "Checking remote connection status..."
-  info "Kodirsync is already configured for SSLH remote connections. To create new SSLH credentials you must first remove the current SSLH settings using our Kodirsync removal tool which is available in the Kodirsync Toolbox."
+  info "To generate new SSLH credentials for Kodirsync, you need to remove the current SSLH settings. This can be done using the Kodirsync removal tool found in the Kodirsync Toolbox. Once the current SSLH settings are removed, you can proceed with creating new credentials."
   echo
   return
 fi
@@ -38,12 +37,12 @@ fi
 if [[ ! $(dpkg -s xclip 2> /dev/null) ]]
 then
   echo "Checking for xclip software..."
-  apt-get install xclip -y > /dev/null
+  apt-get install xclip -y 2> /dev/null
   echo "#pbcopy & pbpaste aliases" >> ~/.bash_aliases
   echo "alias pbcopy='xclip -selection clipboard'" >> ~/.bash_aliases
   echo "alias pbpaste='xclip -selection clipboard -o'"  >> ~/.bash_aliases
-  source ~/.bashrc
-  echo -e "Xclip status: \033[0;32mOK\033[0m"
+  source ~/.bashrc 2> /dev/null
+  echo -e "Xclip status: \033[0;32mOK\033[0m" 2> /dev/null
 fi
 
 #---- Static Variables -------------------------------------------------------------
@@ -66,14 +65,16 @@ SECTION_HEAD='Kodirsync'
 #---- Body -------------------------------------------------------------------------
 
 #---- Prerequisites
+
 #---- Create Kodi client package
 section "Add SSLH ACMI certificates & keys"
 
 # Select a connection method
 msg_box "#### PLEASE READ CAREFULLY - SSLH REMOTE CONNECTION ####\n
-For remote internet connections you require HAProxy (pfSense) to manage inbound remote connections to this Kodirsync server. 
+In order to establish remote internet connections, you will need to utilize HAProxy (pfSense) to manage inbound remote connections to the Kodirsync server.
 
 Pre-requisites to configure Kodirsync for SSLH connectivity are:
+
   --  A valid domain URL address forwarded to your HAProxy server
   --  HAProxy configured as per our pfSense HAProxy guide
   --  Kodirsync Certificate file: Acmi+SSLH+-+Kodirsync.crt (HAProxy Acmi SSLH)
@@ -81,12 +82,12 @@ Pre-requisites to configure Kodirsync for SSLH connectivity are:
 
 HAProxy must be configured to use Acmi SSLH certificates and keys.
 
-Kodirsync clients configured for remote access can also be installed on your LAN network. The Kodirsync client by default first checks for a local LAN Kodirsync server before switching to remote access protocols to connect over the internet WAN."
+Kodirsync clients that are configured for remote access can also be installed on your LAN network. By default, the Kodirsync client first checks for a local LAN Kodirsync server before switching to remote access protocols to establish a connection over the internet WAN."
 echo
 
 #---- Set Remote connection SSLH URL
-url_regex='[-[:alnum:]\+&@#/%?=~_|!:,.;]*[-[:alnum:]\+&@#/%=~_|]'
 
+url_regex='[-[:alnum:]\+&@#/%?=~_|!:,.;]*[-[:alnum:]\+&@#/%=~_|]'
 
 while true
 do
@@ -109,6 +110,7 @@ do
 done
 
 #---- Set Remote connection SSLH Port
+
 msg "Confirm your remote SSLH connection port number. Port $sslh_port is our default."
 read -p "Enter your SSLH port number: " -e -i $sslh_port sslh_port_var
 sslh_port="$sslh_port_var"
@@ -116,6 +118,7 @@ info "Remote SSLH port is set: ${YELLOW}$sslh_port${NC}"
 
 
 #---- Copy and Paste your existing cert & key into the terminal window
+
 if [ -f "/mnt/backup/kodirsync/$sslh_bak_dir/$sslh_cert" ] && [ -f "/mnt/backup/kodirsync/$sslh_bak_dir/$sslh_key" ]
 then
   # Copy sslh cert and key from backup
@@ -205,20 +208,20 @@ config_file='/usr/local/bin/kodirsync/kodirsync.conf'
 # SSLH access
 key=sslh_enable
 value=1
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 key=sslh_address_url
 value="$sslh_address_url"
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 key=sslh_port
 value="$sslh_port"
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 # PF access
 key=pf_enable
 value=0
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 # Local LAN
 local_ip_address="$(hostname -I | sed 's/\s//g')"
@@ -226,9 +229,9 @@ localdomain_address_url="$(hostname).$(hostname -d)"
 
 key=local_ip_address
 value="$local_ip_address"
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 key=localdomain_address_url
 value="$localdomain_address_url"
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 #-----------------------------------------------------------------------------------

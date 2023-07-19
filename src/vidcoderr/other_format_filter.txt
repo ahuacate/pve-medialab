@@ -1,9 +1,0 @@
-srt
-ssa
-ttml
-sbv
-dfxb
-vtt
-error.log
-mkv.log
-mp4.log

@@ -26,7 +26,6 @@ then
   return
 fi
 
-
 # Check for kodirsync hostname
 if [[ ! "$HOSTNAME" =~ ^kodirsync[.-]?[0-9]+?[0-9]+?$ ]]
 then
@@ -64,6 +63,7 @@ Kodirsync clients configured for remote access can also be installed on your LAN
 echo
 
 #---- Set Remote connection SSLH URL
+
 url_regex='[-[:alnum:]\+&@#/%?=~_|!:,.;]*[-[:alnum:]\+&@#/%=~_|]'
 
 while true
@@ -86,6 +86,7 @@ do
 done
 
 #---- Set Remote connection SSLH Port
+
 msg "Confirm your remote PF connection port number. Port $pf_port is our default."
 read -p "Enter your PF port number: " -e -i $pf_port pf_port_var
 pf_port="$pf_port_var"
@@ -94,26 +95,27 @@ echo
 
 
 #---- Edit Kodirsync server conf file
+
 # Uses Func 'edit_config_value'
 config_file='/usr/local/bin/kodirsync/kodirsync.conf'
 
 # SSLH access
 key=sslh_enable
 value=0
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 # PF access
 key=pf_enable
 value=1
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 key=pf_address_url
 value="$pf_address_url"
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 key=pf_port
 value="$pf_port"
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 # Local LAN
 ip_address_url="$(hostname -I | sed 's/\s//g')"
@@ -121,10 +123,10 @@ localdomain_address_url="$(hostname).$(hostname -d)"
 
 key=ip_address_url
 value="$ip_address_url"
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 key=localdomain_address_url
 value="$localdomain_address_url"
-edit_config_value "$config_file" "$key" "$value"
+crudini --set "$config_file" "" "$key" "$value"
 
 #-----------------------------------------------------------------------------------

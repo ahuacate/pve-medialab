@@ -15,6 +15,11 @@ DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
 source $DIR/basic_bash_utility.sh
 
 #---- Static Variables -------------------------------------------------------------
+
+# Update these variables as required for your specific instance
+app_uid=media           # App UID
+app_guid=medialab       # App GUID
+
 #---- Static Variables -------------------------------------------------------------
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
@@ -28,6 +33,7 @@ do
   systemd_LIST+=( "$line" )
 done << EOF
 prowlarr.service
+flaresolverr.service
 EOF
 
 #---- Functions --------------------------------------------------------------------
@@ -48,6 +54,12 @@ apt-get update -y
 apt-get upgrade -y
 
 # Custom software upgrade commands here
+rm -R /opt/FlareSolverr
+git -C /opt clone https://github.com/FlareSolverr/FlareSolverr.git
+chown $app_uid:$app_guid /opt/FlareSolverr
+su -s /bin/bash $app_uid -c "mkdir -m 775 -p /opt/FlareSolverr"
+su -s /bin/bash $app_uid -c "python3 -m venv /opt/FlareSolverr"
+su -s /bin/bash $app_uid -c "cd /opt/FlareSolverr && . /opt/FlareSolverr/bin/activate && /opt/FlareSolverr/bin/pip install -r requirements.txt"
 
 
 #---- Restart services

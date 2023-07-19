@@ -1,0 +1,13 @@
+# ----------------------------------------------------------------------------------
+# Filename:     config.yml
+# Description:  FlexGet sample configuration file.
+# ----------------------------------------------------------------------------------
+
+tasks:
+  test task:
+    rss: http://mysite.com/myfeed.rss
+    series:
+      - My Favorite Show
+      - Another Good Show:
+          quality: 720p
+    download: /tmp

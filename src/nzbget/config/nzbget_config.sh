@@ -81,7 +81,7 @@ do
     echo -e "Category${cnt}.Name=${category}\nCategory${cnt}.DestDir=${destdir}\nCategory${cnt}.Aliases=${aliases}\nCategory${cnt}.Extensions=${ext}\n"
     # add to cnt
     cnt=$(($cnt+1))
-done <<< $(printf '%s\n' "${dlclient_category_LIST[@]}")
+done < <( printf '%s\n' "${dlclient_category_LIST[@]}" )
 
 
 # Setup Watch Folder

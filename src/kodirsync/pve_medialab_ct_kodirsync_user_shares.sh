@@ -245,31 +245,35 @@ fi
 # Create bind mounts
 while IFS=',' read -r local_mnt bind_mnt
 do
-  # Create home category dir
+  # Create the directory for bind mount
   mkdir -p "$bind_mnt"
+
+  # Set ownership and permissions for the bind mount directory
   chown "$username":"$GROUP" "$bind_mnt"
   chmod 0700 "$bind_mnt"
-  # Create fstab mnt
+
+  # Add an entry to /etc/fstab for the bind mount
   echo "$local_mnt $bind_mnt none bind,ro,xattr,acl 0 0" >> /etc/fstab
+
+  # Mount the local mount point
   mount "$local_mnt"
-done <<< $(printf '%s\n' "${dir_input_LIST[@]}")
+done < <(printf '%s\n' "${dir_input_LIST[@]}")
 
-# Create personal user white/blacklists
-cp $DIR/config/rsync_control_list.txt $HOME_BASE/$username/rsync_control_list_${username}.txt
-chown "$username":"$GROUP" $HOME_BASE/$username/rsync_control_list_${username}.txt
-
-# Create bind mount rsync_control_list.txt file in ~/video/rsync_control_list.txt
-if [ -f "/mnt/video/rsync_control_list.txt" ] && [ -d "/home/chrootjail/homes/$username/video" ]
+# Create bind mount 'kodirsync_control_list.txt' to '~/video/kodirsync_control_list.txt'
+if [ -f "/mnt/video/kodirsync_control_list.txt" ] && [ -d "/home/chrootjail/homes/$username" ]
 then
+  # Create mnt point file
+  touch /home/chrootjail/homes/$username/kodirsync_control_list.txt
+
   # Create bind mnt
-  local_mnt='/mnt/video/rsync_control_list.txt'
-  bind_mnt="/home/chrootjail/homes/$username/video/rsync_control_list.txt"
-  touch "$bind_mnt"
-  chown "$username":"$GROUP" "$bind_mnt"
-  chmod 0700 "$bind_mnt"
-  echo "$local_mnt $bind_mnt none bind,ro,xattr,acl 0 0" >> /etc/fstab
-  mount "$local_mnt"
+  mount --bind -o ro /mnt/video/kodirsync_control_list.txt /home/chrootjail/homes/$username/kodirsync_control_list.txt
+
+  # Create fstab mnt
+  echo "/mnt/video/kodirsync_control_list.txt /home/chrootjail/homes/$username/kodirsync_control_list.txt none bind,ro 0 0" >> /etc/fstab
 fi
+
+# Perform a global mount cmd
+mount -a 2> /dev/null
 
 info "Number of '$username' access shares created: ${YELLOW}"${#dir_input_LIST[@]}"x shares${NC}"
 echo

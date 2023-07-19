@@ -32,6 +32,7 @@ SECTION_HEAD='Kodirsync'
 #---- Body -------------------------------------------------------------------------
 
 #---- Prerequisites
+
 #---- SSLH Clean up
 section "SSLH disable"
 
@@ -82,7 +83,7 @@ then
   # SSLH access
   key=sslh_enable
   value=0
-  edit_config_value "$config_file" "$key" "$value"
+  crudini --set "$config_file" "" "$key" "$value"
 
   info "Kodirsync SSLH status: ${YELLOW}inactive${NC} (LAN only)"
   echo
