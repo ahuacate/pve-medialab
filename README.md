@@ -121,6 +121,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
         - [14.4.5. Can I delete a user account?](#1445-can-i-delete-a-user-account)
         - [14.4.6. How do I change Kodirsync remote connection access service type?](#1446-how-do-i-change-kodirsync-remote-connection-access-service-type)
         - [14.4.7. Why are the dates and times of my downloaded files different from the originals?](#1447-why-are-the-dates-and-times-of-my-downloaded-files-different-from-the-originals)
+        - [Node sync. What is it?](#node-sync-what-is-it)
 - [15. Vidcoderr LXC](#15-vidcoderr-lxc)
     - [15.1. Setup Vidcoderr](#151-setup-vidcoderr)
     - [15.2. Vidcoderr FAQ](#152-vidcoderr-faq)
@@ -755,6 +756,10 @@ If you have an existing remote SSLH or Port Forward connection service first dis
 
 ### 14.4.7. Why are the dates and times of my downloaded files different from the originals?
 The discrepancy in file dates and times is due to the exFAT filesystem used on your disk, which is commonly employed for external USB disks to ensure portability across different devices. However, when using Rsync with exFAT file systems, certain issues arise, leading to inconsistencies in file dates. To address this problem, you can switch to the Ext4 filesystem, which resolves the file date issues. It's important to note, though, that by transitioning to Ext4, you may sacrifice the portability feature offered by exFAT.
+
+### Node sync. What is it?
+Node sync can synchronize your local Kodirsync media library to another Linux machine within your LAN network. It will run after every Kodirsync.
+Node sync is under development. 
 
 ---
 

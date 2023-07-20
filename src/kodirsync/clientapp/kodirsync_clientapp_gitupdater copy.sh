@@ -59,6 +59,9 @@ git_update_LIST=( "kodirsync_clientapp_gitupdater.sh" \
 "other_format_filter.txt" \
 "subtitle_format_filter.txt" \
 "video_format_filter.txt" \
+"kodirsync_clientapp_install_termux.sh" \
+"kodirsync_clientapp_install_termux_deps.sh" \
+"kodirsync_clientapp_install_termux_storage.sh" \
 "termux_widget/Start-Kodirsync.bash" \
 "termux_widget/Stop-Kodirsync.bash" \
 "termux_widget/Start-Kodirsync.png" \
