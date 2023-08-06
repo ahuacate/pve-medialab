@@ -52,7 +52,7 @@ git_update_LIST=( "kodirsync_clientapp_gitupdater.sh" \
 "kodirsync_clientapp_node_prune.sh" \
 "kodirsync_clientapp_rsync_main.sh" \
 "kodirsync_clientapp_rsync_throttle.sh" \
-"kodirsync_clientapp_control_list.tmpl" \
+"kodirsync_control_list.tmpl" \
 "audio_format_filter.txt" \
 "audiobook_format_filter.txt" \
 "exclude_dir_filter.txt" \
