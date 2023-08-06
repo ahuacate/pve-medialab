@@ -595,7 +595,7 @@ fi
 if [ "$rsync_connection_type" = 1 ]
 then
   # Set SSLH WAN ssh cmd script - rsync version
-  rsync_ssh_cmd="ssh -i $ssh_dir/${rsync_username}_kodirsync_id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=$ssh_connecttimeout -o ServerAliveInterval=$ssh_serveraliveinterval -o ProxyCommand='openssl s_client -quiet -connect $sslh_address_url:$sslh_port -servername kodirsync.$sslh_address_url -cert $app_dir/sslh.crt -key $app_dir/sslh-kodirsync.key'"
+  rsync_ssh_cmd="ssh -i $ssh_dir/${rsync_username}_kodirsync_id_ed25519 -T -x -c aes128-gcm@openssh.com -o Compression=no -o StrictHostKeyChecking=no -o ConnectTimeout=$ssh_connecttimeout -o ServerAliveInterval=$ssh_serveraliveinterval -o ProxyCommand='openssl s_client -quiet -connect $sslh_address_url:$sslh_port -servername kodirsync.$sslh_address_url -cert $app_dir/sslh.crt -key $app_dir/sslh-kodirsync.key'"
 
   # Set SSLH WAN ssh cmd script - ssh version
   # The ssh version uses an array to enclose the ssh cmd to fix issues I had passing the 'proxycommand' args.
@@ -606,7 +606,7 @@ then
 elif [ "$rsync_connection_type" = 2 ]
 then
   # Set PF WAN ssh cmd script - rsync version
-  rsync_ssh_cmd="ssh -i $ssh_dir/${rsync_username}_kodirsync_id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=$ssh_connecttimeout -o ServerAliveInterval=$ssh_serveraliveinterval -p $pf_port"
+  rsync_ssh_cmd="ssh -i $ssh_dir/${rsync_username}_kodirsync_id_ed25519 -T -x -c aes128-gcm@openssh.com -o Compression=no -o StrictHostKeyChecking=no -o ConnectTimeout=$ssh_connecttimeout -o ServerAliveInterval=$ssh_serveraliveinterval -p $pf_port"
 
   # Set PF ssh cmd script - ssh version
   # The ssh version uses an array to enclose the ssh cmd to fix issues I had passing the 'proxycommand' args.
@@ -617,7 +617,7 @@ then
 elif [ "$rsync_connection_type" = 3 ]
 then
   # Set LAN ssh cmd script - rsync version
-  rsync_ssh_cmd="ssh -i $ssh_dir/${rsync_username}_kodirsync_id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=$ssh_connecttimeout -o ServerAliveInterval=$ssh_serveraliveinterval -p $ssh_port"
+  rsync_ssh_cmd="ssh -i $ssh_dir/${rsync_username}_kodirsync_id_ed25519 -T -x -c aes128-gcm@openssh.com -o Compression=no -o StrictHostKeyChecking=no -o ConnectTimeout=$ssh_connecttimeout -o ServerAliveInterval=$ssh_serveraliveinterval -p $ssh_port"
 
   # Set LAN ssh cmd script - ssh version
   # The ssh version uses an array to enclose the ssh cmd to fix issues I had passing the 'proxycommand' args.
@@ -983,7 +983,7 @@ all_client_LIST=()
 while IFS= read -r line
 do
   all_client_LIST+=("$line")
-done < <( find "$dst_dir" -regextype posix-extended -not -iregex ".*/($exclude_dir_filter_regex)(/.*)?|.*/rsync_tmp(/.*)?" -type f -regextype posix-extended -not -iregex ".*/($exclude_file_filter_regex)$" -type f -regextype posix-extended -iregex ".*\.($video_format_filter_regex)$|.*/photos/(.*/)?.*\.($image_format_filter_regex)$|.*\.($audio_format_filter_regex)$|.*\.($audiobook_format_filter_regex)$|.*\.($subtitle_format_filter_regex)$" -printf '%P;%s;%T@\n' 2> /dev/null | sort -t ';' -k3n )
+done < <( find "$dst_dir" -regextype posix-extended -not -iregex ".*/($exclude_dir_filter_regex)(/.*)?|.*/rsync_tmp(/.*)?|.*/kodirsync_app(/.*)?" -type f -regextype posix-extended -not -iregex ".*/($exclude_file_filter_regex)$" -type f -regextype posix-extended -iregex ".*\.($video_format_filter_regex)$|.*/photos/(.*/)?.*\.($image_format_filter_regex)$|.*\.($audio_format_filter_regex)$|.*\.($audiobook_format_filter_regex)$|.*\.($subtitle_format_filter_regex)$" -printf '%P;%s;%T@\n' 2> /dev/null | sort -t ';' -k3n )
 
 
 #---- Prune, remove old and depreciated media files from destination

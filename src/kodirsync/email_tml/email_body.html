@@ -170,6 +170,27 @@
 <p>Manually performing a update will kill all running Kodirsync processes. The processes will restart at the next scheduled synchronization of media.</p>
 <br>
 
+<h1>Setup Kodirsync node sync</h1>
+Run the Kodirsync installer as per instructions above on the machine node. You must have a USB disk connected or a storage folder available to select.
+
+<ol type="1">
+  <li>Select the installer option - "Prepare Kodirsync disk or folder storage only (for node)"</li>
+  <li>Record the node credentials - Take a note of the node hostname and IP address.</li>
+  <li>Edit user configuration file - See section below "Manual editing of the User configuration file". Edit only the node variables.</li>
+</ol>
+
+<h1>Manual run Kodirsync node sync</h1>
+<p>Kodirsync node will automatically run after a daily Kodirsync.</p>
+<p>To manually start Kodirsync follow these instructions. SSH into your client device as root. Type the following command (or copy &amp; paste) in your SSH terminal.</p>
+<p>There is no Kodirsync node sync for Android-Termux devices.</p>
+<ol type="A">
+  <li>CoreELEC, LibreELEC and Linux hardware</li>
+  <div class="codebox">
+    file_path=$(find / -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_node_run.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync node sync not found on this device"
+  </div>
+</ol>
+<br>
+
 <h1>Changing media content sources</h1>
 <p>Changing a users content source types (i.e movies, series, photos) can only be done at the Kodirsync server. You must edit the user share profile to remove or add content.</p>
 <br>
@@ -207,11 +228,27 @@
 
 <p>First, run our installer on your Android device as detailed in this email.</p>
 <p>On your Android device, you will find a Termux-widget in the app screens. You can move and resize this widget. Make sure your USB disk is connected to your Android phone. The widget should display three executable commands:</p>
-<ol type="A">
+<ol type="1">
   <li>Start Kodirsync.bash - Tap this option to start Kodirsync. The Termux terminal screen should appear, showing the script in progress.</li>
   <li>Stop Kodirsync.bash - Tap this option to stop Kodirsync at any time. Partial downloads are preserved and will resume when Kodirsync runs again.</li>
   <li>Update Widget.bash - Updates the Termux-Widget Kodirsync scripts.</li>
 </ol>
+<br>
+
+<h1>Kodi Player- How to play Kodirsync content</h1>
+
+<p>After installation of Kodirsync on your CoreELEC or LibreELEC player you need to make a new Kodi user profile.
+
+In Kodi complete the following steps:</p>
+<ol type="1">
+<li>Enable login screen - Settings > Profiles > General > Show login screen on startup - enable</li>
+<li>Create profile - Settings > Profiles > Profiles > Add profile > Profile - "Kodirsync" > Browse for folder - OK > Edit profile - OK > Add profile > Start fresh</li>
+<li>Reboot Kodi</li>
+<li>Login as "kodirsync"</li>
+<li>Set movie source - Settings > Media > Library > + Add videos > Add video source - Browse, Root filesystem, media, kodirsync, (Android/data/com.termux/files/kodirsync_storage/video/series) or (kodirsync_storage/video/series), OK, OK > Set content - Movies, OK</li>
+<li>Set TV series source - Settings > Media > Library > + Add videos > Add video source - Browse, Root filesystem, media, kodirsync, (Android/data/com.termux/files/kodirsync_storage/video/series) or (kodirsync_storage/video/series), OK, OK > Set content - TV shows, OK</li>
+</ol>
+
 <br>
 
 <h1>Q&A</h1>

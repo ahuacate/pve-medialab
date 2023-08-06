@@ -85,10 +85,10 @@ find "$selftar_dir" -type f -iname "kodirsync_control_list.tmpl" -exec chown "$u
 # Copy sslh files to $app_dir
 find "$selftar_dir" -type f \( -iname "*.crt" -o -name "*.key" \) -not \( $(printf '%s\n' "${exclude_files[@]}") \) -exec chown $user:$user_grp {} \; -exec chmod 600 {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$app_dir" \;
 # Copy ssh files to $app_dir
-find "$selftar_dir" -type f -iname "*_kodirsync_id_ed25519" -not \( $(printf '%s\n' "${exclude_files[@]}") \) -exec chown $user:$user_grp {} \; -exec chmod 600 {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$app_dir" \;
+find "$selftar_dir" -type f \( -iname "*_kodirsync_id_ed25519" -o -name "kodirsync_node_rsa_key.ppk" -o -name "kodirsync_node_rsa_key.pub" -o -name "kodirsync_node_rsa_key" \) -not \( $(printf '%s\n' "${exclude_files[@]}") \) -exec chown $user:$user_grp {} \; -exec chmod 600 {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$app_dir" \;
 
 # Copy ssh files to $ssh_dir
-find "$selftar_dir" -type f -iname "*_kodirsync_id_ed25519" -not \( $(printf '%s\n' "${exclude_files[@]}") \) -exec chown $user:$user_grp {} \; -exec chmod 600 {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$ssh_dir" \;
+find "$selftar_dir" -type f \( -iname "*_kodirsync_id_ed25519" -o -name "kodirsync_node_rsa_key" \) -not \( $(printf '%s\n' "${exclude_files[@]}") \) -exec chown $user:$user_grp {} \; -exec chmod 600 {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$ssh_dir" \;
 
 # Copy 'termux_widget' to app_dir
 mkdir -p "$app_dir/termux_widget"

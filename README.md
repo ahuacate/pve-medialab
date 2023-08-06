@@ -111,7 +111,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
         - [13.6.7. Does "recipe_00" auto prune documentary media?](#1367-does-recipe_00-auto-prune-documentary-media)
 - [14. Kodirsync LXC](#14-kodirsync-lxc)
     - [14.1. Features](#141-features)
-    - [14.2. Kodirsync User Manager Toolbox](#142-kodirsync-user-manager-toolbox)
+    - [14.2. Kodirsync management](#142-kodirsync-management)
     - [14.3. Android-Termux](#143-android-termux)
     - [14.4. Kodirsync FAQ](#144-kodirsync-faq)
         - [14.4.1. How do I create a new user?](#1441-how-do-i-create-a-new-user)
@@ -121,7 +121,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
         - [14.4.5. Can I delete a user account?](#1445-can-i-delete-a-user-account)
         - [14.4.6. How do I change Kodirsync remote connection access service type?](#1446-how-do-i-change-kodirsync-remote-connection-access-service-type)
         - [14.4.7. Why are the dates and times of my downloaded files different from the originals?](#1447-why-are-the-dates-and-times-of-my-downloaded-files-different-from-the-originals)
-        - [Node sync. What is it?](#node-sync-what-is-it)
+        - [14.4.8. Node sync. What is it?](#1448-node-sync-what-is-it)
 - [15. Vidcoderr LXC](#15-vidcoderr-lxc)
     - [15.1. Setup Vidcoderr](#151-setup-vidcoderr)
     - [15.2. Vidcoderr FAQ](#152-vidcoderr-faq)
@@ -721,10 +721,11 @@ Remote connectivity options over the internet include:
 10. Whitelist and Blacklist: Customize media series or movies by specifying full or partial names for whitelisting or blacklisting.
 11. Throttled Daylight Downloading: Schedule downloads to avoid internet congestion during peak daylight hours.
 12. Configuration File Customization: Users have the flexibility to customize the configuration file according to their preferences.
+13. Setup a storage node mirror: Mirror your primary Kodirsync media to another machine disk or folder over your LAN.
 
 
-## 14.2. Kodirsync User Manager Toolbox
-Kodirsync User Manager is a comprehensive toolbox that enables you to efficiently manage new user accounts and configure your Kodirsync server. It serves as a user-friendly front-end interface, providing easy access to various tasks and functionalities.
+## 14.2. Kodirsync management
+Medialab Easy Script Toolbox enables you to efficiently manage new user accounts and configure your Kodirsync server. It serves as a user-friendly front-end interface, providing easy access to various tasks and functionalities.
 
 When a new user account is created, an installer package is automatically generated and sent via email. This installer package contains all the necessary instructions and resources to facilitate the seamless setup of their remote device.
 
@@ -737,7 +738,7 @@ Follow the installation instructions in your installer email.
 Always read the installer email which contains detailed installation instructions and more.
 
 ### 14.4.1. How do I create a new user?
-Use the Kodirsync Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Create a new user account` and follow the prompts to create a new user account. An installer package will be emailed to the new user and Proxmox administrator.
+Use Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Create a new user account` and follow the prompts to create a new user account. An installer package will be emailed to the new user and Proxmox administrator.
 
 ### 14.4.2. Can I connect my USB storage disk to my Android phone?
 Yes, you can connect your USB storage disk to your Android phone, but there are a few considerations to keep in mind. Firstly, you need to ensure that you have selected the disk portability option during the installation process. Additionally, Android requires the use of the exFAT filesystem for compatibility with external storage devices. To connect your USB storage disk, charger, and phone simultaneously, you will need a USB 'Y-cable'. It's worth noting that using a solid-state drive (SSD) disk may work without the need for charging, albeit with potential severe battery drain. However, for rotational disks, it is unlikely to function properly without an additional power source.
@@ -746,18 +747,18 @@ Yes, you can connect your USB storage disk to your Android phone, but there are 
 No, connecting a USB storage disk directly to an Apple phone is not supported. However, there might be a possibility of making it work if you can run Linux bash/shell scripts on your Apple phone and possess the necessary knowledge to do so.
 
 ### 14.4.4. How do I change a user's media share access?
-Use the Kodirsync Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Modify an existing user rsync shares` to modify a user's access. The Kodirsync client, such as your Kodi player, will automatically update when it is next scheduled to perform its synchronization. All unshared content will automatically be deleted from the client's storage on the next synchronization.
+Use the Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Modify an existing user rsync shares` to modify a user's access. The Kodirsync client, such as your Kodi player, will automatically update when it is next scheduled to perform its synchronization. All unshared content will automatically be deleted from the client's storage on the next synchronization.
 
 ### 14.4.5. Can I delete a user account?
-Use the Kodirsync Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Delete a user account` to delete the user account. The user will no longer have access.
+Use the Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Delete a user account` to delete the user account. The user will no longer have access.
 
 ### 14.4.6. How do I change Kodirsync remote connection access service type?
 If you have an existing remote SSLH or Port Forward connection service first disable the existing remote access service. Use the Kodirsync Toolbox on your server and select `Disable SSLH access` or `Disable Port Forward access` option. Then select the remote connection service type you want to set up from the menu. Then delete all the users and create the users again. All clients will need to uninstall Kodirsync and run the new installer.
 
 ### 14.4.7. Why are the dates and times of my downloaded files different from the originals?
-The discrepancy in file dates and times is due to the exFAT filesystem used on your disk, which is commonly employed for external USB disks to ensure portability across different devices. However, when using Rsync with exFAT file systems, certain issues arise, leading to inconsistencies in file dates. To address this problem, you can switch to the Ext4 filesystem, which resolves the file date issues. It's important to note, though, that by transitioning to Ext4, you may sacrifice the portability feature offered by exFAT.
+The discrepancy in file dates and times is due to the exFAT filesystem used on your disk, which is commonly employed for external USB disks to ensure portability across different devices. However, when using Rsync with exFAT file systems, certain issues arise, leading to inconsistencies in file dates. To address this problem, you can switch to the ext4 filesystem, which resolves the file date issues. It's important to note, though, that by transitioning to ext4, you may sacrifice the portability feature offered by exFAT.
 
-### Node sync. What is it?
+### 14.4.8. Node sync. What is it?
 Node sync can synchronize your local Kodirsync media library to another Linux machine within your LAN network. It will run after every Kodirsync.
 Node sync is under development. 
 

@@ -136,6 +136,15 @@ puttygen $HOME_BASE/"$username"/.ssh/"$username"_kodirsync_id_ed25519 -o $HOME_B
 info "User '"$username"' SSH keys have been added to the system."
 # chown -R "$username":$GROUP $HOME_BASE/"$username"
 
+# Generating new node SSH key pair
+# These keys are used for Kodirsync node sync only
+msg "Creating new SSH key pairs for Kodirsync node sync..." 
+ssh-keygen -o -q -t rsa -f $TEMP_DIR/kodirsync_node_rsa_key -N ""
+# Create ppk key for Putty or Filezilla
+msg "Creating a private PPK key (Putty or Filezilla)..."
+puttygen $TEMP_DIR/kodirsync_node_rsa_key -o $TEMP_DIR/kodirsync_node_rsa_key.ppk
+info "Kodirsync node sync key pairs generated"
+
 
 #---- Create user shares
 
@@ -155,10 +164,15 @@ then
   user_bak_dir="${username}_$(date +%Y%m%d)"
   mkdir -p "/mnt/backup/kodirsync/$user_bak_dir"
   chmod 0750 "/mnt/backup/kodirsync/$user_bak_dir"
+
   # Copy keys to User backup folder
   cp $HOME_BASE/$username/.ssh/${username}_kodirsync_id_ed25519* "/mnt/backup/kodirsync/$user_bak_dir/"
+
   # Copy 'installer.run' to User backup folder
   cp $HOME_BASE/$username/installer.run "/mnt/backup/kodirsync/$user_bak_dir/"
+
+  # Copy Kodirsync node keys to User backup folder
+  cp $TEMP_DIR/kodirsync_node_rsa_key* "/mnt/backup/kodirsync/$user_bak_dir/"
 fi
 
 

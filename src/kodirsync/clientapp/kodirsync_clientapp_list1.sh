@@ -158,14 +158,6 @@ function simple_array_list() {
 #---- Body -------------------------------------------------------------------------
 
 #---- Prerequisites
-
-# # Copy to 'transcode/vidcoderr' dir
-# if [ ! -f "/mnt/transcode/vidcoderr/vidcoderr_control_list.txt" ]
-# then
-#   sudo -u $app_uid cp "/usr/local/bin/vidcoderr/vidcoderr_control_list.tmpl" "/mnt/transcode/vidcoderr/vidcoderr_control_list.txt"
-# fi
-
-
 #---- Create list arrays
 
 # Video file format (.ext) list array
@@ -252,5 +244,4 @@ video_subfolder_dir_filter_regex='video(/|/stream/)?(documentary|movies|musicvid
 # Create format filter from text file - iso languages
 # (i.e de\|eng\|it)
 regex_simple_sed_list "$DIR/iso_language_codes.txt" "iso_lang_codes_sed_regex"
-
 #-----------------------------------------------------------------------------------

@@ -9,5 +9,4 @@ lost+found
 ssh
 \.ssh
 images
-kodirsync_app
 rsync_tmp

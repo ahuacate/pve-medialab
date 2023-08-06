@@ -10,41 +10,6 @@
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
 #---- Functions --------------------------------------------------------------------
-
-# Stop System.d Services
-function stop_systemctl() {
-  # Usage: stop_systemctl "name.service"
-  local service_name="$1"
-  if [ "$(systemctl is-active $service_name)" = 'active' ]
-  then
-    # Stop service
-    systemctl stop $service_name
-    # Waiting to hear from service
-    while ! [[ "$(systemctl is-active $service_name)" == 'inactive' ]]
-    do
-      echo -n .
-    done
-  fi
-}
-
-# Start System.d Services
-function start_systemctl() {
-  # Usage: start_systemctl "name.service"
-  local service_name="$1"
-  # Reload systemd manager configuration
-  systemctl daemon-reload
-  if [ "$(systemctl is-active $service_name)" = 'inactive' ]
-  then
-    # Start service
-    systemctl start $service_name
-    # Waiting to hear from service
-    while ! [[ "$(systemctl is-active $service_name)" == 'active' ]]
-    do
-      echo -n .
-    done
-  fi
-}
-
 #---- Body -------------------------------------------------------------------------
 
 #---- Remove crontab entry
@@ -96,27 +61,6 @@ for ip_address in "${known_hosts_entry[@]}"; do
   sed -i "/^$ip_address/d" $known_hosts_file
 done
 
-# # Remove "*_kodirsync_id_ed25519" entry from known_hosts
-# while IFS= read -r file
-# do
-#   # Skip iteration if no files found
-#   if [ -z "$file" ]
-#   then
-#     continue
-#   fi
-
-#   # Check if file content is in known_hosts
-#   # if grep -q -F "$(cat "$file")" "$known_hosts_file"
-#   if grep -q -F -f "$file" "$known_hosts_file"
-#   then
-#     # Remove matching entry from known_hosts
-#     sed -i "/$(cat "$file")/d" "$known_hosts_file" 2> /dev/null
-#   fi
-
-#   # Delete the matched file
-#   rm "$file" 2> /dev/null
-# done < <( find "$ssh_dir" -type f -name "*_kodirsync_id_ed25519" )
-
 
 #---- Remove SSH keys
 
@@ -129,11 +73,6 @@ rm $ssh_dir/sslh-kodirsync.key 2> /dev/null
 # Remove sslh.crt
 rm $ssh_dir/sslh.crt 2> /dev/null
 
-#---- Remove App dir
-
-# # Remove Kodirsync installation directory
-# app_dir=$(find / \( -path "*/$android_path/$kodirsync_app_dir" -o -path "*/$kodirsync_app_dir" \) -type d -print 2> /dev/null | sed '/^$/d' | uniq)
-# rm -rf "$app_dir" 2> /dev/null
 
 #---- Umount any Kodirsync disk
 
@@ -141,31 +80,5 @@ rm $ssh_dir/sslh.crt 2> /dev/null
 if mount | grep -q "$mnt_point"; then
   # Umount the mount point
   umount -l "$mnt_point"
-fi
-
-
-#---- Remove Samba share
-
-# SMB conf file
-smb_config_file="/storage/.config/samba.conf"
-
-# Remove Kodirsync Share configuration
-if [ -f "$smb_config_file" ]
-then
-    # Stop services
-    stop_systemctl "nmbd.service"
-    wait
-    stop_systemctl "smbd.service"
-
-  # Check if the Kodirsync Share section exists in the config file
-  if grep -q "^\[Kodirsync_Share\]" "$smb_config_file"; then
-    # Delete the Kodirsync Share section from the config file
-    sed -i '/^\[Kodirsync_Share\]/,/^$/d' "$smb_config_file"
-
-    # Restart services
-    start_systemctl "nmbd.service"
-    wait
-    start_systemctl "smbd.service"
-  fi
 fi
 #-----------------------------------------------------------------------------------

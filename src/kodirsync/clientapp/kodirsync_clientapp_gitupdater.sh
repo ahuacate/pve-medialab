@@ -45,7 +45,11 @@ git_update_LIST=( "kodirsync_clientapp_gitupdater.sh" \
 "kodirsync_clientapp_script.sh" \
 "kodirsync_clientapp_prune.sh" \
 "kodirsync_clientapp_list1.sh" \
-"kodirsync_clientapp_node_sync.sh" \
+"kodirsync_clientapp_node_run.sh" \
+"kodirsync_clientapp_node_script.sh" \
+"kodirsync_clientapp_node_rsync_main.sh" \
+"kodirsync_clientapp_node_rsync_app.sh" \
+"kodirsync_clientapp_node_prune.sh" \
 "kodirsync_clientapp_rsync_main.sh" \
 "kodirsync_clientapp_rsync_throttle.sh" \
 "kodirsync_clientapp_control_list.tmpl" \

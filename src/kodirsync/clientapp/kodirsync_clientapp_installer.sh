@@ -302,64 +302,106 @@ fi
 
 #---- Select installer menu option (existing installations only)
 
-# Only for existing kodirsync installations - Linux & ELEC
 # Check if a cron entry exists for Kodirsync. If present Kodirsync already exists.
-if [[ "$os_type" =~ ^(1|2)$ ]] && [[ $(crontab -u $user -l | grep -E '^.*kodirsync_clientapp_run\.sh$') ]]
-then
-  while true
-  do
-    # Display installer menu options
-    msg "A Kodirsync installation already exists. Your menu options:\n"
-    menu_display=(
-      "1) Re-install -- Complete reinstall of Kodirsync"
-      "2) Uninstall -- Remove Kodirsync from your hardware"
-      "3) Manual run -- Manually run kodirsync now"
-      "4) Quit -- Exit this installation"
-    )
-    printf '%s\n' "${menu_display[@]}" | indent
+# Function to check if kodirsync_clientapp_run.sh is present in the user's crontab
+function is_kodirsync_in_crontab() {
+  crontab -u "$user" -l | grep -E '^.*kodirsync_clientapp_run\.sh$' &> /dev/null
+}
 
-    # Prompt user to enter their choice
-    read -p "Enter your choice: " choice
+# Determine menu options based on the presence of kodirsync in crontab
+if is_kodirsync_in_crontab; then
+  menu_options=(
+    "Re-install Kodirsync"   # Option 1 (menu_action 1)
+    "Uninstall Kodirsync"    # Option 2 (menu_action 2)
+    "Manual run Kodirsync"   # Option 3 (menu_action 3)
+    "Quit"                   # Option 4 (menu 00) (menu_action 00)
+  )
+  menu_message="A Kodirsync installation already exists. Your menu options:"
+else
+  menu_options=(
+    "Install Kodirsync"      # Option 1 (menu_action 0)
+    "Prepare Kodirsync disk or folder storage only (for node)"  # Option 2 (menu_action 4)
+    "Quit"                   # Option 3 (menu 00) (menu_action 00)
+  )
+  menu_message="Your menu options:"
+fi
 
-    # Determine action based on user's choice
-    case $choice in
-      1)
+while true; do
+  # Display installer menu options
+  msg "$menu_message\n"
+  for ((i = 0; i < ${#menu_options[@]}; i++)); do
+    option_num=$((i + 1))
+    printf "%d) %s\n" "$option_num" "${menu_options[i]}"
+  done | indent
+
+  # Prompt user to enter their choice
+  read -p "Enter your choice: " choice
+
+  # Determine action based on user's choice
+  case $choice in
+    1)
+      if is_kodirsync_in_crontab; then
         # Kodirsync re-install - option 1
-        info "You have chosen to perform : ${YELLOW}Re-install Kodirsync${NC}"
+        info "You have chosen to perform: ${YELLOW}Re-install Kodirsync${NC}"
         menu_action=1
         echo
         break
-        ;;
-      2)
+      else
+        # Kodirsync installation - option 1
+        info "You have chosen to perform: ${YELLOW}Install Kodirsync${NC}"
+        menu_action=0
+        echo
+        break
+      fi
+      ;;
+    2)
+      if is_kodirsync_in_crontab; then
         # Kodirsync un-install - option 2
-        info "You have chosen to perform : ${YELLOW}Uninstall Kodirsync${NC}"
+        info "You have chosen to perform: ${YELLOW}Uninstall Kodirsync${NC}"
         menu_action=2
         echo
         break
-        ;;
-      3)
-        # Kodirsync manual run - option 3
-        info "You have chosen to perform : ${YELLOW}Run Kodirsync now${NC}"
+      else
+        # Prepare Kodirsync disk or folder storage only (for node) - option 2
+        info "You have chosen to perform: ${YELLOW}Prepare storage only${NC}"
+        menu_action=4
+        echo
+        break
+      fi
+      ;;
+    3)
+      if is_kodirsync_in_crontab; then
+        # Kodirsync un-install - option 3
+        info "You have chosen to perform: ${YELLOW}Run Kodirsync now${NC}"
         menu_action=3
         echo
         break
-        ;;
-      4)
-        # Quit - option 4
+      else
+        # Quit
         warn "You have chosen to skip this installer and quit. Bye..."
+        menu_action=00
         sleep 1
         exit 0
-        ;;
-      *)
+      fi
+      ;;
+    4)
+      if is_kodirsync_in_crontab; then
+        # Quit - option 4
+        warn "You have chosen to skip this installer and quit. Bye..."
+        menu_action=00
+        sleep 1
+        exit 0
+      else
         # Invalid choice
         warn "Invalid choice. Try again..."
-        ;;
-    esac
-  done
-else
-  # New fresh install
-  menu_action=0
-fi
+      fi
+      ;;
+    *)
+      # Invalid choice
+      warn "Invalid choice. Try again..."
+      ;;
+  esac
+done
 
 
 #---- Run actions from menu selection
@@ -409,6 +451,22 @@ then
   then
     # Run Linux Kodirsync
     su - $user -c "$app_dir/kodirsync_clientapp_run.sh"
+    exit 0
+  fi
+fi
+
+# Menu option - 4
+# Prepare Kodirsync disk or folder storage only (for node)
+if [ "$menu_action" = 4 ]
+then
+  # Perform action according to host OS type ( '1' is ELEC, '2' is generic Linux)
+  if [[ "$os_type" =~ ^(1|2)$ ]]
+  then
+    # Linux setup disk/node storage
+    source $DIR/kodirsync_node_install_storage.sh
+  else
+    # Display msg
+    warn "Kodirsync node is supported on CoreELEC, LibreELEC and Termux only.\nBye..."
     exit 0
   fi
 fi
@@ -507,10 +565,12 @@ fi
 
 #---- Finish Line ------------------------------------------------------------------
 
-#---- Get the Kodirsync cron job start time
 
-if [[ "$os_type" =~ ^(1|2)$ ]]
+
+if [[ "$os_type" =~ ^(1|2)$ ]] && [[ "$menu_action" =~ ^(0|1)$ ]]
 then
+  #---- Clean install or re-install - ELEC and Linux
+
   # Get the cron job entry
   cron_job=$(crontab -u $user -l | grep -E '^.*kodirsync_clientapp_run\.sh$')
   # Extract the hour and minute settings from the cron job
@@ -520,7 +580,7 @@ then
   clock_time=$(date -d "$hour:$minute" +"%I:%M %p")
 
   # Display msg
-  display_msg1="Success. Kodirsync installation has completed. Kodirsync is set to run at ${clock_time}. You can change this setting by editing the 'kodirsync' crontab."
+  display_msg1="Success. Kodirsync installation has completed. Kodirsync is set to run at ${clock_time}. You can change this setting by editing the 'kodirsync' crontab. See your installer email about how to perform your first sync manually."
 
   # Message
   msg "$(printf '%s\n' "${display_msg1[@]}")
@@ -533,54 +593,48 @@ then
     --  ${WHITE}$app_dir/logs${NC}
     Storage Destination Folder
     --  ${WHITE}$dst_dir${NC}\n"
-elif [ "$os_type" = 3 ]
+elif [ "$os_type" = 3 ] && [[ "$menu_action" =~ ^(0|1)$ ]]
 then
+  #---- Clean install or re-install - Android-Termux
+
   # Display msg
   display_msg1="Success. Kodirsync installation has completed. To start Kodirsync install Termux widgets using Android file manager '/downloads/com.termux.widget_13.apk' on your Android device."
 
   # Message
   msg "$(printf '%s\n' "${display_msg1[@]}")"
-fi
-
-
-
-#---- First Rsync ------------------------------------------------------------------
-
-# Run Kodirsync now
-if [[ "$os_type" =~ ^(1|2)$ ]]
+elif [[ "$os_type" =~ ^(1|2)$ ]] && [ "$menu_action" = 4 ]
 then
-  # Run Kodirsync - Linux and ELEC installs only
-  while true
-  do
-    read -p "Run 'Kodirsync' now (perform a full rsync) [y/n]? " -n 1 -r YN
-    echo
-    case $YN in
-      [Yy]*)
-        if [ "$os_type" = 1 ]
-        then
-          # Run CoreELEC/LibreELEC Kodirsync
-          msg "Kodirsync is starting. Be patient..."
-          bash "$app_dir/kodirsync_clientapp_run.sh" &
-        elif [ "$os_type" = 2 ]
-        then
-          # Run Linux Kodirsync
-          su - $user -c "$app_dir/kodirsync_clientapp_run.sh" &
-        fi
-        msg "The Kodirsync process has started. The terminal should display the Kodirsync and rsync events.\nYou can close this terminal at any time."
-        echo
-        break 2
-        ;;
-      [Nn]*)
-        info "Bye..."
-        echo
-        break 2
-        ;;
-      *)
-        warn "Error! Entry must be 'y' or 'n'. Try again..."
-        echo
-        ;;
-    esac
-  done
+  #---- Prepare Kodirsync disk or folder storage only (for node)
+
+  # Node hostname
+  node_localdomain_address_url="$(hostname -s).$(grep -E '^(domain|search)\s' /etc/resolv.conf | awk '{print $2}')"
+  # Node IP
+  node_local_ip_address=$(ip -o -4 addr show scope global | awk '{split($4,a,"/"); print a[1]}')
+  # Node user
+  node_user=$user
+  # Node group
+  node_grp=$user_grp
+  # Node destination folder
+  node_dst_dir="$dst_dir"
+
+  # Display msg
+  display_msg1="Success. Kodirsync node storage setup has completed. Now finish the setup by manually editing your user settings cfg file on your main Kodirsync machine. "
+
+  # Message
+  msg "$(printf '%s\n' "${display_msg1[@]}")
+  Edit the following values in your user settings file:\n
+    Settings filename (in kodirsync_app folder)
+    --  ${WHITE}kodirsync_clientapp_user.cfg${NC}
+    node_localdomain_address_url
+    --  ${WHITE}$node_localdomain_address_url${NC}
+    node_local_ip_address
+    --  ${WHITE}$node_local_ip_address${NC}
+    node_user
+    --  ${WHITE}$node_user${NC}
+    node_grp
+    --  ${WHITE}$node_grp${NC}\n
+    node_dst_dir
+    --  ${WHITE}$node_dst_dir${NC}\n"
 fi
 
 # Cleanup

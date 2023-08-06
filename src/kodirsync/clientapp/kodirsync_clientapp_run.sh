@@ -124,7 +124,7 @@ source "$app_dir/kodirsync_clientapp_user.cfg"
 source $app_dir/kodirsync_clientapp_script.sh
 
 # Run Kodirsync node synchronization
-if [ "$node_sync" = 1 ]
+if [ "$node_sync" = 1 ] && [ ! "$ostype" = 'termux' ]
 then
   source $app_dir/kodirsync_clientapp_node_sync.sh
 fi

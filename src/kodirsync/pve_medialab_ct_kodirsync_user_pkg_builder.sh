@@ -128,6 +128,14 @@ then
   pkg_file_LIST+=( "/root/.ssh/sslh.crt" )
 fi
 
+# Read kodirsync_node_rsa_key pairs if available to tar package
+if [ -f "$TEMP_DIR/kodirsync_node_rsa_key" ]
+then
+  pkg_file_LIST+=( "$TEMP_DIR/kodirsync_node_rsa_key" )
+  pkg_file_LIST+=( "$TEMP_DIR/kodirsync_node_rsa_key.pub" )
+  pkg_file_LIST+=( "$TEMP_DIR/kodirsync_node_rsa_key.ppk" )
+fi
+
 # Add files to tar archive & chmod +x executable files
 # Start tar archive by adding the user ssh key
 tar cf $TEMP_DIR/installer_pkg.tar \

@@ -281,123 +281,127 @@ then
   done
 
 
-  # Format selected disk if required
-  if [[ ! "$fstype" =~ ^($disk_fs)$ ]]
-  then
-    # Set display msg
-    display_msg1=$(echo "$stor_disk" | awk -F';' '{ print $1, $3, "\""$5"\"" }')
-    msg "To ensure compatibility and optimal performance, it is necessary to format your selected disk with either the Linux ext4 or exFAT filesystem. For fixed Linux installations like CoreELEC or LibreELEC devices, it is recommended to use the ext4 file system due to its lower overhead and native compatibility with Linux. The ext4 filesystem does not have any limitations on disk size.\n\nOn the other hand, if maximum disk portability is your priority, selecting exFAT over ext4 is preferable. exFAT is supported natively by CoreELEC, LibreELEC, Windows, Mac, Android, and Linux (including Termux), making it ideal for seamless file sharing across multiple platforms. Since Android has a 2TB limitation on USB disks, we will create a 2TB partition to accommodate this restriction.\n\nAll existing disk partitions and data will be ${RED}permanently erased${NC}.\n\n
-    $(printf '%s\n' "$display_msg1" | indent)\n"
+  # Format selected disk
+  # Set display msg
+  display_msg1=$(echo "$stor_disk" | awk -F';' '{ print $1, $3, "\""$5"\"" }')
+  msg "To ensure compatibility and optimal performance, it is necessary to format your selected disk with either the Linux ext4 or exFAT filesystem. For fixed Linux installations like CoreELEC or LibreELEC devices, it is recommended to use the ext4 file system due to its lower overhead and native compatibility with Linux. The ext4 filesystem does not have any limitations on disk size.\n\nOn the other hand, if maximum disk portability is your priority, selecting exFAT over ext4 is preferable. exFAT is supported natively by CoreELEC, LibreELEC, Windows, Mac, Android, and Linux (including Termux), making it ideal for seamless file sharing across multiple platforms. Since Android has a 2TB limitation on USB disks, we will create a 2TB partition to accommodate this restriction.\n\nAll existing disk partitions and data will be ${RED}permanently erased${NC}.\n\n
+  $(printf '%s\n' "$display_msg1" | indent)\n"
 
-    # Select disk FS
-    while true
-    do
-      # Display installer menu options
-      msg "Select a disk filesystem. Your menu options:\n"
-      menu_display=(
-        "1) FS ext4 -- Limited portability. For Linux/ELEC devices only (recommended)"
-        "2) FS exFAT -- Portable with devices (Android/Termux, Linux, Windows users)"
-      )
-      printf '%s\n' "${menu_display[@]}" | indent
+  # Select disk FS
+  while true
+  do
+    # Display installer menu options
+    msg "Select a disk filesystem. Your menu options:\n"
+    menu_display=(
+      "1) FS ext4 -- Limited portability. For Linux/ELEC devices only (recommended)"
+      "2) FS exFAT -- Portable with devices (Android/Termux, Linux, Windows users)"
+      "3) Quit -- Exit this installer"
+    )
+    printf '%s\n' "${menu_display[@]}" | indent
 
-      # Prompt user to enter their choice
-      read -p "Enter your choice: " choice
+    # Prompt user to enter their choice
+    read -p "Enter your choice: " choice
 
-      # Determine action based on user's choice
-      case $choice in
-        1)
-          # FS Ext4 - option 1
-          info "You have chosen filesystem : ${YELLOW}ext4${NC}"
-          format_fstype=ext4
-          echo
-          break
-          ;;
-        2)
-          # FS exFAT - option 2
-          info "You have chosen filesystem : ${YELLOW}exfat${NC}"
-          format_fstype=exfat
-          echo
-          break
-          ;;
-        *)
-          # Invalid choice
-          warn "Invalid choice. Try again..."
-          ;;
-      esac
-    done
+    # Determine action based on user's choice
+    case $choice in
+      1)
+        # FS Ext4 - option 1
+        info "You have chosen filesystem : ${YELLOW}ext4${NC}"
+        format_fstype=ext4
+        echo
+        break
+        ;;
+      2)
+        # FS exFAT - option 2
+        info "You have chosen filesystem : ${YELLOW}exfat${NC}"
+        format_fstype=exfat
+        echo
+        break
+        ;;
+      3)
+        # Exit installer
+        info "You have chosen to exit the installer. Bye..."
+        sleep2
+        exit 0
+        ;;
+      *)
+        # Invalid choice
+        warn "Invalid choice. Try again..."
+        ;;
+    esac
+  done
 
-    # Ask to perform disk format
-    while true
-    do
-      read -p "Proceed to format the selected disk to $format_fstype [y/n]?: " -n 1 -r YN
-      echo
-      case $YN in
-        [Yy]*)
-          msg "Wiping, erasing and formatting disk to $format_fstype filesystem..."
-          # Stopping Samba
-          systemctl stop nmbd smbd
+  # Ask to perform disk format
+  while true
+  do
+    read -p "Proceed to format the selected disk to $format_fstype [y/n]?: " -n 1 -r YN
+    echo
+    case $YN in
+      [Yy]*)
+        msg "Wiping, erasing and formatting disk to $format_fstype filesystem..."
+        # Stopping Samba
+        systemctl stop nmbd smbd
 
-          # Unmounting any existing mount points
-          while read line
-          do
-            # Check OS type and run task
-            if [ "$os_type" = 1 ]
+        # Unmounting any existing mount points
+        while read line
+        do
+          # Check OS type and run task
+          if [ "$os_type" = 1 ]
+          then
+            # Check if the specified mount point exists and remove
+            if mount | grep -q "$line"
             then
-              # Check if the specified mount point exists and remove
-              if mount | grep -q "$line"
-              then
-                # Umount the mount point
-                umount -l "$line"
-              fi
-            elif [ "$os_type" = 2 ]
-            then
-              # Check if the specified mount point exists and remove
-              if mount | grep -q "$line"
-              then
-                # Umount the mount point
-                umount -l "$line"
-              fi
-              # Check if the mount point exists in the fstab file
-              if grep -q "$line" /etc/fstab
-              then
-                # Delete the mount point from the fstab file
-                line_regex=$(echo "$line" | sed "s/${escape_string_regex}/g")
-                sed -i "/${line_regex}/d" /etc/fstab
-              fi
+              # Umount the mount point
+              umount -l "$line"
             fi
-          done < <( blkid -o device | grep -E "^${dev_path}(p)?([1-9])?" )
-
-          # Erasing selected disk disk
-          dd if=/dev/zero of="$dev_path" bs=512 count=1 conv=notrunc >/dev/null
-          wait
-
-          # Formatting disk
-          if [ "$format_fstype" = ext4 ]
+          elif [ "$os_type" = 2 ]
           then
-            # FS formatting - ext4
-            source $DIR/kodirsync_clientapp_install_format_disk_ext4.sh
-          elif [ "$format_fstype" = exfat ]
-          then
-            # FS formatting - exFAT
-            source $DIR/kodirsync_clientapp_install_format_disk_exfat.sh
+            # Check if the specified mount point exists and remove
+            if mount | grep -q "$line"
+            then
+              # Umount the mount point
+              umount -l "$line"
+            fi
+            # Check if the mount point exists in the fstab file
+            if grep -q "$line" /etc/fstab
+            then
+              # Delete the mount point from the fstab file
+              line_regex=$(echo "$line" | sed "s/${escape_string_regex}/g")
+              sed -i "/${line_regex}/d" /etc/fstab
+            fi
           fi
+        done < <( blkid -o device | grep -E "^${dev_path}(p)?([1-9])?" )
 
-          # Update uuid (Set again if changed during formatting)
-          uuid=$(blkid -s UUID -o value "$dev_path" 2> /dev/null)
-          break
-          ;;
-        [Nn]*)
-          msg "You have chosen not to format your selected disk. To choose another option run\nthis script again and start again. Exiting in 2 seconds..."
-          sleep 2
-          exit 0
-          ;;
-        *)
-          warn "Error! Entry must be 'y' or 'n'. Try again..."
-          echo
-          ;;
-      esac
-    done
-  fi
+        # Erasing selected disk disk
+        dd if=/dev/zero of="$dev_path" bs=512 count=1 conv=notrunc >/dev/null
+        wait
+
+        # Formatting disk
+        if [ "$format_fstype" = ext4 ]
+        then
+          # FS formatting - ext4
+          source $DIR/kodirsync_clientapp_install_format_disk_ext4.sh
+        elif [ "$format_fstype" = exfat ]
+        then
+          # FS formatting - exFAT
+          source $DIR/kodirsync_clientapp_install_format_disk_exfat.sh
+        fi
+
+        # Update uuid (Set again if changed during formatting)
+        uuid=$(blkid -s UUID -o value "$dev_path" 2> /dev/null)
+        break
+        ;;
+      [Nn]*)
+        msg "You have chosen not to format your selected disk. To choose another option run\nthis script again and start again. Exiting in 2 seconds..."
+        sleep 2
+        exit 0
+        ;;
+      *)
+        warn "Error! Entry must be 'y' or 'n'. Try again..."
+        echo
+        ;;
+    esac
+  done
 
   # Wait for disks to be ready
   udevadm settle

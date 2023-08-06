@@ -64,79 +64,52 @@ then
 fi
 
 
-#---- Configure Samba
-# Here we create a SMB share of the new Kodirsync disk mount.
+# #---- Configure Samba
+# # Here we create a SMB share of the new Kodirsync disk mount.
 
-# SMB conf file
-smb_config_file="/storage/.config/samba.conf"
+# # SMB conf file
+# smb_config_file="/storage/.config/samba.conf"
 
-# Kodirsync SMB share
-kodirsync_share="[Kodirsync_Share]
-  path = $smb_dir
-  available = yes
-  browsable = yes
-  public = yes
-  writable = yes"
+# # Kodirsync SMB share
+# kodirsync_share="[Kodirsync_Share]
+#   path = $smb_dir
+#   available = yes
+#   browsable = yes
+#   public = yes
+#   writable = yes"
 
-# Update SMB shares
-if [ -f "/storage/.config/samba.conf" ]
-then
-  # Check if "Kodirsync Share" section already exists
-  if ! grep -q "^\[Kodirsync_Share\]" "$smb_config_file"; then
-    # Stop services
-    stop_systemctl "nmbd.service"
-    wait
-    stop_systemctl "smbd.service"
-
-    # Append the kodirsync_share configuration to the config file
-    printf "%s\n" "$kodirsync_share" >> "$smb_config_file"
-
-    # Restart services
-    start_systemctl "nmbd.service"
-    wait
-    start_systemctl "smbd.service"
-  fi
-else
-  # Stop services
-  stop_systemctl "nmbd.service"
-  wait
-  stop_systemctl "smbd.service"
-  
-  # Create new 'samba.conf' with [Kodirsync Share]
-  cp /storage/.config/samba.conf.sample $smb_config_file
-  echo "" >> $smb_config_file
-  printf "%s\n" "$kodirsync_share" >> $smb_config_file
-
-  # Restart services
-  start_systemctl "nmbd.service"
-  wait
-  start_systemctl "smbd.service"
-fi
-
-
-# # Create a new  user profile
-# if [[ ${ostype} =~ ^.*(\")?(coreelec|libreelec)(\")?.*$ ]]
+# # Update SMB shares
+# if [ -f "/storage/.config/samba.conf" ]
 # then
-#   msg "You can create a new Kodi local user profile called 'Kodirsync' on this device to for\nyour new rsync media library."
-#   while true; do
-#     read -p "Do you want to create a 'Kodirsync' user profile [y/n]? " -n 1 -r YN
-#     echo
-#     case $YN in
-#       [Yy]*)
-#         echo "Coming soon..."
-#         break
-#         ;;
-#       [Nn]*)
-#         info "You have chosen not set up a 'Kodirsync' profile. You can always manually create\na local profile at your Kodi player station."
-#         echo
-#         break
-#         ;;
-#       *)
-#         warn "Error! Entry must be 'y' or 'n'. Try again..."
-#         echo
-#         ;;
-#     esac
-#   done
-# fi
+#   # Check if "Kodirsync Share" section already exists
+#   if ! grep -q "^\[Kodirsync_Share\]" "$smb_config_file"; then
+#     # Stop services
+#     stop_systemctl "nmbd.service"
+#     wait
+#     stop_systemctl "smbd.service"
 
+#     # Append the kodirsync_share configuration to the config file
+#     printf "%s\n" "$kodirsync_share" >> "$smb_config_file"
+
+#     # Restart services
+#     start_systemctl "nmbd.service"
+#     wait
+#     start_systemctl "smbd.service"
+#   fi
+# else
+#   # Stop services
+#   stop_systemctl "nmbd.service"
+#   wait
+#   stop_systemctl "smbd.service"
+  
+#   # Create new 'samba.conf' with [Kodirsync Share]
+#   cp /storage/.config/samba.conf.sample $smb_config_file
+#   echo "" >> $smb_config_file
+#   printf "%s\n" "$kodirsync_share" >> $smb_config_file
+
+#   # Restart services
+#   start_systemctl "nmbd.service"
+#   wait
+#   start_systemctl "smbd.service"
+# fi
 #-----------------------------------------------------------------------------------------------------------------------
