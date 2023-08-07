@@ -111,6 +111,7 @@ do
   while [ "$retries" -lt "$max_retries" ]
   do
     # Download GitHub files
+    echo "DL from GitHub: $filename"
     curl --fail -o "$dl_dir/$filename" -f "https://raw.githubusercontent.com/$git_dl_user/$git_dl_repo/$git_dl_branch/src/kodirsync/clientapp/$filename"
 
     # Check if curl command succeeded
