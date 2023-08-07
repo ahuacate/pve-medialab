@@ -31,6 +31,12 @@ git_dl_repo='pve-medialab'
 # Git branch
 git_dl_branch='main'
 
+# Set $app_dir
+if [ -z "$app_dir" ]
+then
+  app_dir=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+fi
+
 # Log files
 now=$(date +"%F")
 logfile="$app_dir/logs/kodirsync-${now}.log"
