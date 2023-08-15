@@ -67,6 +67,7 @@ exclude_files=(
   "-o -iname kodirsync_clientapp_install_linux.sh"
   "-o -iname kodirsync_clientapp_uninstall_linux.sh"
   "-o -iname kodirsync_clientapp_install_linux_storage.sh"
+  "-o -iname kodirsync_clientapp_kodi_install_favorites.sh"
   "-o -iname Start-Kodirsync.sh"
   "-o -iname Stop-Kodirsync.sh"
   "-o -iname Start-Kodirsync.png"
@@ -75,7 +76,7 @@ exclude_files=(
 )
 
 # Copy App files to $app_dir
-find "$selftar_dir" -type f \( -iname "*.sh" -o -iname "*.cfg" \) -not \( $(printf '%s\n' "${exclude_files[@]}") \) -exec chown $user:$user_grp {} \; -exec chmod +x {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$app_dir" \;
+find "$selftar_dir" -type f \( -iname "*.sh" -o -iname "*.cfg" -o -iname "*.py" \) -not \( $(printf '%s\n' "${exclude_files[@]}") \) -exec chown $user:$user_grp {} \; -exec chmod +x {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$app_dir" \;
 find "$selftar_dir" -type f -iname "*.txt" -not \( $(printf '%s\n' "${exclude_files[@]}") \) -exec chown $user:$user_grp {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$app_dir" \;
 
 # Copy 'kodirsync_control_list' to $app_dir (rename)
@@ -90,7 +91,10 @@ find "$selftar_dir" -type f \( -iname "*_kodirsync_id_ed25519" -o -name "kodirsy
 # Copy ssh files to $ssh_dir
 find "$selftar_dir" -type f \( -iname "*_kodirsync_id_ed25519" -o -name "kodirsync_node_rsa_key" \) -not \( $(printf '%s\n' "${exclude_files[@]}") \) -exec chown $user:$user_grp {} \; -exec chmod 600 {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$ssh_dir" \;
 
-# Copy 'termux_widget' to app_dir
+# Copy 'termux_widget' to $app_dir
 mkdir -p "$app_dir/termux_widget"
 find "$selftar_dir" -type f \( -iname "Start-Kodirsync.bash" -o -iname "Start-Kodirsync.png" -o -iname "Stop-Kodirsync.bash" -o -iname "Stop-Kodirsync.png" -o -iname "Update-Widget.bash" \) -exec chown $user:$user_grp {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$app_dir/termux_widget" \;
+
+# Copy kodi 'icon' and 'thumb' to $app_dir
+find "$selftar_dir" -type f \( -iname "kodi_icon*.png" -o -iname "kodi_thumb*.png" \) -exec chown $user:$user_grp {} \; -exec sh -c 'if [ ! -f "$2/$(basename "$1")" ]; then cp -f "$1" "$2/$(basename "$1")"; fi' sh {} "$app_dir" \;
 #-----------------------------------------------------------------------------------

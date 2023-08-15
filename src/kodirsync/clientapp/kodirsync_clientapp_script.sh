@@ -206,7 +206,15 @@ if [ "$ostype" = 'termux' ]
 then
   # Search for priority '$dst_dir' location with '.kodirsync_storage' file
   # Android exFAT mount path. Full path '/storage/XXXX-XXXX/Android/data/com.termux/files/'.
-  dst_dir_chk=$(find /storage -path "*/$android_path/$kodirsync_storage_dir" -type d -execdir sh -c '[ -e "$1/.kodirsync_storage" ]' sh {} \; -print 2> /dev/null)
+  dst_dir_chk=""
+  while IFS= read -r path
+  do
+    # Check for hidden file '.kodirsync_storage'
+    if [ -f "$path/.kodirsync_storage" ]
+    then
+      dst_dir_chk="$path"
+    fi
+  done < <(find /storage -path "*/$android_path/$kodirsync_storage_dir" -type d 2> /dev/null)
 
   # Set '$dst_dir' location
   if [ -n "$dst_dir_chk" ] && [ -d "$dst_dir_chk" ]
@@ -249,9 +257,17 @@ then
   storage_type='2'
 else
   # ELEC and Linux client - check & set variable overrides
-  # Search for priority '$dst_dir' location with '.kodirsync_storage' file
-  # Check Android exFAT mount path. Full path '/storage/XXXX-XXXX/Android/data/com.termux/files/'.
-  dst_dir_chk=$(find / \( -path "*/$android_path/$kodirsync_storage_dir" -o -path "*/$kodirsync_storage_dir" \) -type d -execdir sh -c '[ -e "$1/.kodirsync_storage" ]' sh {} \; -print 2> /dev/null)
+  # Search for priority '$dst_dir' location with hidden kodirsync_storage' file
+  # Check Android exFAT/ext4 mount path. Android path is '/storage/XXXX-XXXX/Android/data/com.termux/files/'.
+  dst_dir_chk=""
+  while IFS= read -r path
+  do
+    # Check for hidden file '.kodirsync_storage'
+    if [ -f "$path/.kodirsync_storage" ]
+    then
+      dst_dir_chk="$path"
+    fi
+  done < <(find / \( -path "*/$android_path/$kodirsync_storage_dir" -o -path "*/$kodirsync_storage_dir" \) -type d 2> /dev/null)
 
   # Set '$dst_dir' location
   if [ -n "$dst_dir_chk" ] && [ -d "$dst_dir_chk" ]

@@ -122,7 +122,7 @@
 <ol type="A">
   <li>CoreELEC, LibreELEC and Linux hardware</li>
   <div class="codebox">
-    file_path=$(find / -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_run.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync not found on this device"
+    file_path=$(find / -not -path "/tmp/*" -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_run.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync not found on this device"
   </div>
 
   <li>Android-Termux</li>
@@ -164,7 +164,7 @@
 <ol type="A">
   <li>CoreELEC, LibreELEC and Linux hardware</li>
     <div class="codebox">
-      file_path=$(find / -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_gitupdater.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync updater not found on this device"
+      file_path=$(find / -not -path "/tmp/*" -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_gitupdater.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync updater not found on this device" 
     </div>
 </ol>
 <p>Manually performing a update will kill all running Kodirsync processes. The processes will restart at the next scheduled synchronization of media.</p>

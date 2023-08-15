@@ -17,6 +17,17 @@
 # Set Kodirsync server source dir
 source='.'
 
+# Overrides for Android/Termux hosts
+# Override the rsync threads for Android/Termux to single rsync thread only
+if [ "$ostype" = 'termux' ]
+then
+  # Override max LAN rsync thread
+  max_rsync_threads_lan='1'
+
+  # Override max remote rsync thread
+  max_rsync_threads_remote='1'
+fi
+
 # Convert '$throttle_bw_limit' Mbps to Kb
 throttle_bw_limit_kb=$((throttle_bw_limit_mbps * 1000 / 8))
 
@@ -25,7 +36,6 @@ mkdir -p $dst_dir/rsync_tmp
 
 # Copy dl list to '$dst_dir' (for manual user viewer checking only)
 cp $work_dir/rsync_process_list.txt $dst_dir/rsync_tmp/rsync_process_list.txt
-
 
 #---- Run Rsync
 
@@ -90,6 +100,7 @@ then
       # rsync_address="$8"           # Rsync server address
       # source="$9"                  # Source directory/file
       # dst_dir="$10"                # Destination directory
+      # max_rsync_threads_remote="$11"  # Max rsync threads
       args=("$rsync_sleep_time" \
       "$rsync_cnt_timeout" \
       "$rsync_ssh_cmd" \
@@ -99,7 +110,8 @@ then
       "$rsync_username" \
       "$rsync_address" \
       "$source" \
-      "$dst_dir")
+      "$dst_dir" \
+      "$max_rsync_threads_remote")
 
       # The '&' at the end of the command is used to run the script in the background,
       # allowing it to execute independently while the throttle part of the script
@@ -144,32 +156,62 @@ then
       # Calculate the remaining time until the end of the throttle period
       remaining_seconds=$((end_time_seconds - current_time_seconds))
 
-      # Run rsync cmd
+      # Throttle arg tuner - args
+      # Optimize the threads and BW limit for throttled connections
       # Required variables to script (passed with array '${args[@]}')
-      # rsync_sleep_time="$1"         # Sleep time between retries
+      # rsync_sleep_time="$1"        # Sleep time between retries
       # rsync_cnt_timeout="$2"       # Maximum number of retries
       # ssh_cmd="$3"                 # SSH command (if required)
-      # logfile="$4"                 # Path to the log file
-      # work_dir="$5"                # Working directory for rsync
-      # throttle_bw_limit_kb="$6"    # Throttle bandwidth limit in kilobits per second
-      # rsync_username="$7"          # Rsync username
-      # rsync_address="$8"           # Rsync server address
-      # source="$9"                  # Source directory/file
-      # dst_dir="$10"                # Destination directory
+      # work_dir="$4"                # Working directory for rsync
+      # throttle_bw_limit_kb="$5"    # Throttle bandwidth limit in kilobits per second
+      # rsync_username="$6"          # Rsync username
+      # rsync_address="$7"           # Rsync server address
+      # source="$8"                  # Source directory/file
+      # dst_dir="$9"                # Destination directory
+      # max_rsync_threads_remote="$10"  # Max rsync threads
       args=("$rsync_sleep_time" \
       "$rsync_cnt_timeout" \
       "$rsync_ssh_cmd" \
-      "$logfile" \
       "$work_dir" \
       "$throttle_bw_limit_kb" \
       "$rsync_username" \
       "$rsync_address" \
       "$source" \
-      "$dst_dir")
+      "$dst_dir" \
+      "$max_rsync_threads_remote")
+
+      # Run throttle arg tuner
+      source "$app_dir/kodirsync_clientapp_rsync_throttle_tune.sh" "${args[@]}"
+
+      # Run rsync - args
+      # Required variables to script (passed with array '${args[@]}')
+      # rsync_sleep_time="$1"        # Sleep time between retries
+      # rsync_cnt_timeout="$2"       # Maximum number of retries
+      # ssh_cmd="$3"                 # SSH command (if required)
+      # logfile="$4"                 # Path to the log file
+      # work_dir="$5"                # Working directory for rsync
+      # bw_limit_tune="$6"           # Throttle bandwidth limit in kilobits per second
+      # rsync_username="$7"          # Rsync username
+      # rsync_address="$8"           # Rsync server address
+      # source="$9"                  # Source directory/file
+      # dst_dir="$10"                # Destination directory
+      # rsync_threads_tune="$11"     # Max rsync threads
+      args=("$rsync_sleep_time" \
+      "$rsync_cnt_timeout" \
+      "$rsync_ssh_cmd" \
+      "$logfile" \
+      "$work_dir" \
+      "$bw_limit_tune" \
+      "$rsync_username" \
+      "$rsync_address" \
+      "$source" \
+      "$dst_dir" \
+      "$rsync_threads_tune")
 
       # The '&' at the end of the command is used to run the script in the background,
       # allowing it to execute independently while the throttle part of the script
       # continues to manage the remaining time.
+      # Run rsync
       source "$app_dir/kodirsync_clientapp_rsync_throttle.sh" "${args[@]}" &
 
       # Save the process pid
@@ -221,7 +263,8 @@ then
       # rsync_username="$7"          # Rsync username
       # rsync_address="$8"           # Rsync server address
       # source="$9"                  # Source directory/file
-      # dst_dir="$10"                # Destination directory
+      # dst_dir="$10"                # Destination 
+      # max_rsync_threads_remote="$11"  # Max rsync threads
       args=("$rsync_sleep_time" \
       "$rsync_cnt_timeout" \
       "$rsync_ssh_cmd" \
@@ -231,7 +274,8 @@ then
       "$rsync_username" \
       "$rsync_address" \
       "$source" \
-      "$dst_dir")
+      "$dst_dir" \
+      "$max_rsync_threads_remote")
 
       # No '&' at the end of the command because no throttling.
       source "$app_dir/kodirsync_clientapp_rsync_throttle.sh" "${args[@]}"
@@ -259,22 +303,7 @@ then
   then
     # Configure for rsync filesystem compatibility -exFAT or Termux/Android OS
     # ExFAT filesystem is not compatible with the rsync '-a' archive option.
-    rsync -v -e "$rsync_ssh_cmd" \
-    --progress \
-    --timeout=60 \
-    --human-readable \
-    --partial-dir=$dst_dir/rsync_tmp \
-    --delete \
-    --exclude '*.partial~' \
-    --log-file=$logfile \
-    --files-from=$work_dir/rsync_process_list.txt \
-    --relative \
-    --no-owner \
-    --modify-window=1 \
-    --size-only \
-    $rsync_username@$rsync_address:$source "$dst_dir"
-  else
-    # Configure for rsync filesystem compatibility - ext4
+    cat $work_dir/rsync_process_list.txt | xargs -I {} -P $max_rsync_threads_lan \
     rsync -av -e "$rsync_ssh_cmd" \
     --progress \
     --timeout=60 \
@@ -283,10 +312,25 @@ then
     --delete \
     --exclude '*.partial~' \
     --log-file=$logfile \
-    --files-from=$work_dir/rsync_process_list.txt \
     --relative \
     --no-owner \
-    $rsync_username@$rsync_address:$source "$dst_dir"
+    --modify-window=1 \
+    --size-only \
+    $rsync_username@$rsync_address:"$source/{}" "$dst_dir"
+  else
+    # Configure for rsync filesystem compatibility - ext4
+    cat $work_dir/rsync_process_list.txt | xargs -I {} -P $max_rsync_threads_lan \
+    rsync -av -e "$rsync_ssh_cmd" \
+    --progress \
+    --timeout=60 \
+    --human-readable \
+    --partial-dir=$dst_dir/rsync_tmp \
+    --delete \
+    --exclude '*.partial~' \
+    --log-file=$logfile \
+    --relative \
+    --no-owner \
+    $rsync_username@$rsync_address:"$source/{}" "$dst_dir"
   fi
 fi
 #-----------------------------------------------------------------------------------

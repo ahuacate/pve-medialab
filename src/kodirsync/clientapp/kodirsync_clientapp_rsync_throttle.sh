@@ -19,16 +19,17 @@
 # When referencing positional parameters greater than 9,
 # you need to use curly braces ({}) to correctly expand the value.
 # Source parameters must also be passed in array (when greater than 9 parameters).
-rsync_sleep_time="${1}"         # Sleep time between retries
+rsync_sleep_time="${1}"        # Sleep time between retries
 rsync_cnt_timeout="${2}"       # Maximum number of retries
 rsync_ssh_cmd="${3}"           # SSH command
 logfile="${4}"                 # Path to the log file
 work_dir="${5}"                # Working directory for rsync
-throttle_bw_limit_kb="${6}"    # Throttle bandwidth limit in kilobits per second
+bw_limit="${6}"                # Throttle bandwidth limit in kilobits per second
 rsync_username="${7}"          # Rsync username
 rsync_address="${8}"           # Rsync server address
 source="${9}"                  # Source directory/file
 dst_dir="${10}"                # Destination directory
+rsync_threads="${11}"          # Max rsync threads
 
 #---- Run rsync 
 
@@ -44,6 +45,7 @@ do
   then
     # Configure for rsync filesystem compatibility -exFAT or Termux/Android OS
     # ExFAT filesystem is not compatible with the rsync '-a' archive option.
+    cat $work_dir/rsync_process_list.txt | xargs -I {} -P $rsync_threads \
     rsync -v -e "$rsync_ssh_cmd" \
     --progress \
     --timeout=60 \
@@ -52,15 +54,15 @@ do
     --delete \
     --exclude '*.partial~' \
     --log-file=$logfile \
-    --files-from=$work_dir/rsync_process_list.txt \
     --relative \
     --no-owner \
     --modify-window=1 \
     --size-only \
-    --bwlimit=$throttle_bw_limit_kb \
-    $rsync_username@$rsync_address:$source "$dst_dir"
+    --bwlimit=$bw_limit \
+    $rsync_username@$rsync_address:"$source/{}" "$dst_dir"
   else
     # Configure for rsync filesystem compatibility - ext4
+    cat $work_dir/rsync_process_list.txt | xargs -I {} -P $rsync_threads \
     rsync -av -e "$rsync_ssh_cmd" \
     --progress \
     --timeout=60 \
@@ -69,11 +71,10 @@ do
     --delete \
     --exclude '*.partial~' \
     --log-file=$logfile \
-    --files-from=$work_dir/rsync_process_list.txt \
     --relative \
     --no-owner \
-    --bwlimit=$throttle_bw_limit_kb \
-    $rsync_username@$rsync_address:$source "$dst_dir"
+    --bwlimit=$bw_limit \
+    $rsync_username@$rsync_address:"$source/{}" "$dst_dir"
   fi
 
   # Capture the rsync exit code

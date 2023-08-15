@@ -58,6 +58,11 @@ git_update_LIST=( "kodirsync_clientapp_gitupdater.sh" \
 "kodirsync_clientapp_node_prune.sh" \
 "kodirsync_clientapp_rsync_main.sh" \
 "kodirsync_clientapp_rsync_throttle.sh" \
+"kodirsync_clientapp_rsync_throttle_tune.sh" \
+"kodirsync_clientapp_kodi_gitupdater.py" \
+"kodirsync_clientapp_kodi_run.py" \
+"kodirsync_clientapp_kodi_status.py" \
+"kodirsync_clientapp_kodi_install_favourites.sh" \
 "kodirsync_control_list.tmpl" \
 "audio_format_filter.txt" \
 "audiobook_format_filter.txt" \
@@ -69,6 +74,11 @@ git_update_LIST=( "kodirsync_clientapp_gitupdater.sh" \
 "other_format_filter.txt" \
 "subtitle_format_filter.txt" \
 "video_format_filter.txt" \
+"kodi_icon_start.png" \
+"kodi_icon_stop.png" \
+"kodi_thumb_start.png" \
+"kodi_thumb_status.png" \
+"kodi_thumb_updater.png" \
 "termux_widget/Start-Kodirsync.bash" \
 "termux_widget/Stop-Kodirsync.bash" \
 "termux_widget/Start-Kodirsync.png" \
@@ -83,6 +93,30 @@ echo -e "#---- GIT SCRIPT UPDATE -----------------------------------------------
 
 
 #---- Prerequisites
+
+# Check for existing Kodirsync events
+# List of script names or keywords to check
+# 'kodirsync_id' and 'kodirsync_node' will discover any rsync or ssh events (associates with key name)
+script_names=(
+  kodirsync_id
+  kodirsync_node
+)
+
+# Check $script_names list
+for script_name in "${script_names[@]}"
+do
+  # Get PIDs of running scripts except the current one ($$)
+  pids=$(pgrep -f "$script_name" | grep -v "$$")
+
+  # If pids exist
+  if [ -n "$pids" ]
+  then
+    for pid in $pids; do
+      # Return to parent script (skip GitHub update)
+      return
+    done
+  fi
+done
 
 # Get Kodirsync User permissions
 file_perms=$(ls -ld $app_dir | awk '{print $3 ":" $4}')
@@ -180,4 +214,7 @@ rm -R "$dl_dir" 2> /dev/null
 
 # Finish Job log
 echo -e "#---- GIT SCRIPT UPDATE FINISHED ---------------------------------------------------\n" >> $logfile
+
+# Parse $dl_status to python script (for Kodi installs)
+echo "$dl_status"
 #-----------------------------------------------------------------------------------------------------------------------
