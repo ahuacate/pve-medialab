@@ -122,6 +122,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
         - [14.4.6. How do I change Kodirsync remote connection access service type?](#1446-how-do-i-change-kodirsync-remote-connection-access-service-type)
         - [14.4.7. Why are the dates and times of my downloaded files different from the originals?](#1447-why-are-the-dates-and-times-of-my-downloaded-files-different-from-the-originals)
         - [14.4.8. Node sync. What is it?](#1448-node-sync-what-is-it)
+    - [14.4. Kodirsync Email instructions](#144-kodirsync-email-instructions)
 - [15. Vidcoderr LXC](#15-vidcoderr-lxc)
     - [15.1. Setup Vidcoderr](#151-setup-vidcoderr)
     - [15.2. Vidcoderr FAQ](#152-vidcoderr-faq)
@@ -732,6 +733,8 @@ When a new user account is created, an installer package is automatically genera
 ## 14.3. Android-Termux
 If you configure your CoreELEC, LibreELEC or Linux device to use a USB storage disk then you can connect that same disk to a Android mobile to perform media updates.
 
+The USB storage disk filesystem must be exFAT.
+
 Follow the installation instructions in your installer email.
 
 ## 14.4. Kodirsync FAQ
@@ -741,7 +744,7 @@ Always read the installer email which contains detailed installation instruction
 Use Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Create a new user account` and follow the prompts to create a new user account. An installer package will be emailed to the new user and Proxmox administrator.
 
 ### 14.4.2. Can I connect my USB storage disk to my Android phone?
-Yes, you can connect your USB storage disk to your Android phone, but there are a few considerations to keep in mind. Firstly, you need to ensure that you have selected the disk portability option during the installation process. Additionally, Android requires the use of the exFAT filesystem for compatibility with external storage devices. To connect your USB storage disk, charger, and phone simultaneously, you will need a USB 'Y-cable'. It's worth noting that using a solid-state drive (SSD) disk may work without the need for charging, albeit with potential severe battery drain. However, for rotational disks, it is unlikely to function properly without an additional power source.
+Yes, you can connect your USB storage disk to your Android phone, but there are a few considerations to keep in mind. Firstly, you need to ensure that you have selected the disk portability option during the installation process. Additionally, Android requires the use of the exFAT filesystem for compatibility with external storage devices. To connect your USB storage disk, charger, and phone simultaneously, you will need a USB 'Y-cable'. It's worth noting that using a solid-state drive (SSD) disk may work without the need for charging, albeit with potential severe battery drain. However, rotational disks, are unlikely to function properly without an additional power source.
 
 ### 14.4.3. Can I connect my USB storage disk to my Apple phone?
 No, connecting a USB storage disk directly to an Apple phone is not supported. However, there might be a possibility of making it work if you can run Linux bash/shell scripts on your Apple phone and possess the necessary knowledge to do so.
@@ -759,9 +762,14 @@ If you have an existing remote SSLH or Port Forward connection service first dis
 The discrepancy in file dates and times is due to the exFAT filesystem used on your disk, which is commonly employed for external USB disks to ensure portability across different devices. However, when using Rsync with exFAT file systems, certain issues arise, leading to inconsistencies in file dates. To address this problem, you can switch to the ext4 filesystem, which resolves the file date issues. It's important to note, though, that by transitioning to ext4, you may sacrifice the portability feature offered by exFAT.
 
 ### 14.4.8. Node sync. What is it?
-Node sync can synchronize your local Kodirsync media library to another Linux machine within your LAN network. It will run after every Kodirsync.
-Node sync is under development. 
+Node Sync is designed to facilitate the synchronization of your local Kodirsync media library with another Linux machine (referred to as a "node") on your LAN network. This synchronization process is automatically initiated following each instance of Kodirsync.
 
+To set up the node machine, you will need to prepare a USB or internal storage disk, or alternatively, select a specific folder. This can be achieved by executing our installer package on the node. For detailed guidance on the installation procedure, please refer to the instructions provided in the installer email you received.
+
+## 14.4. Kodirsync Email instructions
+Here is a copy of the email instructions.
+
+<iframe src="./src/kodirsync/email_tml/email_body.html" width="100%" height="500"></iframe>
 ---
 
 # 15. Vidcoderr LXC
