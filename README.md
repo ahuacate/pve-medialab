@@ -770,6 +770,7 @@ To set up the node machine, you will need to prepare a USB or internal storage d
 Here is a copy of the email instructions.
 
 <iframe src="./src/kodirsync/email_tml/email_body.html" width="100%" height="500"></iframe>
+
 ---
 
 # 15. Vidcoderr LXC
