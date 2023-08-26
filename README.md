@@ -122,7 +122,6 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
         - [14.4.6. How do I change Kodirsync remote connection access service type?](#1446-how-do-i-change-kodirsync-remote-connection-access-service-type)
         - [14.4.7. Why are the dates and times of my downloaded files different from the originals?](#1447-why-are-the-dates-and-times-of-my-downloaded-files-different-from-the-originals)
         - [14.4.8. Node sync. What is it?](#1448-node-sync-what-is-it)
-    - [14.4. Kodirsync Email instructions](#144-kodirsync-email-instructions)
 - [15. Vidcoderr LXC](#15-vidcoderr-lxc)
     - [15.1. Setup Vidcoderr](#151-setup-vidcoderr)
     - [15.2. Vidcoderr FAQ](#152-vidcoderr-faq)
@@ -738,7 +737,7 @@ The USB storage disk filesystem must be exFAT.
 Follow the installation instructions in your installer email.
 
 ## 14.4. Kodirsync FAQ
-Always read the installer email which contains detailed installation instructions and more.
+Always read the [installer email](https://github.com/ahuacate/pve-medialab/blob/main/src/kodirsync/email_tml/kodirsync_instructions.pdf) which contains detailed installation instructions and more.
 
 ### 14.4.1. How do I create a new user?
 Use Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Create a new user account` and follow the prompts to create a new user account. An installer package will be emailed to the new user and Proxmox administrator.
@@ -765,11 +764,6 @@ The discrepancy in file dates and times is due to the exFAT filesystem used on y
 Node Sync is designed to facilitate the synchronization of your local Kodirsync media library with another Linux machine (referred to as a "node") on your LAN network. This synchronization process is automatically initiated following each instance of Kodirsync.
 
 To set up the node machine, you will need to prepare a USB or internal storage disk, or alternatively, select a specific folder. This can be achieved by executing our installer package on the node. For detailed guidance on the installation procedure, please refer to the instructions provided in the installer email you received.
-
-## 14.4. Kodirsync Email instructions
-Here is a copy of the email instructions.
-
-<iframe src="./src/kodirsync/email_tml/email_body.html" width="100%" height="500"></iframe>
 
 ---
 

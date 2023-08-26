@@ -24,6 +24,7 @@ display_time_short = '3000'
 # Notification icon
 icon_green = '/storage/.kodi/addons/script.module.kodirsync/kodi_icon_start.png'
 icon_red = '/storage/.kodi/addons/script.module.kodirsync/kodi_icon_stop.png'
+icon_orange = '/storage/.kodi/addons/script.module.kodirsync/kodi_icon_idle.png'
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
@@ -43,7 +44,7 @@ def kodimsg_start():
 
 # Kodi func - 'finish'
 def kodimsg_finish():
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync, Synchronization completed... ,{display_time_short},{icon_green})'])
+    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync, Synchronization completed... ,{display_time_short},{icon_orange})'])
 
 # Kodi func - 'library update'
 def kodi_library_update():

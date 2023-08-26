@@ -131,10 +131,13 @@ CT_SIZE='5'
 CT_ACL='1'
 
 #----[CT_STARTUP_OPTIONS]
-# Startup and shutdown behavior ( '--startup order=1,up=1,down=1' ). Order is a non-negative number defining the general startup order. Up=1 means first to start up. Shutdown in done with reverse ordering so down=1 means last to shutdown.
-CT_ORDER='2'
-CT_UP='2'
-CT_DOWN='2'
+# Startup and shutdown behavior ( '--startup order=1,up=1,down=1' ).
+# Order is a non-negative number defining the general startup order. Up=1 means first to start up. Shutdown in done with reverse ordering so down=1 means last to shutdown.
+# Up: Startup delay. Defines the interval between this container start and subsequent containers starts. For example, set it to 240 if you want to wait 240 seconds before starting other containers.
+# Down: Shutdown timeout. Defines the duration in seconds Proxmox VE should wait for the container to be offline after issuing a shutdown command. By default this value is set to 60, which means that Proxmox VE will issue a shutdown request, wait 60s for the machine to be offline, and if after 60s the machine is still online will notify that the shutdown action failed. 
+CT_ORDER='3'
+CT_UP='30'
+CT_DOWN='60'
 
 #----[CT_NET_OPTIONS]
 # Name of the network device as seen from inside the VM/CT.

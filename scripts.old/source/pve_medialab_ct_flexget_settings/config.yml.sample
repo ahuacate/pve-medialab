@@ -1,8 +1,0 @@
-tasks:
-  test task:
-    rss: http://mysite.com/myfeed.rss
-    series:
-      - My Favorite Show
-      - Another Good Show:
-          quality: 720p
-    download: /home/me/watchdir/

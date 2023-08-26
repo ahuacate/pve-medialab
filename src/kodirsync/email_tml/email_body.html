@@ -114,19 +114,34 @@
       </div>
   </ol>
   <p>The above command will run our Kodirsync device installer. Follow the prompts.</p>
+  <li><h2>Configure Kodi Favorite Menu</h2> </li>
+  <p>Kodirsync can me manually run via the favorites menu in your Kodi player. You menu options are:</p>
+  <ol type="A">
+    <li>Kodirsync Start - manually start Kodirsync</li>
+    <li>Kodirsync Updater - update Kodirsync software</li>
+    <li>Kodirsync Status - check Kodirsync run status and download speed (checks inbound traffic on NIC)</li>
+  </ol>
+  <p>After installation of Kodirsync on your CoreELEC or LibreELEC player you need to enable Kodi favorite menu. In Kodi GUI complete the following steps:</p>
+    <ol type="1">
+    <li>Enable favourites menu - Settings > Interface > Skin > Configure skin > Main menu items > Favourites - enable</li>
+    <li>Reboot Kodi</li>
+    </ol>
+  <p>You now have Kodirsync options in the Kodi favorites menu.</p>
 </ol>
 <br>
 
 <h1>Manual run Kodirsync</h1>
-<p>SSH into your client device as root. Type the following command (or copy &amp; paste) in your SSH terminal.</p>
 <ol type="A">
   <li>CoreELEC, LibreELEC and Linux hardware</li>
+  <p>SSH into your client device as root. Type the following command (or copy &amp; paste) in your SSH terminal.</p>
   <div class="codebox">
     file_path=$(find / -not -path "/tmp/*" -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_run.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync not found on this device"
   </div>
 
   <li>Android-Termux</li>
   <p>Kodirsync on Termux-Android is manually started using the Termux-widget control.</p>
+  <li>Kodi Player</li>
+  <p>Kodirsync menu options are available in the Kodi favourites menu.</p>
 </ol>
 <br>
 
@@ -166,6 +181,8 @@
     <div class="codebox">
       file_path=$(find / -not -path "/tmp/*" -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_gitupdater.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync updater not found on this device" 
     </div>
+    <li>Kodi player</li>
+    <p>Kodirsync menu options are available in the Kodi favourites menu.</p>
 </ol>
 <p>Manually performing a update will kill all running Kodirsync processes. The processes will restart at the next scheduled synchronization of media.</p>
 <br>

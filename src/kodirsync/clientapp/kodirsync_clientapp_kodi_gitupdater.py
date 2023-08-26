@@ -21,6 +21,7 @@ display_time_short = '3000'
 # Notification icon
 icon_green = '/storage/.kodi/addons/script.module.kodirsync/kodi_icon_start.png'
 icon_red = '/storage/.kodi/addons/script.module.kodirsync/kodi_icon_stop.png'
+icon_orange = '/storage/.kodi/addons/script.module.kodirsync/kodi_icon_idle.png'
 
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
@@ -34,7 +35,7 @@ def kodimsg_app_not_found():
 
 # Kodi func - 'disabled'
 def kodimsg_disabled():
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,Updater is disabled in your user settings... ,{display_time_long},{icon_red})'])
+    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,Updater is disabled in your user settings... ,{display_time_long},{icon_orange})'])
 
 # Kodi func - 'fail'
 def kodimsg_fail():
@@ -50,7 +51,7 @@ def kodimsg_start():
 
 # Kodi func - 'finish'
 def kodimsg_finish():
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync, Update completed... ,{display_time_short},{icon_green})'])
+    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync, Update completed... ,{display_time_short},{icon_orange})'])
 
 #---- Check func
 # checks if script is already running
