@@ -76,6 +76,7 @@ git_update_LIST=( "kodirsync_clientapp_gitupdater.sh" \
 "video_format_filter.txt" \
 "kodi_icon_start.png" \
 "kodi_icon_stop.png" \
+"kodi_icon_idle.png" \
 "kodi_thumb_start.png" \
 "kodi_thumb_status.png" \
 "kodi_thumb_updater.png" \
