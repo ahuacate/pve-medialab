@@ -62,7 +62,7 @@ git_update_LIST=( "kodirsync_clientapp_gitupdater.sh" \
 "kodirsync_clientapp_kodi_gitupdater.py" \
 "kodirsync_clientapp_kodi_run.py" \
 "kodirsync_clientapp_kodi_status.py" \
-"kodirsync_clientapp_kodi_install_favourites.sh" \
+"kodirsync_clientapp_kodi_install_favorites.sh" \
 "kodirsync_control_list.tmpl" \
 "audio_format_filter.txt" \
 "audiobook_format_filter.txt" \
