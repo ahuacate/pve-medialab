@@ -38,6 +38,7 @@ kodi_files=(
   kodirsync_clientapp_kodi_status.py
   kodi_icon_start.png
   kodi_icon_stop.png
+  kodi_icon_idle.png
   kodi_thumb_start.png
   kodi_thumb_updater.png
   kodi_thumb_status.png
@@ -92,6 +93,9 @@ else
   echo "New entry already exists in XML file '$xml_file'. No changes made."
 fi
 
+# Copy favourites.xml to Profile 'kodirsync'
+mkdir -p /storage/.kodi/userdata/profiles/kodirsync
+cp -f $xml_file /storage/.kodi/userdata/profiles/kodirsync/
 
 #---- Restart Kodi
 

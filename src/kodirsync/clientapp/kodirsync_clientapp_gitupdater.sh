@@ -62,7 +62,7 @@ git_update_LIST=( "kodirsync_clientapp_gitupdater.sh" \
 "kodirsync_clientapp_kodi_gitupdater.py" \
 "kodirsync_clientapp_kodi_run.py" \
 "kodirsync_clientapp_kodi_status.py" \
-"kodirsync_clientapp_kodi_install_favorites.sh" \
+"kodirsync_clientapp_kodi_install_favourites.sh" \
 "kodirsync_control_list.tmpl" \
 "audio_format_filter.txt" \
 "audiobook_format_filter.txt" \
@@ -204,6 +204,37 @@ then
       chmod +x "$app_dir/$filename"
     fi
   done < <( printf '%s\n' "${git_update_LIST[@]}" )
+
+  # Update Kodi favourite files
+  if [ -d "/storage/.kodi/addons" ]
+  then
+    # Make script folder
+    script_dir='/storage/.kodi/addons/script.module.kodirsync'
+    mkdir -p $script_dir
+
+    # Copy python files to addons dir
+    kodi_files=(
+      kodirsync_clientapp_kodi_run.py
+      kodirsync_clientapp_kodi_gitupdater.py
+      kodirsync_clientapp_kodi_status.py
+      kodi_icon_start.png
+      kodi_icon_stop.png
+      kodi_icon_idle.png
+      kodi_thumb_start.png
+      kodi_thumb_updater.png
+      kodi_thumb_status.png
+    )
+    for file in "${kodi_files[@]}"; do
+      # Copy file
+      cp -f "$app_dir/$file" "$script_dir/" 2> /dev/null
+
+      # Set permissions
+      if [[ "$file" =~ \.(sh|py)$ ]]
+      then
+        chmod +x "$script_dir/$file" 2> /dev/null
+      fi
+    done
+  fi
 fi
 
 

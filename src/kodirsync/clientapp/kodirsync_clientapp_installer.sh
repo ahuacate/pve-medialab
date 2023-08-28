@@ -498,8 +498,8 @@ then
   # Add Kodirsync cron entry to client
   source $DIR/kodirsync_clientapp_install_common_cron.sh
 
-  # Configure Kodi favorites
-  source $DIR/kodirsync_clientapp_kodi_install_favorites.sh
+  # Configure Kodi favourites
+  source $DIR/kodirsync_clientapp_kodi_install_favourites.sh
 elif [[ "$menu_action" =~ ^(0|1)$ ]] && [ "$os_type" = 2 ]
 then
   # OS type - Linux
