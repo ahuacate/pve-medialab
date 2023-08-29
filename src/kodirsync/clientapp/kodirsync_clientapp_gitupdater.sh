@@ -42,10 +42,9 @@ git_dl_branch='main'
 # Set $app_dir
 if [ -z "$app_dir" ]
 then
-  # app_dir=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
-  app_dir=$(find / -type d -name kodirsync_app)
+  # app_dir=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd ) # Issues on CoreELEC
+  app_dir=$(find / -type d -name kodirsync_app -not -path "/storage/*" -not -path "/tmp/*")
 fi
-
 
 # Log files
 now=$(date +"%F")

@@ -37,12 +37,12 @@ rsync_threads="${11}"          # Max rsync threads
 retry_count=0
 exit_code=1
 
+# Create log entry
+echo -e "#---- ACTION - RSYNC TASK ONLY\nTime : $(date)\nRsync list : rsync_process_list.txt\n" >> $logfile
+
 # Run rsync cmd
 while [[ $exit_code -ne 0 && $retry_count -lt $rsync_cnt_timeout ]]
 do
-  # Create log entry
-  echo -e "#---- ACTION - RSYNC TASK ONLY\nTime : $(date)\nRsync list : rsync_process_list.txt\n" >> $logfile
-
   # Throttle rsync transfer speed during selected period of time
   if [ "$stor_fs" = exfat ] || [ "$ostype" = 'termux' ]
   then
