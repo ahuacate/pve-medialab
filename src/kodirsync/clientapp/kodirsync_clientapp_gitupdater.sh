@@ -195,7 +195,7 @@ then
     printf "%s\n" "${display_MSG[@]}" >> $logfile
 
     # Move new file to App dir
-    rm "$app_dir/$filename" 2> /dev/null
+    rm -f "$app_dir/$filename" 2> /dev/null
     mv "$dl_dir/$filename" "$app_dir/$filename"
     chown "$file_perms" "$app_dir/$filename"
 
