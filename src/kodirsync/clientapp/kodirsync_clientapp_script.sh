@@ -1010,6 +1010,9 @@ source $app_dir/kodirsync_clientapp_prune.sh
 
 #---- Perform rsync task
 
+# Create log entry
+echo -e "#---- STORAGE CAPACITY\nTime : $(date)\nTotal Kodirsync storage capacity : $(($storage_cap / (1024 * 1024 * 1024)))GB\nTotal download size : $(($dl_total_size / (1024 * 1024 * 1024)))GB\nRemaining Kodirsync storage space : $(($avail_storage_bytes / (1024 * 1024 * 1024)))GB\n" >> $logfile
+
 # Display msg ( for terminal only)
 echo "Total disk kodirsync storage capacity: $storage_cap bytes or $(($storage_cap / (1024 * 1024 * 1024)))GB"
 echo "Total download size: $dl_total_size bytes or $(($dl_total_size / (1024 * 1024 * 1024)))GB"
@@ -1018,15 +1021,12 @@ echo "Remaining Kodirsync storage space: $avail_storage_bytes bytes or $(($avail
 # Create rsync input file list
 printf '%s\n' "${dl_server_LIST[@]}" | awk -F';' '{ print $1 }' > $work_dir/rsync_process_list.txt
 
-# Create log entry
-echo -e "#---- ACTION - RSYNC TASK ONLY\nTime : $(date)\nRsync list : rsync_process_list.txt\n" >> $logfile
-
 # Run 'kodirsync_clientapp_rsync_main.sh'
 source $app_dir/kodirsync_clientapp_rsync_main.sh
 
 
-#---- Finish Line ------------------------------------------------------------------
+#---- Job Finish
 
-# Create log entry
+# Create log entry - finish
 echo -e "\nFinish Time : $(date)\n#---- JOB FINISHED -----------------------------------------------------------------\n" >> $logfile
 #-----------------------------------------------------------------------------------

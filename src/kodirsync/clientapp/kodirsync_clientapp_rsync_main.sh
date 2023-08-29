@@ -299,6 +299,10 @@ then
 elif [ "$rsync_connection_type" = 3 ]
 then
   # Standard rsync - LAN connections only (full bandwidth)
+
+  # Create log entry
+  echo -e "#---- ACTION - RSYNC TASK ONLY\nTime : $(date)\nRsync list : rsync_process_list.txt\n" >> $logfile
+
   if [ "$stor_fs" = exfat ] || [ "$ostype" = 'termux' ]
   then
     # Configure for rsync filesystem compatibility -exFAT or Termux/Android OS

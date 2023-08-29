@@ -40,9 +40,6 @@ exit_code=1
 # Run rsync cmd
 while [[ $exit_code -ne 0 && $retry_count -lt $rsync_cnt_timeout ]]
 do
-  # Create log entry
-  echo -e "#---- ACTION - RSYNC TASK ONLY\nTime : $(date)\nRsync list : rsync_process_list.txt\n" >> $logfile
-
   # Throttle rsync transfer speed during selected period of time
   if [ "$stor_fs" = exfat ] || [ "$ostype" = 'termux' ]
   then
@@ -51,7 +48,7 @@ do
     cat $work_dir/rsync_process_list.txt | xargs -I {} -P $rsync_threads \
     rsync -v -e "$rsync_ssh_cmd" \
     --progress \
-    --timeout=120 \
+    --timeout=60 \
     --human-readable \
     --partial-dir=$dst_dir/rsync_tmp \
     --delete \
@@ -68,7 +65,7 @@ do
     cat $work_dir/rsync_process_list.txt | xargs -I {} -P $rsync_threads \
     rsync -av -e "$rsync_ssh_cmd" \
     --progress \
-    --timeout=120 \
+    --timeout=60 \
     --human-readable \
     --partial-dir=$dst_dir/rsync_tmp \
     --delete \
@@ -85,10 +82,10 @@ do
   # Display rsync exit code
   echo "Rsync exit code: $exit_code"
 
-  if [ $exit_code -ne 0 ]
+  if [[ $exit_code -ne 0 ]]
   then
     # Create log entry - retry
-    echo -e "\nWARNING - RSYNC FAIL\nFail date : $(date)\nTrying again in $rsync_sleep_time seconds (Attempt: $retry_count of $rsync_cnt_timeout)\n" >> $logfile
+    echo -e "#---- WARNING - RSYNC FAIL\nFail date : $(date)\nTrying again in $rsync_sleep_time seconds (Attempt: $retry_count of $rsync_cnt_timeout)\n" >> $logfile
 
     # Apply retry delay
     sleep $rsync_sleep_time
@@ -98,11 +95,11 @@ do
   fi
 done
 
-if [ $exit_code -eq 0 ]
+if [[ $exit_code -eq 0 ]]
 then
   echo "Rsync completed successfully."
 else
   # Create log entry - fail
-  echo -e "\nWARNING - RSYNC FAIL\nFail date : $(date)\nFailed to establish rsync connection. Exiting script.\n" >> $logfile
+  echo -e "#---- WARNING - RSYNC FAIL\nFail date : $(date)\nFailed to establish rsync connection. Exiting script.\n" >> $logfile
 fi
 #-----------------------------------------------------------------------------------
