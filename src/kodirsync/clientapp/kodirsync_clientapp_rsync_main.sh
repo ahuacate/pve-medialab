@@ -308,7 +308,7 @@ then
     # Configure for rsync filesystem compatibility -exFAT or Termux/Android OS
     # ExFAT filesystem is not compatible with the rsync '-a' archive option.
     cat $work_dir/rsync_process_list.txt | xargs -I {} -P $max_rsync_threads_lan \
-    rsync -av -e "$rsync_ssh_cmd" \
+    rsync -rv -e "$rsync_ssh_cmd" \
     --progress \
     --timeout=60 \
     --human-readable \

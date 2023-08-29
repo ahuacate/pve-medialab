@@ -59,6 +59,8 @@ chmod 700 /root/.ssh
 
 # Removing ForceCommand internal-sftp
 sed -i 's|^[#]*\s*        ForceCommand internal-sftp||g' /etc/ssh/sshd_config
+sed -i 's/^\s*\(#\{0,1\}\)ClientAliveInterval.*/ClientAliveInterval 60/' /etc/ssh/sshd_config
+sed -i 's/^\s*\(#\{0,1\}\)ClientAliveCountMax.*/ClientAliveCountMax 15/' /etc/ssh/sshd_config
 pct_restart_systemctl "ssh.service"
 
 

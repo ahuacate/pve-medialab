@@ -34,7 +34,7 @@ rsync_threads="${11}"          # Max rsync threads
 #---- Run rsync 
 
 # Set start vars
-retry_count=0
+retry_count=1
 exit_code=1
 
 # Create log entry
@@ -49,7 +49,7 @@ do
     # Configure for rsync filesystem compatibility -exFAT or Termux/Android OS
     # ExFAT filesystem is not compatible with the rsync '-a' archive option.
     cat $work_dir/rsync_process_list.txt | xargs -I {} -P $rsync_threads \
-    rsync -v -e "$rsync_ssh_cmd" \
+    rsync -rv -e "$rsync_ssh_cmd" \
     --progress \
     --timeout=120 \
     --human-readable \
@@ -85,7 +85,7 @@ do
   # Display rsync exit code
   echo "Rsync exit code: $exit_code"
 
-  if [ $exit_code -ne 0 ]
+  if [[ $exit_code -ne 0 ]]
   then
     # Create log entry - retry
     echo -e "\nWARNING - RSYNC FAIL\nFail date : $(date)\nTrying again in $rsync_sleep_time seconds (Attempt: $retry_count of $rsync_cnt_timeout)\n" >> $logfile
@@ -98,7 +98,7 @@ do
   fi
 done
 
-if [ $exit_code -eq 0 ]
+if [[ $exit_code -eq 0 ]]
 then
   echo "Rsync completed successfully."
 else
