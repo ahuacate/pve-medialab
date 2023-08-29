@@ -8,6 +8,14 @@
 # Must be run using the cmd:
 #    source <( cat ${app_dir}/kodirsync_clientapp_gitupdater.sh )
 
+# To manually download/update a single file
+# git_dl_user='ahuacate'
+# git_dl_repo='pve-medialab'
+# git_dl_branch='main'
+# filename=kodirsync_clientapp_gitupdater.sh
+# dl_dir=/var/media/kodirsync/kodirsync_app
+# curl --fail -o "$dl_dir/$filename" -f "https://raw.githubusercontent.com/$git_dl_user/$git_dl_repo/$git_dl_branch/src/kodirsync/clientapp/$filename"
+
 #---- Source -----------------------------------------------------------------------
 #---- Dependencies -----------------------------------------------------------------
 
@@ -34,8 +42,10 @@ git_dl_branch='main'
 # Set $app_dir
 if [ -z "$app_dir" ]
 then
-  app_dir=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+  # app_dir=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
+  app_dir=$(find / -type d -name kodirsync_app)
 fi
+
 
 # Log files
 now=$(date +"%F")
