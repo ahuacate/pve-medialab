@@ -8,7 +8,6 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
 
-
 #---- Dependencies -----------------------------------------------------------------
 
 #---- Check script is not already running

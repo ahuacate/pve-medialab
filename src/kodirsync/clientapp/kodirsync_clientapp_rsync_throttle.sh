@@ -31,6 +31,10 @@ source="${9}"                  # Source directory/file
 dst_dir="${10}"                # Destination directory
 rsync_threads="${11}"          # Max rsync threads
 
+# Dev testing
+echo "dst_dir location : $dst_dir" > /var/media/kodirsync/kodirsync_app/logs/dev_test.log
+echo "source location : $source" >> /var/media/kodirsync/kodirsync_app/logs/dev_test.log
+
 #---- Run rsync 
 
 # Set start vars
