@@ -34,6 +34,9 @@ rsync_threads="${11}"          # Max rsync threads
 # Dev testing
 echo "dst_dir location : $dst_dir" > /var/media/kodirsync/kodirsync_app/logs/dev_test.log
 echo "source location : $source" >> /var/media/kodirsync/kodirsync_app/logs/dev_test.log
+echo "disk file system : $stor_fs" >> /var/media/kodirsync/kodirsync_app/logs/dev_test.log
+echo -e "number of threads : $rsync_threads\n" >> /var/media/kodirsync/kodirsync_app/logs/dev_test.log
+
 
 #---- Run rsync 
 
@@ -94,8 +97,21 @@ do
     # Create log entry - retry
     echo -e "\nWARNING - RSYNC FAIL\nFail date : $(date)\nTrying again in $rsync_sleep_time seconds (Attempt: $retry_count of $rsync_cnt_timeout)\n" >> $logfile
 
+    # Dev testing
+    sleep 2
+    echo -e "ps aux output before timeout $(date) :" >> /var/media/kodirsync/kodirsync_app/logs/dev_test.log
+    ps aux | awk '{ cmd = ""; for(i=4; i<=NF; i++) cmd = cmd $i " "; if (cmd ~ /^(xargs -I \{\} -P [0-9]+ rsync|rsync -[a-zA-Z]{1,6} -e|ssh -i)/) {print $1, cmd} }' >> /var/media/kodirsync/kodirsync_app/logs/dev_test.log
+    echo -e "\nps aux output before timeout $(date) :" >> $logfile
+    ps aux | awk '{ cmd = ""; for(i=4; i<=NF; i++) cmd = cmd $i " "; if (cmd ~ /^(xargs -I \{\} -P [0-9]+ rsync|rsync -[a-zA-Z]{1,6} -e|ssh -i)/) {print $1, cmd} }' >> $logfile
+
     # Apply retry delay
     sleep $rsync_sleep_time
+
+    # Dev testing
+    echo -e "ps aux output after timeout $(date) :" >> /var/media/kodirsync/kodirsync_app/logs/dev_test.log
+    ps aux | awk '{ cmd = ""; for(i=4; i<=NF; i++) cmd = cmd $i " "; if (cmd ~ /^(xargs -I \{\} -P [0-9]+ rsync|rsync -[a-zA-Z]{1,6} -e|ssh -i)/) {print $1, cmd} }' >> /var/media/kodirsync/kodirsync_app/logs/dev_test.log
+    echo -e "\nps aux output before timeout $(date) :" >> $logfile
+    ps aux | awk '{ cmd = ""; for(i=4; i<=NF; i++) cmd = cmd $i " "; if (cmd ~ /^(xargs -I \{\} -P [0-9]+ rsync|rsync -[a-zA-Z]{1,6} -e|ssh -i)/) {print $1, cmd} }' >> $logfile
 
     # Add to retry counter
     ((retry_count++))
