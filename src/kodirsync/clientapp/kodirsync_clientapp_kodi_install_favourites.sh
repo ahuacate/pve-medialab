@@ -72,10 +72,10 @@ else
     echo "New entry already exists in XML file '$xml_file'. No changes made."
 fi
 
-# Add 'Kodirsync status' cmd to Kodi favourites
-entry="<favourite name=\"Kodirsync status\" thumb=\"$script_dir/kodi_thumb_status.png\">RunScript($script_dir/kodirsync_clientapp_kodi_status.py)</favourite>"
+# Add 'Kodirsync node start' cmd to Kodi favourites
+entry="<favourite name=\"Kodirsync node start\" thumb=\"$script_dir/kodi_thumb_node_start.png\">RunScript($script_dir/kodirsync_clientapp_kodi_node_run.py)</favourite>"
 # Check if 'Kodirsync run' already exists in the file
-if ! grep -q "<favourite name=\"Kodirsync status\"" "$xml_file"; then
+if ! grep -q "<favourite name=\"Kodirsync node start\"" "$xml_file"; then
     sed -i "\$i$entry" "$xml_file"  # Add the new entry at the end of the file
     echo "New entry added to XML file '$xml_file':"
     tail -n 4 "$xml_file"
@@ -84,10 +84,10 @@ else
     echo "New entry already exists in XML file '$xml_file'. No changes made."
 fi
 
-# Add 'Kodirsync node start' cmd to Kodi favourites
-entry="<favourite name=\"Kodirsync node start\" thumb=\"$script_dir/kodi_thumb_node_start.png\">RunScript($script_dir/kodirsync_clientapp_kodi_node_run.py)</favourite>"
+# Add 'Kodirsync status' cmd to Kodi favourites
+entry="<favourite name=\"Kodirsync status\" thumb=\"$script_dir/kodi_thumb_status.png\">RunScript($script_dir/kodirsync_clientapp_kodi_status.py)</favourite>"
 # Check if 'Kodirsync run' already exists in the file
-if ! grep -q "<favourite name=\"Kodirsync node start\"" "$xml_file"; then
+if ! grep -q "<favourite name=\"Kodirsync status\"" "$xml_file"; then
     sed -i "\$i$entry" "$xml_file"  # Add the new entry at the end of the file
     echo "New entry added to XML file '$xml_file':"
     tail -n 4 "$xml_file"
@@ -111,7 +111,7 @@ fi
 # Copy favourites.xml to Profile 'kodirsync'
 if [ "$update_status" = true ]; then
     mkdir -p /storage/.kodi/userdata/profiles/kodirsync
-    cp -f -r $xml_file /storage/.kodi/userdata/profiles/kodirsync/
+    cp -f $xml_file /storage/.kodi/userdata/profiles/kodirsync/
     systemctl restart kodi  # Restart kodi
 fi
 #-----------------------------------------------------------------------------------
