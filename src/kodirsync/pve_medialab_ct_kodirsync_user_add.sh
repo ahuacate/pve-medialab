@@ -145,6 +145,21 @@ msg "Creating a private PPK key (Putty or Filezilla)..."
 puttygen $TEMP_DIR/kodirsync_node_rsa_key -o $TEMP_DIR/kodirsync_node_rsa_key.ppk
 info "Kodirsync node sync key pairs generated"
 
+#---- Create user tmp dir
+
+# Create the directory for bind mount
+mkdir -p "$HOME_BASE/$username/tmp"
+
+# Set ownership and permissions for the bind mount directory
+chown "$username":"$GROUP" "$HOME_BASE/$username/tmp"
+chmod 0777 "$HOME_BASE/$username/tmp"
+
+# Add an entry to /etc/fstab for the bind mount
+echo "/mnt/tmp $HOME_BASE/$username/tmp none bind,rwx,xattr,acl 0 0" >> /etc/fstab
+
+# Mount the local mount point
+mount "/mnt/tmp"
+
 
 #---- Create user shares
 

@@ -42,6 +42,9 @@ apt-get install -y acl >/dev/null
 # Install putty tools
 apt-get install -y putty-tools >/dev/null
 
+# Install zip
+apt-get install zip -y >/dev/null
+
 # Set default adduser start range for dynamically allocated UIDs
 sed -i "s/^FIRST_UID=.*/FIRST_UID=50000/g" /etc/adduser.conf
 sed -i "s/^UID_MIN.*/UID_MIN                 50000/g" /etc/login.defs
@@ -61,6 +64,7 @@ chmod 700 /root/.ssh
 sed -i 's|^[#]*\s*        ForceCommand internal-sftp||g' /etc/ssh/sshd_config
 sed -i 's/^\s*\(#\{0,1\}\)ClientAliveInterval.*/ClientAliveInterval 60/' /etc/ssh/sshd_config
 sed -i 's/^\s*\(#\{0,1\}\)ClientAliveCountMax.*/ClientAliveCountMax 15/' /etc/ssh/sshd_config
+sed -i 's/^\s*\(#\{0,1\}\)TCPKeepAlive.*/TCPKeepAlive yes/' /etc/ssh/sshd_config
 pct_restart_systemctl "ssh.service"
 
 

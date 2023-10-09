@@ -10,3 +10,4 @@ ssh
 \.ssh
 images
 rsync_tmp
+tmp

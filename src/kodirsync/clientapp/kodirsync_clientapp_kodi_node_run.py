@@ -1,10 +1,10 @@
 #! /usr/bin/python3
 
 # ----------------------------------------------------------------------------------
-# Filename:     kodirsync_clientapp_kodi_run.py
+# Filename:     kodirsync_clientapp_kodi_node_run.py
 # Description:  Runs Kodi Kodirsync via favourites
 #               Parent to:
-#                 'kodirsync_clientapp_run.sh'
+#                 'kodirsync_clientapp_node_run.sh'
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
@@ -90,7 +90,7 @@ def main():
     #---- Prerequisites
 
     # Locate script, Set $app_dir, Exit if no script
-    file_path = next((path for path in subprocess.run(['find', '/', '-not', '-path', '/tmp/*', '-path', '*/kodirsync_app/*', '-type', 'f', '-name', 'kodirsync_clientapp_run.sh'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True).stdout.split('\n') if path.strip()), None)
+    file_path = next((path for path in subprocess.run(['find', '/', '-not', '-path', '/tmp/*', '-path', '*/kodirsync_app/*', '-type', 'f', '-name', 'kodirsync_clientapp_node_run.sh'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True).stdout.split('\n') if path.strip()), None)
     if file_path:
         app_dir = os.path.dirname(file_path)
     else:
@@ -103,7 +103,7 @@ def main():
     kodimsg_start()
     
     # Path to the bash script
-    bash_script_path = f"{app_dir}/kodirsync_clientapp_run.sh"
+    bash_script_path = f"{app_dir}/kodirsync_clientapp_node_run.sh"
 
     # Execute the shell script in a new shell using subprocess.Popen
     process = subprocess.Popen(["bash", bash_script_path])

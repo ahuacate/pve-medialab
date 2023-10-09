@@ -13,3 +13,6 @@
 /bin/printf
 /usr/bin/find
 /usr/bin/rsync
+/bin/wc
+/bin/zip
+/bin/sleep

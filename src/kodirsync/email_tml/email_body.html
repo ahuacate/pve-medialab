@@ -193,7 +193,16 @@ Run the Kodirsync installer as per instructions above on the machine node. You m
 <ol type="1">
   <li>Select the installer option - "Prepare Kodirsync disk or folder storage only (for node)"</li>
   <li>Record the node credentials - Take a note of the node hostname and IP address.</li>
-  <li>Edit user configuration file - See section below "Manual editing of the User configuration file". Edit only the node variables.</li>
+  <li>Edit user configuration file - See section below "Manual editing of the user configuration file". Edit or add only the node variables.</li>
+  <ol type="A">
+    <li>node2_localdomain_address_url='coreelec-03.local'</li>
+    <li>node2_local_ip_address=''</li>
+    <li>node2_ssh_port='22'</li>
+    <li>node2_dst_max_storage_limit='0'</li>
+    <li>node2_hdr_enable='0'</li>
+    <li>node2_ssh_private_key_path="$app_dir/kodirsync_node_rsa_key"</li>
+  </ol>
+  <li>Enable node sync - Set user configuration file variable 'node_sync='1' to enable.</li>
 </ol>
 
 <h1>Manual run Kodirsync node sync</h1>
@@ -205,6 +214,8 @@ Run the Kodirsync installer as per instructions above on the machine node. You m
   <div class="codebox">
     file_path=$(find / -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_node_run.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync node sync not found on this device"
   </div>
+  <li>Kodi player</li>
+  <p>Kodirsync menu options are available in the Kodi favourites menu.</p>
 </ol>
 <br>
 

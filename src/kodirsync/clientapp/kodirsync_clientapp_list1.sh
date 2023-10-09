@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------------
 # Filename:     Kodirsync_list1.sh
-# Description:  Source script for creating Kodirsync lists (i.e whitelists etc)
+# Description:  Source script for creating Kodirsync regex filters and lists
 # Usage:        Requires kodirsync_clientapp_script.sh
 # Usage:        All variables/args set in:
 #                   'kodirsync_clientapp_user.cfg'

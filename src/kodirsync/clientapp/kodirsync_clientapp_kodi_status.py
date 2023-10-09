@@ -111,6 +111,8 @@ if __name__ == "__main__":
     processes_to_check = [
         "kodirsync_clientapp_kodi_run.py",
         "kodirsync_clientapp_run.sh",
+        "kodirsync_clientapp_kodi_node_run.py",
+        "kodirsync_clientapp_node_run.sh",
         "kodirsync_clientapp_kodi_gitupdater.py",
         "kodirsync_clientapp_gitupdater.sh" 
     ]

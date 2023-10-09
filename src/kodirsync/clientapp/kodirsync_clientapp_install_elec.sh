@@ -49,6 +49,12 @@ function start_systemctl() {
 
 #---- Prerequisites
 
+# Perform opkg update
+opkg update
+
+# Install opkg package moreutils (includes parallel)
+opkg install moreutils
+
 # Specify the path to the known_hosts file
 known_hosts_file="$ssh_dir/known_hosts"
 

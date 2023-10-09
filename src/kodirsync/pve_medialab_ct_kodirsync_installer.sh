@@ -185,6 +185,7 @@ backup:CT settings backup storage
 music:Music, Albums and Songs
 photo:Photographic image collection
 video:All video libraries (i.e movies, series, homevideos)
+tmp:Proxmox tmp folder
 EOF
 
 #---- Body -------------------------------------------------------------------------

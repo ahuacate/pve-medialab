@@ -65,6 +65,7 @@ def check():
     # List of processes to check for (script names without path)
     processes_to_check = [
         "kodirsync_clientapp_run.sh",
+        "kodirsync_clientapp_node_run.sh",
         "kodirsync_clientapp_kodi_gitupdater.sh" 
     ]
 

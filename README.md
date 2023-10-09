@@ -117,11 +117,13 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
         - [14.4.1. How do I create a new user?](#1441-how-do-i-create-a-new-user)
         - [14.4.2. Can I connect my USB storage disk to my Android phone?](#1442-can-i-connect-my-usb-storage-disk-to-my-android-phone)
         - [14.4.3. Can I connect my USB storage disk to my Apple phone?](#1443-can-i-connect-my-usb-storage-disk-to-my-apple-phone)
-        - [14.4.4. How do I change a user's media share access?](#1444-how-do-i-change-a-users-media-share-access)
-        - [14.4.5. Can I delete a user account?](#1445-can-i-delete-a-user-account)
-        - [14.4.6. How do I change Kodirsync remote connection access service type?](#1446-how-do-i-change-kodirsync-remote-connection-access-service-type)
-        - [14.4.7. Why are the dates and times of my downloaded files different from the originals?](#1447-why-are-the-dates-and-times-of-my-downloaded-files-different-from-the-originals)
-        - [14.4.8. Node sync. What is it?](#1448-node-sync-what-is-it)
+        - [14.4.4. What is parallel rsync synchronization?](#1444-what-is-parallel-rsync-synchronization)
+        - [14.4.5. What is parallel multipart rsync sychronisation?](#1445-what-is-parallel-multipart-rsync-sychronisation)
+        - [14.4.6. How do I change a user's media share access?](#1446-how-do-i-change-a-users-media-share-access)
+        - [14.4.7. Can I delete a user account?](#1447-can-i-delete-a-user-account)
+        - [14.4.8. How do I change Kodirsync remote connection access service type?](#1448-how-do-i-change-kodirsync-remote-connection-access-service-type)
+        - [14.4.9. Why are the dates and times of my downloaded files different from the originals?](#1449-why-are-the-dates-and-times-of-my-downloaded-files-different-from-the-originals)
+        - [14.4.10. Node sync. What is it?](#14410-node-sync-what-is-it)
 - [15. Vidcoderr LXC](#15-vidcoderr-lxc)
     - [15.1. Setup Vidcoderr](#151-setup-vidcoderr)
     - [15.2. Vidcoderr FAQ](#152-vidcoderr-faq)
@@ -710,7 +712,7 @@ Remote connectivity options over the internet include:
 
 ## 14.1. Features
 1. USB Disk Portability: Easily connect your USB Kodirsync disk to CoreELEC, LibreELEC, Linux, and Android devices to perform media updates on LAN, WiFi or even cellular networks.
-2. Storage Disk Options: Choose between ext4 or exFAT formats for compatibility with Android devices.
+2. Storage Disk Options: Choose between ext4 or exFAT formats for compatibility with Android devices (exfat only).
 3. Storage Options: Use internal SATA folders or portable USB disk storage for flexible storage management.
 4. Autodetect LAN Server: Kodirsync automatically detects LAN servers for fast media synchronization.
 5. Selective Media Synchronization: Users can choose specific media categories for synchronization, whether stored internally or on external drives.
@@ -722,6 +724,7 @@ Remote connectivity options over the internet include:
 11. Throttled Daylight Downloading: Schedule downloads to avoid internet congestion during peak daylight hours.
 12. Configuration File Customization: Users have the flexibility to customize the configuration file according to their preferences.
 13. Setup a storage node mirror: Mirror your primary Kodirsync media to another machine disk or folder over your LAN.
+14. Single or Parallel rsync threads: Remote connections use parallel mulipart rsync threads to maximise synchronization speed.
 
 
 ## 14.2. Kodirsync management
@@ -748,22 +751,48 @@ Yes, you can connect your USB storage disk to your Android phone, but there are 
 ### 14.4.3. Can I connect my USB storage disk to my Apple phone?
 No, connecting a USB storage disk directly to an Apple phone is not supported. However, there might be a possibility of making it work if you can run Linux bash/shell scripts on your Apple phone and possess the necessary knowledge to do so.
 
-### 14.4.4. How do I change a user's media share access?
+### 14.4.4. What is parallel rsync synchronization?
+Parallel rsync empowers you to enhance the efficiency of file copying by harnessing the capabilities of multiple rsync threads. This method enables the simultaneous transfer of various files, leading to a notable boost in the overall copying speed. For optimal performance, we suggest setting a maximum limit of '10' for remote connections, '4' for LAN connections, and '5' for Termux Android environments. You can conveniently configure these presets in your `kodirsync_clientapp_user.cfg` file.
+
+### 14.4.5. What is parallel multipart rsync sychronisation?
+"Multipart" is a process that involves dividing large video source files into smaller, compressed zip files on the Kodirsync server. This functionality is exclusively available for remote connections and is initiated when the number of video files in the download queue falls below or is equal to twice the number of rsync threads.
+
+The primary objective of this feature is to optimize download speeds by enabling parallel rsync operations on individual files or sets of files simultaneously.
+
+### 14.4.6. How do I change a user's media share access?
 Use the Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Modify an existing user rsync shares` to modify a user's access. The Kodirsync client, such as your Kodi player, will automatically update when it is next scheduled to perform its synchronization. All unshared content will automatically be deleted from the client's storage on the next synchronization.
 
-### 14.4.5. Can I delete a user account?
+### 14.4.7. Can I delete a user account?
 Use the Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Delete a user account` to delete the user account. The user will no longer have access.
 
-### 14.4.6. How do I change Kodirsync remote connection access service type?
+### 14.4.8. How do I change Kodirsync remote connection access service type?
 If you have an existing remote SSLH or Port Forward connection service first disable the existing remote access service. Use the Kodirsync Toolbox on your server and select `Disable SSLH access` or `Disable Port Forward access` option. Then select the remote connection service type you want to set up from the menu. Then delete all the users and create the users again. All clients will need to uninstall Kodirsync and run the new installer.
 
-### 14.4.7. Why are the dates and times of my downloaded files different from the originals?
+### 14.4.9. Why are the dates and times of my downloaded files different from the originals?
 The discrepancy in file dates and times is due to the exFAT filesystem used on your disk, which is commonly employed for external USB disks to ensure portability across different devices. However, when using Rsync with exFAT file systems, certain issues arise, leading to inconsistencies in file dates. To address this problem, you can switch to the ext4 filesystem, which resolves the file date issues. It's important to note, though, that by transitioning to ext4, you may sacrifice the portability feature offered by exFAT.
 
-### 14.4.8. Node sync. What is it?
+### 14.4.10. Node sync. What is it?
 Node Sync is designed to facilitate the synchronization of your local Kodirsync media library with another Linux machine (referred to as a "node") on your LAN network. This synchronization process is automatically initiated following each instance of Kodirsync.
 
-To set up the node machine, you will need to prepare a USB or internal storage disk, or alternatively, select a specific folder. This can be achieved by executing our installer package on the node. For detailed guidance on the installation procedure, please refer to the instructions provided in the installer email you received.
+You can add as many nodes as required. Remember, a node must be on your LAN network.
+
+To set up the node machine, you will need to prepare a USB or internal storage disk, or alternatively, select a specific folder on your node. This can be achieved by executing our installer package on the node.
+
+1. Select the installer option - "Prepare Kodirsync disk or folder storage only (for node)"
+2. Record the node credentials - Take a note of the node hostname and IP address.
+3. Edit user configuration file - See section below "Manual editing of the user configuration file". Edit or add additional nodes as required.
+    * node2_localdomain_address_url='coreelec-03.local'
+    * node2_local_ip_address=''
+    * node2_ssh_port='22'
+    * node2_dst_max_storage_limit='0'
+    * node2_hdr_enable='0'<
+    * node2_ssh_private_key_path="$app_dir/kodirsync_node_rsa_key"
+4. Enable node sync - Edit user configuration file variable
+    * node_sync='1'
+
+To enable Node sync you must edit your user configuration file.
+
+For detailed guidance on the installation procedure, please refer to the instructions provided in the installer email you received.
 
 ---
 
