@@ -147,6 +147,10 @@ function dl_github_updates(){
         local success=false
         
         while [ $retry -le $max_retries ]; do
+            # Create the parent directory structure if it doesn't exist
+            parent_dir="$(dirname "$work_dir/$entry")"
+            mkdir -p "$parent_dir"
+
             # Download the ZIP archive
             curl -L -o "$work_dir/$entry" "$dl_url/$entry"
             
@@ -182,6 +186,11 @@ echo -e "#---- GIT SCRIPT UPDATE -----------------------------------------------
 
 
 #---- Prerequisites
+
+# Create temp work dir (if missing)
+if [ -z "$work_dir" ]; then
+    work_dir=$(mktemp -dt -p /tmp kodirsync-XXXXXX)
+fi
 
 # Check for existing Kodirsync events
 # List of script names or keywords to check

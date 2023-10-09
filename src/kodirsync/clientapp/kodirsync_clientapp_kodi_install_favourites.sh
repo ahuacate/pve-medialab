@@ -18,8 +18,7 @@
 xml_file="/storage/.kodi/userdata/favourites.xml"
 
 # Check for favourites.xml file
-if [ ! -f "$xml_file" ]
-then
+if [ ! -f "$xml_file" ]; then
     # Create favourites.xml file if missing
     echo -e "<favourites>\n</favourites>" > $xml_file
 fi
@@ -112,7 +111,7 @@ fi
 # Copy favourites.xml to Profile 'kodirsync'
 if [ "$update_status" = true ]; then
     mkdir -p /storage/.kodi/userdata/profiles/kodirsync
-    cp -f $xml_file /storage/.kodi/userdata/profiles/kodirsync/
+    cp -f -r $xml_file /storage/.kodi/userdata/profiles/kodirsync/
     systemctl restart kodi  # Restart kodi
 fi
 #-----------------------------------------------------------------------------------
