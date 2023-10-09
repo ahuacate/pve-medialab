@@ -280,7 +280,7 @@ done
 
 #---- Update entries in kodi favourites.xml
 if [ -d "/storage/.kodi/addons" ]; then
-    source $app_dir/kodirsync_clientapp_kodi_install_favorites.sh
+    source $app_dir/kodirsync_clientapp_kodi_install_favourites.sh
 fi
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------------
-# Filename:     kodirsync_clientapp_kodi_install_favorites.sh
+# Filename:     kodirsync_clientapp_kodi_install_favourites.sh
 # Description:  Setup Kodi run cmds in Kodi favorite menu
 # ----------------------------------------------------------------------------------
 
