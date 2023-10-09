@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -x
+
 # ----------------------------------------------------------------------------------
 # Filename:     kodirsync_clientapp_node_run.sh
 # Description:  Default Kodirsync node run script

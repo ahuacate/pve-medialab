@@ -236,7 +236,6 @@ printf "%s\n" "${display_MSG[@]}" >> $logfile
 exclude_update_file_regex='.*\.(key|ppk|pub|crt|db)$|.*kodirsync_id_ed25519$|.*kodirsync_node_rsa_key$|.*/kodirsync_clientapp_user.cfg$'
 exclude_update_dir_regex='\.*|cache|\#recycle|\@eaDir|lost+found|images|logs'
 
-
 # Remove old local app files
 find "$app_dir" -regextype posix-extended -not -iregex ".*/($exclude_update_dir_regex)/.*" -type f -regextype posix-extended -not -iregex ".*/($exclude_update_file_regex)" -exec rm -f {} \;
 
