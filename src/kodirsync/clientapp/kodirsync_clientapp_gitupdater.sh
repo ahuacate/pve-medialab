@@ -82,7 +82,6 @@ git_update_LIST=(
     kodirsync_clientapp_script.sh
     kodirsync_clientapp_uninstall_elec.sh
     kodirsync_clientapp_uninstall_linux.sh
-    kodirsync_clientapp_user.cfg
     kodirsync_control_list.tmpl
     kodirsync_node_install_storage.sh
     kodi_icon_idle.png
