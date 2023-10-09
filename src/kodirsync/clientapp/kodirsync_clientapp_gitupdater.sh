@@ -77,6 +77,8 @@ git_update_LIST=(
     kodirsync_clientapp_node_prune.sh
     kodirsync_clientapp_node_run.sh
     kodirsync_clientapp_node_script.sh
+    kodirsync_clientapp_prune.sh
+    kodirsync_clientapp_run.sh
     kodirsync_clientapp_script.sh
     kodirsync_clientapp_uninstall_elec.sh
     kodirsync_clientapp_uninstall_linux.sh
