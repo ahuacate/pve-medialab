@@ -30,6 +30,10 @@ if [ -z "$existing_entry" ]; then
   crontab -l | { cat; echo "$crontab_entry"; } | crontab - 2>/dev/null
   echo "Cron job added"
 else
-  echo "Cron job already exists"
+  # Edit the existing entry
+  string="kodirsync_clientapp_run.sh"
+  crontab -l -u $user | grep -v "$string" | crontab - -u $user 2>/dev/null  # write out current crontab
+  crontab -l | { cat; echo "$crontab_entry"; } | crontab - 2>/dev/null
+  echo "Cron job updated"
 fi
 #-----------------------------------------------------------------------------------

@@ -58,16 +58,6 @@ done < <( find "$ssh_dir" -type f -name "*_kodirsync_id_ed25519" )
 # Create exclude array of certain filenames
 exclude_files=(
   "-iname install.sh"
-  "-o -iname kodirsync_clientapp_install_common_cron.sh"
-  "-o -iname kodirsync_clientapp_install_format_disk_ext4.sh"
-  "-o -iname kodirsync_clientapp_install_format_disk_exfat.sh"
-  "-o -iname kodirsync_clientapp_install_elec.sh"
-  "-o -iname kodirsync_clientapp_install_elec_entware.sh"
-  "-o -iname kodirsync_clientapp_uninstall_elec.sh"
-  "-o -iname kodirsync_clientapp_install_linux.sh"
-  "-o -iname kodirsync_clientapp_uninstall_linux.sh"
-  "-o -iname kodirsync_clientapp_install_linux_storage.sh"
-  "-o -iname kodirsync_clientapp_kodi_install_favorites.sh"
   "-o -iname Start-Kodirsync.sh"
   "-o -iname Stop-Kodirsync.sh"
   "-o -iname Start-Kodirsync.png"

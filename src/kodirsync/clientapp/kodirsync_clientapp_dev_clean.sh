@@ -150,10 +150,10 @@ if [ -e '/storage/.kodi/userdata/favourites.xml' ]; then
     # Entry list of Kodirsync
     favourite_name_LIST=()  # Initialize array
     favourite_name_LIST=(
-    Kodirsync start
-    Kodirsync node start
-    Kodirsync status
-    Kodirsync sw updater
+    "Kodirsync start"
+    "Kodirsync node start"
+    "Kodirsync status"
+    "Kodirsync sw updater"
     )
 
     # Check if 'Kodirsync run' already exists in the file
@@ -237,7 +237,7 @@ fi
 
 #---- Perform full Kodirsync update
 
-# source $app_dir/kodirsync_clientapp_gitupdater.sh
+source $app_dir/kodirsync_clientapp_gitupdater.sh
 
 
 #----- Ensure the cleanup function is also called when your script exits normally

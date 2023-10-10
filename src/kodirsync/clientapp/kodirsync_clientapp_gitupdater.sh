@@ -280,8 +280,23 @@ done
 
 
 #---- Update entries in kodi favourites.xml
+
 if [ -d "/storage/.kodi/addons" ]; then
     source $app_dir/kodirsync_clientapp_kodi_install_favourites.sh
+fi
+
+#---- Update cron if required
+config_file="$app_dir/kodirsync_clientapp_user.cfg"
+variable_name='cron_run_time'
+
+# Check if the variable exists in the config file
+if grep -q "^$variable_name=" "$config_file"; then
+    value=$(grep "^$variable_name=" "$config_file" | awk -F= '{print $2}')
+    eval "$variable_name=\"$value\""  # set bash variable
+
+    # Update cron to user settings
+    user=$(ls -ld $app_dir | awk '{print $3}')  # sets user
+    source $app_dir/kodirsync_clientapp_install_common_cron.sh
 fi
 
 
