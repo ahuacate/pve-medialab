@@ -51,6 +51,7 @@ git_update_LIST=(
     iso_language_codes.txt
     kodirsync_clientapp_connect.sh
     kodirsync_clientapp_default.cfg
+    kodirsync_clientapp_dev_clean.sh
     kodirsync_clientapp_gitupdater.sh
     kodirsync_clientapp_installer.sh
     kodirsync_clientapp_install_common_cfg_update.sh
@@ -152,7 +153,7 @@ function dl_github_updates(){
             parent_dir="$(dirname "$work_dir/$entry")"
             mkdir -p "$parent_dir"
 
-            # Download the ZIP archive
+            # Download file
             curl -L -o "$work_dir/$entry" "$dl_url/$entry"
             
             # Check if the download was successful (exit code 0)
@@ -234,7 +235,7 @@ display_MSG=( "$(echo -e "Start time : $(date)\nApp files update completed\n")" 
 printf "%s\n" "${display_MSG[@]}" >> $logfile
 
 # Exclude regex of files and dirs
-exclude_update_file_regex='.*\.(key|ppk|pub|crt|db)$|.*kodirsync_id_ed25519$|.*kodirsync_node_rsa_key$|.*/kodirsync_clientapp_user.cfg$'
+exclude_update_file_regex='.*\.(key|ppk|pub|crt|db)$|.*kodirsync_id_ed25519$|.*kodirsync_node_rsa_key$|.*/kodirsync_clientapp_user.cfg(.old)?$'
 exclude_update_dir_regex='\.*|cache|\#recycle|\@eaDir|lost+found|images|logs'
 
 # Remove old local app files
