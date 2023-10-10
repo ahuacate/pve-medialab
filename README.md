@@ -124,6 +124,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
         - [14.4.8. How do I change Kodirsync remote connection access service type?](#1448-how-do-i-change-kodirsync-remote-connection-access-service-type)
         - [14.4.9. Why are the dates and times of my downloaded files different from the originals?](#1449-why-are-the-dates-and-times-of-my-downloaded-files-different-from-the-originals)
         - [14.4.10. Node sync. What is it?](#14410-node-sync-what-is-it)
+    - [14.5. Developer fix](#145-developer-fix)
 - [15. Vidcoderr LXC](#15-vidcoderr-lxc)
     - [15.1. Setup Vidcoderr](#151-setup-vidcoderr)
     - [15.2. Vidcoderr FAQ](#152-vidcoderr-faq)
@@ -793,6 +794,17 @@ To set up the node machine, you will need to prepare a USB or internal storage d
 To enable Node sync you must edit your user configuration file.
 
 For detailed guidance on the installation procedure, please refer to the instructions provided in the installer email you received.
+
+## 14.5. Developer fix
+If your CoreElec or LibreElec Kodi box is experiencing issues, you can use this script to restore it to a healthy state. This script will perform the following actions:
+
+1. Remove all old Kodirsync and script files.
+2. Update your Kodi Kodirsync settings to the latest version from the main GitHub repository.
+3. Retain your credentials and user keys.
+
+```
+bash -c "$(curl -sSL https://raw.githubusercontent.com/ahuacate/pve-medialab/main/src/kodirsync/clientapp/kodirsync_clientapp_dev_clean.sh)" || echo "Failed to download the script."
+```
 
 ---
 

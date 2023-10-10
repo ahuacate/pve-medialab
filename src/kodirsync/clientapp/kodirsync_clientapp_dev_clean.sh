@@ -9,11 +9,11 @@
 
 #---- Bash command to run script ---------------------------------------------------
 
-# Local version
-# file_path=$(find / -not -path "/tmp/*" -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_dev_clean.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync dev cleaner not found on this device" 
-
 # Remote GitHub version
-# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/main/src/kodirsync/clientapp/kodirsync_clientapp_dev_clean.sh)" || echo "Failed to download the script."
+# bash -c "$(curl -sSL https://raw.githubusercontent.com/ahuacate/pve-medialab/main/src/kodirsync/clientapp/kodirsync_clientapp_dev_clean.sh)" || echo "Failed to download the script."
+
+# Local version (best use the remote version)
+# file_path=$(find / -not -path "/tmp/*" -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_dev_clean.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync dev cleaner not found on this device" 
 
 #---- Source -----------------------------------------------------------------------
 #---- Dependencies -----------------------------------------------------------------
