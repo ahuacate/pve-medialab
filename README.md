@@ -115,15 +115,16 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
     - [14.3. Android-Termux](#143-android-termux)
     - [14.4. Kodirsync FAQ](#144-kodirsync-faq)
         - [14.4.1. How do I create a new user?](#1441-how-do-i-create-a-new-user)
-        - [14.4.2. Can I connect my USB storage disk to my Android phone?](#1442-can-i-connect-my-usb-storage-disk-to-my-android-phone)
-        - [14.4.3. Can I connect my USB storage disk to my Apple phone?](#1443-can-i-connect-my-usb-storage-disk-to-my-apple-phone)
-        - [14.4.4. What is parallel rsync synchronization?](#1444-what-is-parallel-rsync-synchronization)
-        - [14.4.5. What is parallel multipart rsync sychronisation?](#1445-what-is-parallel-multipart-rsync-sychronisation)
-        - [14.4.6. How do I change a user's media share access?](#1446-how-do-i-change-a-users-media-share-access)
-        - [14.4.7. Can I delete a user account?](#1447-can-i-delete-a-user-account)
-        - [14.4.8. How do I change Kodirsync remote connection access service type?](#1448-how-do-i-change-kodirsync-remote-connection-access-service-type)
-        - [14.4.9. Why are the dates and times of my downloaded files different from the originals?](#1449-why-are-the-dates-and-times-of-my-downloaded-files-different-from-the-originals)
-        - [14.4.10. Node sync. What is it?](#14410-node-sync-what-is-it)
+        - [14.4.2. Can I change the frequency and time when Kodirsync runs?](#1442-can-i-change-the-frequency-and-time-when-kodirsync-runs)
+        - [14.4.3. Can I connect my USB storage disk to my Android phone?](#1443-can-i-connect-my-usb-storage-disk-to-my-android-phone)
+        - [14.4.4. Can I connect my USB storage disk to my Apple phone?](#1444-can-i-connect-my-usb-storage-disk-to-my-apple-phone)
+        - [14.4.5. What is parallel rsync synchronization?](#1445-what-is-parallel-rsync-synchronization)
+        - [14.4.6. What is parallel multipart rsync sychronisation?](#1446-what-is-parallel-multipart-rsync-sychronisation)
+        - [14.4.7. How do I change a user's media share access?](#1447-how-do-i-change-a-users-media-share-access)
+        - [14.4.8. Can I delete a user account?](#1448-can-i-delete-a-user-account)
+        - [14.4.9. How do I change Kodirsync remote connection access service type?](#1449-how-do-i-change-kodirsync-remote-connection-access-service-type)
+        - [14.4.10. Why are the dates and times of my downloaded files different from the originals?](#14410-why-are-the-dates-and-times-of-my-downloaded-files-different-from-the-originals)
+        - [14.4.11. Node sync. What is it?](#14411-node-sync-what-is-it)
     - [14.5. Developer fix](#145-developer-fix)
 - [15. Vidcoderr LXC](#15-vidcoderr-lxc)
     - [15.1. Setup Vidcoderr](#151-setup-vidcoderr)
@@ -746,33 +747,36 @@ Always read the [installer email](https://github.com/ahuacate/pve-medialab/blob/
 ### 14.4.1. How do I create a new user?
 Use Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Create a new user account` and follow the prompts to create a new user account. An installer package will be emailed to the new user and Proxmox administrator.
 
-### 14.4.2. Can I connect my USB storage disk to my Android phone?
+### 14.4.2. Can I change the frequency and time when Kodirsync runs?
+Certainly! You have the ability to do so. Kodirsync employs the use of the cron system to arrange synchronization tasks. You can easily set up the desired cron schedule by adjusting the preset `cron_run_time='0 23 * * *'` in your 'kodirsync_clientapp_user.cfg' file. To activate this updated cron configuration, it is necessary to execute a Kodirsync software update.
+
+### 14.4.3. Can I connect my USB storage disk to my Android phone?
 Yes, you can connect your USB storage disk to your Android phone, but there are a few considerations to keep in mind. Firstly, you need to ensure that you have selected the disk portability option during the installation process. Additionally, Android requires the use of the exFAT filesystem for compatibility with external storage devices. To connect your USB storage disk, charger, and phone simultaneously, you will need a USB 'Y-cable'. It's worth noting that using a solid-state drive (SSD) disk may work without the need for charging, albeit with potential severe battery drain. However, rotational disks, are unlikely to function properly without an additional power source.
 
-### 14.4.3. Can I connect my USB storage disk to my Apple phone?
+### 14.4.4. Can I connect my USB storage disk to my Apple phone?
 No, connecting a USB storage disk directly to an Apple phone is not supported. However, there might be a possibility of making it work if you can run Linux bash/shell scripts on your Apple phone and possess the necessary knowledge to do so.
 
-### 14.4.4. What is parallel rsync synchronization?
+### 14.4.5. What is parallel rsync synchronization?
 Parallel rsync empowers you to enhance the efficiency of file copying by harnessing the capabilities of multiple rsync threads. This method enables the simultaneous transfer of various files, leading to a notable boost in the overall copying speed. For optimal performance, we suggest setting a maximum limit of '10' for remote connections, '4' for LAN connections, and '5' for Termux Android environments. You can conveniently configure these presets in your `kodirsync_clientapp_user.cfg` file.
 
-### 14.4.5. What is parallel multipart rsync sychronisation?
+### 14.4.6. What is parallel multipart rsync sychronisation?
 "Multipart" is a process that involves dividing large video source files into smaller, compressed zip files on the Kodirsync server. This functionality is exclusively available for remote connections and is initiated when the number of video files in the download queue falls below or is equal to twice the number of rsync threads.
 
 The primary objective of this feature is to optimize download speeds by enabling parallel rsync operations on individual files or sets of files simultaneously.
 
-### 14.4.6. How do I change a user's media share access?
+### 14.4.7. How do I change a user's media share access?
 Use the Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Modify an existing user rsync shares` to modify a user's access. The Kodirsync client, such as your Kodi player, will automatically update when it is next scheduled to perform its synchronization. All unshared content will automatically be deleted from the client's storage on the next synchronization.
 
-### 14.4.7. Can I delete a user account?
+### 14.4.8. Can I delete a user account?
 Use the Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Delete a user account` to delete the user account. The user will no longer have access.
 
-### 14.4.8. How do I change Kodirsync remote connection access service type?
+### 14.4.9. How do I change Kodirsync remote connection access service type?
 If you have an existing remote SSLH or Port Forward connection service first disable the existing remote access service. Use the Kodirsync Toolbox on your server and select `Disable SSLH access` or `Disable Port Forward access` option. Then select the remote connection service type you want to set up from the menu. Then delete all the users and create the users again. All clients will need to uninstall Kodirsync and run the new installer.
 
-### 14.4.9. Why are the dates and times of my downloaded files different from the originals?
+### 14.4.10. Why are the dates and times of my downloaded files different from the originals?
 The discrepancy in file dates and times is due to the exFAT filesystem used on your disk, which is commonly employed for external USB disks to ensure portability across different devices. However, when using Rsync with exFAT file systems, certain issues arise, leading to inconsistencies in file dates. To address this problem, you can switch to the ext4 filesystem, which resolves the file date issues. It's important to note, though, that by transitioning to ext4, you may sacrifice the portability feature offered by exFAT.
 
-### 14.4.10. Node sync. What is it?
+### 14.4.11. Node sync. What is it?
 Node Sync is designed to facilitate the synchronization of your local Kodirsync media library with another Linux machine (referred to as a "node") on your LAN network. This synchronization process is automatically initiated following each instance of Kodirsync.
 
 You can add as many nodes as required. Remember, a node must be on your LAN network.
