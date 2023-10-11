@@ -139,7 +139,7 @@ source $app_dir/kodirsync_clientapp_script.sh
 
 
 #---- Run Kodirsync node synchronization script
-if [ "$node_sync" = 1 ] && [ ! "$ostype" = 'termux' ]; then
+if [ "$node_sync" = 1 ] && [ ! "$ostype" = 'termux' ] && [[ "$rsync_connection_type" =~ (1|2) ]]; then
   bash $app_dir/kodirsync_clientapp_node_run.sh
 fi
 
