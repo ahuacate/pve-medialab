@@ -67,7 +67,7 @@ file="\$HOME/tmp/kodirsync/$rsync_username/\$file_to_watch"
 
 # Start a loop with a timeout
 start_time=\$(date +%s)
-timeout_seconds=60  # Set the timeout duration in seconds (e.g., 60 seconds)
+timeout_seconds=90  # Set the timeout duration in seconds (e.g., 60 seconds)
 timeout_expired=false
 
 while true; do
@@ -102,6 +102,23 @@ EOF
 
 
 #---- Functions --------------------------------------------------------------------
+
+#---- UTF-8 Ascii cleanup
+
+cleanup_utf8() {
+    # Makes all input text UTF-8 ascii compliant
+
+    # Usage:
+        # Make $name UTF-8 ascii (func cleanup_utf8)
+        # name=$(cleanup_utf8 "$name")
+
+    # Set argument parameters
+    local input="$1"
+    # Set other variables
+    local cleaned_input=$(echo "$input" | sed 's/ä/a/g; s/ö/o/g; s/ü/u/g; s/Ä/A/g; s/Ö/O/g; s/Ü/U/g; s/ß/ss/g')
+    echo "$cleaned_input"
+}
+
 
 #---- Atomic increment/decrement value
     # This function is used to synchronize and control concurrent operations
@@ -178,10 +195,10 @@ function run_remote_ssh_command() {
 
     local check_code="$?"
     if [ "$check_code" -ne 0 ]; then
-    echo -e "#---- WARNING - SSH ERROR\nError Code ($check_code) : $(date)\nFunction : ${FUNCNAME[${#FUNCNAME[@]} - 1]}\n" >> $logfile  # Print error log
-    $error_handle_cmd  # Bash command to be executed in case of an error
+        echo -e "#---- WARNING - SSH ERROR\nError Code ($check_code) : $(date)\nFunction : ${FUNCNAME[${#FUNCNAME[@]} - 1]}\nScript line number : $LINENO\n" >> $logfile  # Print error log
+        eval "$error_handle_cmd"  # Bash command to be executed in case of an error
     else
-    echo "$ssh_result"  # Print cmd stdin result
+        echo "$ssh_result"  # Print cmd stdin result
     fi
 }
 
@@ -304,6 +321,7 @@ function make_multipart_files() {
     for ((i = 0; i <= ssh_connect_retrycount; i++)); do
         # Cmd - Get multipart filenames and sizes 
         eval "expanded_cmd=\"find '$source/tmp/kodirsync/$rsync_username' -regextype posix-extended -not -iregex '.*/($exclude_dir_filter_regex)/.*' -type f -regextype posix-extended -regex '.*(${escaped_source_filename}\\.z[0-9]+$|${escaped_source_filename}\\.zip$)' -printf '%P;%s\\n' 2> /dev/null\""
+
         # Run the SSH command and capture the result
         multipart_file_LIST=()  # Initialize array
         local multipart_size_bytes=0  # Initialize value
@@ -390,7 +408,7 @@ function make_multipart_file_LIST() {
     local source_size="$2"
     # Set other variables
     local source='.'
-    local source_filename=$(basename "$source_file")
+    local source_filename="$(printf '%q' "$(basename "$source_file")")"  # Escaped filename
 
     # Attempt to generate the list of server multipart filenames
     local calc_multipart_cnt=$(( source_size / ((multipart_chunk_size * 1024) * 1024)))  # Calc zip multipart file count
@@ -527,10 +545,10 @@ function start_multipart_rsync() {
     # Step 1 - Create multipart files
     (
     make_multipart_files "$source_file" "$source_size"
-    if [ $? -ne 0 ]; then
-        multipart_cleanup_server "$source_file"  # Delete server multipart files
-        return 1
-    fi
+    # if [ $? -ne 0 ]; then
+    #     multipart_cleanup_server "$source_file"  # Delete server multipart files
+    #     return 1
+    # fi
     ) &
 
     # Step 2 - Get a list of multipart filenames ${multipart_file_LIST[@]}
@@ -587,7 +605,7 @@ function start_multipart_rsync() {
         bw_tune=$(rsync_bwlimit_tuner)
 
         # Run rsync
-        printf '%s\n' "${multipart_file_LIST[@]}" | xargs -P $rsync_threads -I% rsync -e "$rsync_ssh_cmd" "${rsync_args[@]}" "--bwlimit=$bw_tune" $rsync_username@$rsync_address:"$source/%" "$dst_dir/rsync_tmp"
+        printf '%s\n' "${multipart_file_LIST[@]}" | xargs -P $rsync_threads -I% rsync -e "$rsync_ssh_cmd" "${rsync_args[@]}" "--bwlimit=$bw_tune" "$rsync_username@$rsync_address:$source/%" "$dst_dir/rsync_tmp"
 
         # Process rsync exit codes
         if [ $? = 0 ]; then
@@ -762,7 +780,7 @@ function start_single_rsync() {
         local bw_tune=$(rsync_bwlimit_tuner)
 
         # Run Rsync
-        rsync -e "$rsync_ssh_cmd" "${rsync_args[@]}" "--bwlimit=$bw_tune" $rsync_username@$rsync_address:"$source/$source_file" "$dst_dir"
+        rsync -e "$rsync_ssh_cmd" "${rsync_args[@]}" "--bwlimit=$bw_tune" "$rsync_username@$rsync_address:$source/$source_file" "$dst_dir"
 
         # Process rsync exit codes
         if [ $? = 0 ]; then

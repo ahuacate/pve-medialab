@@ -3,7 +3,7 @@
 # Filename:     kodirsync_clientapp_run.sh
 # Description:  Default Kodirsync client run script
 # ----------------------------------------------------------------------------------
-
+set -x
 #---- Source -----------------------------------------------------------------------
 
 DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
@@ -85,6 +85,9 @@ work_dir=$(mktemp -dt -p /tmp kodirsync-XXXXXX)
 mkdir -p "$app_dir/logs"
 now=$(date +"%F")
 logfile="$app_dir/logs/kodirsync-${now}.log"
+
+# Debug file
+debug="$app_dir/logs/debug.log"
 
 # Remove log files older than $log_life days
 find "$app_dir/logs" -name "kodirsync-*.log" -type f -mtime +$log_life -delete

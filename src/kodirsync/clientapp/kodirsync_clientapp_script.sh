@@ -16,6 +16,10 @@
 cleanup_utf8() {
     # Makes all input text UTF-8 ascii compliant
 
+    # Usage:
+        # Make $name UTF-8 ascii (func cleanup_utf8)
+        # name=$(cleanup_utf8 "$name")
+
     # Set argument parameters
     local input="$1"
     # Set other variables
@@ -68,7 +72,7 @@ function get_remote_control_list() {
             if [ $i -lt $max_retries ]; then
                 sleep $rsync_retry_sleep  # Apply sleep period before retry
             else
-                echo -e "#---- WARNING - RSYNC CONTROL FILES\nError Code ("$exit_code") : $(date)\nFunction : get_remote_control_list\nRetry count : "$ssh_connect_retrycount"x failed attempts\n" >> $logfile  # Log entry
+                echo -e "#---- WARNING - RSYNC CONTROL FILES\nError Code ("$exit_code") : $(date)\nFunction : get_remote_control_list\nScript line number : $LINENO\nRetry count : "$ssh_connect_retrycount"x failed attempts\n" >> $logfile  # Log entry
 
                 return 1  # Set exit code
             fi
@@ -119,7 +123,7 @@ function get_remote_file_LIST() {
             if [ $i -lt $max_retries ]; then
                 sleep $rsync_retry_sleep  # Apply sleep period before retry
             else
-                echo -e "#---- WARNING - GET SERVER FILE LIST\nError Code ($check_code) : $(date)\nFunction : get_remote_file_LIST\nRetry count : "$ssh_connect_retrycount"x failed attempts\n" >> $logfile  # Log entry
+                echo -e "#---- WARNING - GET SERVER FILE LIST\nError Code ($check_code) : $(date)\nFunction : get_remote_file_LIST\nScript line number : $LINENO\nRetry count : "$ssh_connect_retrycount"x failed attempts\n" >> $logfile  # Log entry
                 return 1  # Set exit code
             fi
         fi
@@ -213,7 +217,7 @@ for website in "${websites[@]}"; do
         connection_up=1  # Flag to track if internet connection is up
         break
     else
-    connection_up=0  # Flag to track if internet connection is down
+        connection_up=0  # Flag to track if internet connection is down
     fi
 done
 
@@ -552,7 +556,7 @@ while true; do
         lan_address="$localdomain_address_url1"
         lan_server_status=1  # Set LAN active
         rsync_connection_type=3   # Set 'rsync_connection_type' temporary override
-        echo -e "#---- SUCCESS - CHECKING LAN AND RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC redirected to use Type 3 [LAN connection $lan_address:$ssh_port]\n" >> $logfile  # Create log entry
+        echo -e "#---- SUCCESS - CHECKING LAN AND RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC redirected to use Type 3 [LAN connection $lan_address:$ssh_port]\nScript line number : $LINENO\n" >> $logfile  # Create log entry
         break  # Break out of the loop when LAN is active
     fi
 
@@ -570,7 +574,7 @@ while true; do
         lan_address="$localdomain_address_url2"
         lan_server_status=1  # Set LAN active
         rsync_connection_type=3   # Set 'rsync_connection_type' temporary override
-        echo -e "#---- SUCCESS - CHECKING LAN AND RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC redirected to use Type 3 [LAN connection $lan_address:$ssh_port]\n" >> $logfile  # Create log entry
+        echo -e "#---- SUCCESS - CHECKING LAN AND RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC redirected to use Type 3 [LAN connection $lan_address:$ssh_port]\nScript line number : $LINENO\n" >> $logfile  # Create log entry
         break  # Break out of the loop when LAN is active
     fi
 
@@ -587,7 +591,7 @@ while true; do
             lan_address="$local_ip_address"
             lan_server_status=1  # Set LAN active
             rsync_connection_type=3   # Set 'rsync_connection_type' temporary override
-            echo -e "#---- SUCCESS - CHECKING LAN AND RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC redirected to use Type 3 [LAN connection $lan_address:$ssh_port]\n" >> $logfile  # Create log entry
+            echo -e "#---- SUCCESS - CHECKING LAN AND RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC redirected to use Type 3 [LAN connection $lan_address:$ssh_port]\nScript line number : $LINENO\n" >> $logfile  # Create log entry
             break  # Break out of the loop when LAN is active
         fi
     fi
@@ -601,7 +605,8 @@ while true; do
     fi
 
     # Set LAN inactive
-    lan_server_status=0 
+    lan_server_status=0
+    break
 done
 
 
@@ -625,7 +630,7 @@ if [ "$rsync_connection_type" = 1 ] && [ "$lan_server_status" = 0 ]; then
         echo -e "#---- SUCCESS - RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC set to use Type 1 [SSLH connection $sslh_address_url:$sslh_port]\n" >> $logfile
     elif [ ! "$sslh_server_status" = 0 ]; then
         # Create log entry
-        echo -e "#---- WARNING - RSYNC CONNECTION FAIL\nFail date : $(date)\nFunction : RSYNC connection fail. [SSLH and LAN]\n" >> $logfile
+        echo -e "#---- WARNING - RSYNC CONNECTION FAIL\nFail date : $(date)\nFunction : RSYNC connection fail. [SSLH and LAN]\nScript line number : $LINENO\n" >> $logfile
         echo -e "\nFinish Time : $(date)\n#---- JOB FINISHED -----------------------------------------------------------------\n" >> $logfile
         # Exit on fail
         exit 1
@@ -642,7 +647,7 @@ elif [ "$rsync_connection_type" = 2 ] && [ "$lan_server_status" = 0 ]; then
 
     if [ "$pf_server_status" = 0 ]; then
         # Create log entry
-        echo -e "#---- SUCCESS - RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC set to use Type 2 [PF connection $pf_address_url:$pf_port]\n" >> $logfile
+        echo -e "#---- SUCCESS - RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC set to use Type 2 [PF connection $pf_address_url:$pf_port]\nScript line number : $LINENO\n" >> $logfile
     elif [ ! "$pf_server_status" = 0 ]; then
         # Create log entry
         echo -e "#---- WARNING - RSYNC CONNECTION FAIL\nFail date : $(date)\nFunction : RSYNC connection fail. [PF and LAN]\n" >> $logfile
