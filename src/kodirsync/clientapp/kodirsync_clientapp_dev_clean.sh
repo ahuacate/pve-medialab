@@ -248,5 +248,8 @@ source $app_dir/kodirsync_clientapp_gitupdater.sh
 
 
 #----- Ensure the cleanup function is also called when your script exits normally
+
+# Finish Job log
+echo -e "#---- SUCCESS\nFull update has been completed.\n" 
 exit 0
 #-----------------------------------------------------------------------------------
