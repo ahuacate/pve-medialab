@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------------
 # Filename:     kodirsync_clientapp_dev_clean.sh
-# Description:  Forces update of all Kodi settings and full GitHub update
+# Description:  Forces update of all Kodi settings and full GitHub script update.
 #               We RECOMMEND you make a backup of "$app_dir/kodirsync_clientapp_user.cfg"
 #               file to a safe space.
 #               A temporary backup copy is stored in your $app_dir.
@@ -100,14 +100,21 @@ function dl_github_updates(){
 
 #---- Prerequisites
 
-# Create temp work dir (if missing)
-if [ -z "$work_dir" ]; then
-    work_dir=$(mktemp -dt -p /tmp kodirsync-XXXXXX)
-fi
-
 # Set $app_dir
 if [ -z "$app_dir" ]; then
     app_dir=$(find / -type d -name kodirsync_app -not -path "/storage/*" -not -path "/tmp/*")
+fi
+
+# Check if $app_dir is still empty
+if [ -z "$app_dir" ]; then
+    # Print display message
+    echo -e "#---- WARNING - Terminal Error\nCould not locate your 'kodirsync_app' folder.\nExiting script.\n"
+    exit 1  # Exit the script with a non-zero status
+fi
+
+# Create temp work dir (if missing)
+if [ -z "$work_dir" ]; then
+    work_dir=$(mktemp -dt -p /tmp kodirsync-XXXXXX)
 fi
 
 # Backup 'kodirsync_clientapp_user.cfg' to $work_dir

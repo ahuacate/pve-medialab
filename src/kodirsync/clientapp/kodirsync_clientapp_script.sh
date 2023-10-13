@@ -364,7 +364,7 @@ fi
 
 #---- Set "$dst_dir/rsync_tmp" dir
 rsync_tmp="$dst_dir/rsync_tmp"
-mkdir -p "$dst_dir/multipart"  # Include a multipart partial rsync dir
+mkdir -p "$rsync_tmp/multipart"  # Include a multipart partial rsync dir
 
 
 #---- Check destination storage status (type - '1' for disk, '2' for dir)

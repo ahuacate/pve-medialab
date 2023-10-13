@@ -712,6 +712,8 @@ Remote connectivity options over the internet include:
     * Dynamic DNS client updater (ddclient PVE CT)
     * WAN Gateway port forwarded to Kodirsync server"
 
+> If your CoreElec or LibreElec Kodi box is experiencing issues, you can use our Developer fix script to restore it to a healthy state. Go to section "Developer fix".
+
 ## 14.1. Features
 1. USB Disk Portability: Easily connect your USB Kodirsync disk to CoreELEC, LibreELEC, Linux, and Android devices to perform media updates on LAN, WiFi or even cellular networks.
 2. Storage Disk Options: Choose between ext4 or exFAT formats for compatibility with Android devices (exfat only).

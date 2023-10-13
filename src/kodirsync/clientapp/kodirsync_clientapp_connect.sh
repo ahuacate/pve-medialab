@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 # ----------------------------------------------------------------------------------
 # Filename:     kodirsync_clientapp_connect.sh
 # Description:  SSH rsync script to download files.
@@ -67,7 +68,7 @@ file="\$HOME/tmp/kodirsync/$rsync_username/\$file_to_watch"
 
 # Start a loop with a timeout
 start_time=\$(date +%s)
-timeout_seconds=90  # Set the timeout duration in seconds (e.g., 60 seconds)
+timeout_seconds=120  # Set the timeout duration in seconds (e.g., 60 seconds)
 timeout_expired=false
 
 while true; do
@@ -360,13 +361,22 @@ function make_multipart_files() {
         fi
     done
 
+
     # Create zip chunk files on server
-    local i 
+    local i
     for ((i = 0; i <= ssh_connect_retrycount; i++)); do
         # Cmd - Create zip split file
         eval "expanded_cmd=\"mkdir -p '$source/tmp/kodirsync/$rsync_username' && rm -f '$source/tmp/kodirsync/$rsync_username/${source_filename}'.* && zip -0 -s ${multipart_chunk_size}m '$source/tmp/kodirsync/$rsync_username/${source_filename}.zip' '$source/$source_file'\""
-        # Run SSH cmd
-        run_remote_ssh_command "$expanded_cmd" "return 1"  # Func run remote ssh command
+        
+        # Run the SSH command
+        # If the SSH connection is lost, the remote command will continue executing
+        # without interruption, thanks to nohup .
+        "${ssh_cmd[@]}" "$rsync_username@$rsync_address" "nohup bash -c \"$expanded_cmd > /dev/null 2>&1\" &"
+
+        # Sleep for a short period (you can adjust the duration)
+        sleep 2
+
+        # Process ssh exit codes
         if [ $? = 0 ]; then
             return 0
         elif [ $? -ne 0 ]; then
@@ -542,13 +552,9 @@ function start_multipart_rsync() {
     local max_retries="$rsync_retry_cnt"  # Maximum number of retries (adjust as needed)
     local source='.'  # Set current working dir
 
-    # Step 1 - Create multipart files
+    # Step 1 - Create multipart files on remote server
     (
     make_multipart_files "$source_file" "$source_size"
-    # if [ $? -ne 0 ]; then
-    #     multipart_cleanup_server "$source_file"  # Delete server multipart files
-    #     return 1
-    # fi
     ) &
 
     # Step 2 - Get a list of multipart filenames ${multipart_file_LIST[@]}
@@ -1063,4 +1069,18 @@ while true; do
         break
     fi
 done
+
+
+#---- Cleanup remote and local multipart and rsync_tmp temprary dl files
+# Only multipart files are removed. 'start_single_rsync' partial files are retained.
+
+# Remove remote multipart files from remote server user dir
+eval "expanded_cmd=\"find './tmp/kodirsync/$rsync_username' -regextype posix-extended -not -iregex '.*/($exclude_dir_filter_regex)/.*' -type f -exec rm {} \\;\""
+# Run SSH cmd
+run_remote_ssh_command "$expanded_cmd" "return 0" # Func run remote ssh command
+
+# Remove local multipart files from 'rsync_tmp' dir
+while IFS= read -r file; do
+    (rm -f "$file" 2> /dev/null; sleep 0.5) &  # Start a background process to delete each file
+done < <(find "$rsync_tmp" -regextype posix-extended -not -iregex ".*/($exclude_dir_filter_regex)(/.*)?|.*/kodirsync_app(/.*)?" -type f -regextype posix-extended -not -iregex ".*/($exclude_file_filter_regex)$" -type f -regextype posix-extended -iregex ".*\.(z[0-9]+|[0-9]+|zip[0-9]*)\..+$")
 #-----------------------------------------------------------------------------------

@@ -159,6 +159,7 @@ echo "/mnt/tmp $HOME_BASE/$username/tmp none bind,rwx,xattr,acl 0 0" >> /etc/fst
 
 # Mount the local mount point
 mount "/mnt/tmp"
+mount -a
 
 
 #---- Create user shares
