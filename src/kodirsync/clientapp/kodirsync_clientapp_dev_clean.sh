@@ -181,7 +181,7 @@ fi
 #---- Remove files in $app_dir (keeping ssh keys & user config)
 
 # Exclude regex of files and dirs
-exclude_update_file_regex='.*\.(key|ppk|pub|crt|db)$|.*kodirsync_id_ed25519$|.*kodirsync_node_rsa_key$|.*/kodirsync_clientapp_user.cfg.old$'
+exclude_update_file_regex='.*\.(key|ppk|pub|crt|db)$|.*kodirsync_id_ed25519$|.*kodirsync_node_rsa_key$|.*/kodirsync_clientapp_user.cfg.old$|.*/kodirsync_control_list.txt$'
 exclude_update_dir_regex='\.*|cache|\#recycle|\@eaDir|lost+found|images|logs'
 
 # Remove old local app files

@@ -20,7 +20,14 @@ xml_file="/storage/.kodi/userdata/favourites.xml"
 # Check for favourites.xml file
 if [ ! -f "$xml_file" ]; then
     # Create favourites.xml file if missing
-    echo -e "<favourites>\n</favourites>" > $xml_file
+    echo -e "<favourites>\n</favourites>" > "$xml_file"
+else
+    # Check if the file contains "<favourites>" at the start and "</favourites>" at the end
+    if ! grep -q "<favourites>" "$xml_file" || ! grep -q "</favourites>" "$xml_file"; then
+        # If either "<favourites>" or "</favourites>" is missing, add them
+        sed -i '1s/^/<favourites>\n/' "$xml_file"
+        echo -e "\n</favourites>" >> "$xml_file"
+    fi
 fi
 
 
