@@ -1,10 +1,8 @@
 #! /usr/bin/python3
 
 # ----------------------------------------------------------------------------------
-# Filename:     kodirsync_clientapp_kodi_run.py
-# Description:  Runs Kodi Kodirsync via favourites
-#               Parent to:
-#                 'kodirsync_clientapp_run.sh'
+# Filename:     kodirsync_clientapp_kodi_libraryscan.py
+# Description:  Runs Kodi Kodirsync library scanner
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
@@ -48,10 +46,6 @@ def kodimsg_finish():
 
 # Kodi func - 'library update'
 def kodi_library_update():
-    # Kodi library clean
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'CleanLibrary(video)'])
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'CleanLibrary(music)'])
-
     # Kodi library update
     subprocess.run(['/usr/bin/kodi-send', '-a', f'UpdateLibrary(video)'])
     subprocess.run(['/usr/bin/kodi-send', '-a', f'UpdateLibrary(music)'])
@@ -132,3 +126,5 @@ check()
 if __name__ == "__main__":
     main()
 #-----------------------------------------------------------------------------------
+
+curl --data-binary '{ "jsonrpc": "2.0", "method": "VideoLibrary.Scan", "id": "mybash"}' -H 'content-type: application/json;' http://root:coreelec@localhost:8080/jsonrpc

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------------
 # Filename:     kodirsync_clientapp_install_elec.sh
-# Description:  Default Kodirsync client run script
+# Description:  This file is used by the installer and 'kodirsync_clientapp_run.sh'
+#               script. Edit with caution.
 # ----------------------------------------------------------------------------------
 
 #---- Source -----------------------------------------------------------------------
@@ -49,73 +50,34 @@ function start_systemctl() {
 
 #---- Prerequisites
 
-# Perform opkg update
 opkg update
+opkg upgrade
 
-# Install opkg package moreutils (includes parallel)
-opkg install moreutils
 
-# Specify the path to the known_hosts file
-known_hosts_file="$ssh_dir/known_hosts"
+#---- Install SW dependencies
+
+# Required packages
+pkg_LIST=(
+    moreutils
+    p7zip
+)
+
+# Install required packages if missing
+for pkg in "${pkg_LIST[@]}"; do
+    opkg install "$pkg"
+done
+
+
+#---- Check for known_hosts file
+
+known_hosts_file="$ssh_dir/known_hosts"  # Specify the path to the known_hosts file
 
 # Create '$known_hosts_file' if missing
-if [ ! -f "$known_hosts_file" ]
-then
-  # Create the known_hosts file
-  touch "$known_hosts_file"
+if [ ! -f "$known_hosts_file" ]; then
+    touch "$known_hosts_file"  # Create the known_hosts file
 
-  # Set the appropriate ownership and permissions
-  chmod 600 "$known_hosts_file"
-  chown "$user:$user_grp" "$known_hosts_file"
+    # Set the appropriate ownership and permissions
+    chmod 600 "$known_hosts_file"
+    chown "$user:$user_grp" "$known_hosts_file"
 fi
-
-
-# #---- Configure Samba
-# # Here we create a SMB share of the new Kodirsync disk mount.
-
-# # SMB conf file
-# smb_config_file="/storage/.config/samba.conf"
-
-# # Kodirsync SMB share
-# kodirsync_share="[Kodirsync_Share]
-#   path = $smb_dir
-#   available = yes
-#   browsable = yes
-#   public = yes
-#   writable = yes"
-
-# # Update SMB shares
-# if [ -f "/storage/.config/samba.conf" ]
-# then
-#   # Check if "Kodirsync Share" section already exists
-#   if ! grep -q "^\[Kodirsync_Share\]" "$smb_config_file"; then
-#     # Stop services
-#     stop_systemctl "nmbd.service"
-#     wait
-#     stop_systemctl "smbd.service"
-
-#     # Append the kodirsync_share configuration to the config file
-#     printf "%s\n" "$kodirsync_share" >> "$smb_config_file"
-
-#     # Restart services
-#     start_systemctl "nmbd.service"
-#     wait
-#     start_systemctl "smbd.service"
-#   fi
-# else
-#   # Stop services
-#   stop_systemctl "nmbd.service"
-#   wait
-#   stop_systemctl "smbd.service"
-  
-#   # Create new 'samba.conf' with [Kodirsync Share]
-#   cp /storage/.config/samba.conf.sample $smb_config_file
-#   echo "" >> $smb_config_file
-#   printf "%s\n" "$kodirsync_share" >> $smb_config_file
-
-#   # Restart services
-#   start_systemctl "nmbd.service"
-#   wait
-#   start_systemctl "smbd.service"
-# fi
 #-----------------------------------------------------------------------------------------------------------------------

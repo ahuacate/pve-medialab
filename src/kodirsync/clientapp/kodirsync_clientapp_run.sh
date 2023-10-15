@@ -99,24 +99,23 @@ lan_network_status=$(ip route | grep "linkdown" > /dev/null; echo $?)
 if [ ! "$lan_network_status" = 1 ]; then
     # Log Job fail
     echo -e "#---- JOB START --------------------------------------------------------------------\nStart Time : $(date)\n" >> $logfile
-    echo -e "#---- WARNING - LAN NETWORK FAIL\nFail Time : $(date)\n" >> ${logfile}
+    echo -e "#---- WARNING - LAN NETWORK FAIL\nFail Time : $(date)\n" >> $logfile
     echo -e "\nFinish Time : $(date)\n#---- JOB FINISHED -----------------------------------------------------------------\n" >> $logfile
     exit 1
 fi
 
-# Check if client is Termux or Linux/CoreELEC/LibreELEC
+# Set client OS - Termux or Linux/CoreELEC/LibreELEC
 if [ $(command -v termux-info >/dev/null 2>&1; echo $?) = 0 ]; then
-    # Set OS type to Termux
-    ostype='termux'
-    source $app_dir/kodirsync_clientapp_install_termux_deps.sh  # Install Termux-Android dependencies
+    ostype='termux'  # Set OS type to Termux
 elif [ "$(uname)" == "Linux" ] && [ ! $(command -v termux-info >/dev/null 2>&1; echo $?) = 0 ]; then
-    # Set Linux OS type
-    ostype=$(awk -F= '$1=="ID" { print $2 ;}' /etc/os-release)
+    ostype=$(awk -F= '$1=="ID" { print $2 ;}' /etc/os-release)  # Set Linux OS type
 else
     echo -e "\e[93m[WARNING]\e[39m \e[97mKodirsync is supported on CoreELEC, LibreELEC, Linux and Termux only.\nBye...\n\e[39m"
     exit 0  # Exit script. OS not supported
 fi
 
+# Check client dependencies (SW and OS version)
+source $app_dir/kodirsync_clientapp_run_deps.sh
 
 # Run Kodirsync Git updater
 # Not available to Termux-Android clients 
