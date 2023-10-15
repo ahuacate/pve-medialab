@@ -126,5 +126,3 @@ check()
 if __name__ == "__main__":
     main()
 #-----------------------------------------------------------------------------------
-
-curl --data-binary '{ "jsonrpc": "2.0", "method": "VideoLibrary.Scan", "id": "mybash"}' -H 'content-type: application/json;' http://root:coreelec@localhost:8080/jsonrpc
