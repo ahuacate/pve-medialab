@@ -70,6 +70,7 @@ git_update_LIST=(
     kodirsync_clientapp_install_termux_storage.sh
     kodirsync_clientapp_kodi_gitupdater.py
     kodirsync_clientapp_kodi_install_favourites.sh
+    kodirsync_clientapp_kodi_libraryscan.py
     kodirsync_clientapp_kodi_node_run.py
     kodirsync_clientapp_kodi_run.py
     kodirsync_clientapp_kodi_status.py
