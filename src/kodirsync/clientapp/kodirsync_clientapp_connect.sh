@@ -836,6 +836,9 @@ function start_single_rsync() {
             done
 
             if [[ $retry -lt $max_retries ]]; then
+                # Log entry
+                echo -e "#---- SINGLE RSYNC FAIL\nDate : $(date)\nRetry count $retry of $max_retries for:\n$source_file\n" >> "$logfile"
+
                 sleep $rsync_retry_sleep  # Apply sleep period before retry
             else
                 # Kill the throttle PID
@@ -847,7 +850,7 @@ function start_single_rsync() {
                 fi
 
                 # Log entry
-                echo -e "#---- WARNING - RSYNC FAIL\nDate : $(date)\nReached retry count limit for: $source_file\n" >> "$logfile"
+                echo -e "#---- WARNING - SINGLE RSYNC FAIL\nDate : $(date)\nReached retry count limit for: $source_file\n" >> "$logfile"
 
                 # Update queue counters (if func run in subshell, not required, use signal)
                 # global_job_cnt=$(( global_job_cnt - 1 ))

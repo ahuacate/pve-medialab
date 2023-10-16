@@ -467,81 +467,6 @@ echo -e "#---- JOB START -------------------------------------------------------
 # Check for LAN connectivity using IP address and host name.
 # rsync_connection_type: '1' for SSLH, '2' for PF, '3' for LAN connection
 
-# # Check LAN connectivity 1 - hostname.localdomain
-# localdomain_address_url1=$localdomain_address_url
-# ssh -q -i $ssh_dir/"$rsync_username"_kodirsync_id_ed25519 \
-# -o "BatchMode yes" \
-# -o "StrictHostKeyChecking no" \
-# -o "ConnectTimeout 5" \
-# -p $ssh_port \
-# $rsync_username@$localdomain_address_url1 echo OK
-# lan_server_domain_status1=$?
-
-# # Check LAN connectivity 2 - hostname only
-# # Remove the domain name from $localdomain_address_url
-# localdomain_address_url2=${localdomain_address_url%%.*}
-# ssh -q -i $ssh_dir/"$rsync_username"_kodirsync_id_ed25519 \
-# -o "BatchMode yes" \
-# -o "StrictHostKeyChecking no" \
-# -o "ConnectTimeout 5" \
-# -p $ssh_port \
-# $rsync_username@$localdomain_address_url2 echo OK
-# lan_server_domain_status2=$?
-
-# # Check LAN connectivity - IP address
-# ssh -q -i $ssh_dir/"$rsync_username"_kodirsync_id_ed25519 \
-# -o "BatchMode yes" \
-# -o "StrictHostKeyChecking no" \
-# -o "ConnectTimeout 5" \
-# -p $ssh_port \
-# $rsync_username@$local_ip_address echo OK
-# lan_server_ip_status=$?
-
-# # Set LAN server connection status & url
-# if [ "$lan_server_domain_status1" = 0 ]; then
-#     # Set LAN active
-#     lan_address="$localdomain_address_url1"
-#     lan_server_status=1
-
-#     # Set 'rsync_connection_type' temporary override
-#     rsync_connection_type=3
-
-#     # Create log entry
-#     echo -e "#---- SUCCESS - CHECKING LAN AND RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC redirected to use Type 3 [LAN connection $lan_address:$ssh_port]\n" >> $logfile
-# elif [ ! "$lan_server_domain_status1" = 0 ] && [ "$lan_server_domain_status2" = 0 ]; then
-#     # Set LAN active
-#     lan_address="$localdomain_address_url2"
-#     lan_server_status=1
-
-#     # Set 'rsync_connection_type' temporary override
-#     rsync_connection_type=3
-
-#     # Create log entry
-#     echo -e "#---- SUCCESS - CHECKING LAN AND RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC redirected to use Type 3 [LAN connection $lan_address:$ssh_port]\n" >> $logfile
-# elif [ ! "$lan_server_domain_status" = 0 ] && [ "$lan_server_ip_status" = 0 ]; then
-#     # Set LAN active
-#     lan_address="$local_ip_address"
-#     lan_server_status=1
-
-#     # Set 'rsync_connection_type' temporary override
-#     rsync_connection_type=3
-
-#     # Create log entry
-#     echo -e "#---- SUCCESS - LAN NETWORK AND RSYNC CONNECTION STATUS\nTime : $(date)\nFunction : RSYNC redirected to use Type 3 [LAN connection $lan_address:$ssh_port]\n" >> $logfile
-# elif [ ! "$lan_server_domain_status" = 0 ] && [ ! "$lan_server_ip_status" = 0 ]; then
-#     # Set LAN inactive
-#     lan_server_status=0
-
-#     # If LAN inactive & no internet WAN access then exit ('0' is disabled, '1' is enabled)
-#     if [ "$connection_up" = 0 ]; then
-#         # Create log entry
-#         echo -e "#---- WARNING - LAN & WAN RSYNC CONNECTION FAIL\nFail date : $(date)\nFunction : RSYNC connection fail. [WAN and LAN]\n" >> $logfile
-#         echo -e "\nFinish Time : $(date)\n#---- JOB FINISHED -----------------------------------------------------------------\n" >> $logfile
-#         exit 1
-#     fi
-# fi
-
-
 while true; do
     # Check LAN connectivity 1 - hostname.localdomain
     localdomain_address_url1=$localdomain_address_url
@@ -1030,7 +955,7 @@ source $app_dir/kodirsync_clientapp_prune.sh
 #---- Perform rsync task
 
 # Create log entry
-echo -e "#---- STORAGE CAPACITY\nTime : $(date)\nTotal Kodirsync storage capacity : $(($storage_cap / (1024 * 1024 * 1024)))GB\nTotal download size : $(($total_dl_size / (1024 * 1024 * 1024)))GB\nRemaining Kodirsync storage space : $((adjusted_storage_cap / (1024 * 1024 * 1024)))GB\n" >> $logfile
+echo -e "#---- STORAGE CAPACITY\nTime : $(date)\nTotal dl file cnt : ${#dl_remote_LIST[@]}\nTotal Kodirsync storage capacity : $(($storage_cap / (1024 * 1024 * 1024)))GB\nTotal download size : $(($total_dl_size / (1024 * 1024 * 1024)))GB\nRemaining Kodirsync storage space : $((adjusted_storage_cap / (1024 * 1024 * 1024)))GB\n" >> $logfile
 
 # Display msg ( for terminal only)
 echo "Total disk kodirsync storage capacity: $storage_cap bytes or $(($storage_cap / (1024 * 1024 * 1024)))GB"
