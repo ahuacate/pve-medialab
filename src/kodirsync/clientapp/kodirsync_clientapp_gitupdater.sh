@@ -115,6 +115,7 @@ kodi_addon_file_LIST=(
     kodi_icon_start.png
     kodi_icon_stop.png
     kodi_icon_idle.png
+    kodi_thumb_cleanup.png
     kodi_thumb_node_start.png
     kodi_thumb_start.png
     kodi_thumb_updater.png
