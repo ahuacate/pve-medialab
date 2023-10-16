@@ -144,7 +144,8 @@ source $app_dir/kodirsync_clientapp_script.sh
 
 # Run kodi-send cmd to Kodi localhost to clean/update media library
 if [[ "$ostype" =~ ^.*(\")?(coreelec|libreelec)(\")?.*$ ]]; then
-    python3 "$app_dir/kodirsync_clientapp_kodi_libraryscan.py" > /dev/null 2>&1
+    libraryscan_file=$(find / -type f -path '*/script.module.kodirsync/*' -name 'kodirsync_clientapp_kodi_libraryscan.py')
+    python3 "$libraryscan_file" > /dev/null 2>&1
 fi
 
 
