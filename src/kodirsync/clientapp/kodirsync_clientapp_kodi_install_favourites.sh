@@ -115,6 +115,18 @@ else
     echo "New entry already exists in XML file '$xml_file'. No changes made."
 fi
 
+# Add 'Kodirsync library cleanup' cmd to Kodi favourites
+entry="<favourite name=\"Kodirsync library cleanup\" thumb=\"$script_dir/kodi_thumb_cleanup.png\">RunScript($script_dir/kodirsync_clientapp_kodi_libraryscan.py)</favourite>"
+# Check if 'Kodirsync run' already exists in the file
+if ! grep -q "<favourite name=\"Kodirsync library cleanup\"" "$xml_file"; then
+    sed -i "\$i$entry" "$xml_file"  # Add the new entry at the end of the file
+    echo "New entry added to XML file '$xml_file':"
+    tail -n 4 "$xml_file"
+    update_status=true  # Set action status
+else
+    echo "New entry already exists in XML file '$xml_file'. No changes made."
+fi
+
 # Copy favourites.xml to Profile 'kodirsync'
 if [ "$update_status" = true ]; then
     mkdir -p /storage/.kodi/userdata/profiles/kodirsync

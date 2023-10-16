@@ -107,6 +107,7 @@ git_update_LIST=(
 # Kodi addon update files
 kodi_addon_file_LIST=()  # Initialize array
 kodi_addon_file_LIST=(
+    kodirsync_clientapp_kodi_libraryscan.py
     kodirsync_clientapp_kodi_run.py
     kodirsync_clientapp_kodi_node_run.py
     kodirsync_clientapp_kodi_gitupdater.py
