@@ -140,6 +140,14 @@ source "$app_dir/kodirsync_clientapp_user.cfg"
 source $app_dir/kodirsync_clientapp_script.sh
 
 
+#---- Update Kodi library
+
+# Run kodi-send cmd to Kodi localhost to clean/update media library
+if [[ "$ostype" =~ ^.*(\")?(coreelec|libreelec)(\")?.*$ ]]; then
+    python3 "$app_dir/kodirsync_clientapp_kodi_libraryscan.py" > /dev/null 2>&1
+fi
+
+
 #---- Run Kodirsync node synchronization script
 if [ "$node_sync" = 1 ] && [ ! "$ostype" = 'termux' ] && [[ "$rsync_connection_type" =~ (1|2) ]]; then
   bash $app_dir/kodirsync_clientapp_node_run.sh

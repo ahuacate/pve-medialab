@@ -121,7 +121,7 @@ def main():
     #---- Update Kodi library
 
     # Call the function - library update
-    kodi_library_update()
+    # kodi_library_update()
 
 #---- Body -------------------------------------------------------------------------
 
