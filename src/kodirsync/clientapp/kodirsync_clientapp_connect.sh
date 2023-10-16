@@ -629,11 +629,17 @@ function start_multipart_rsync() {
                 # On 7z success
                 multipart_cleanup_server "$source_file"  # Delete server multipart files
                 multipart_cleanup_local "$source_file"  # Delete local multipart files
+
+                # Log entry
+                echo -e "#---- MULTIPART SUCCESS\nDate : $(date)\nSource filename : $source_filename\n" >> "$logfile"
             else
                 # On 7z fail
                 multipart_cleanup_server "$source_file"  # Delete server multipart files
                 multipart_cleanup_local "$source_file"  # Delete local multipart files
                 rm -f "$dst_dir/$source_file" 2> /dev/null || true  # Delete local part destination if exists
+
+                # Log entry
+                echo -e "#---- MULTIPART 7z FAIL\nDate : $(date)\nSource filename : $source_filename\n" >> "$logfile"
             fi
 
             # Kill the throttle PID
@@ -658,7 +664,7 @@ function start_multipart_rsync() {
                 # the remote server before proceeding.
 
                 # Log entry
-                echo -e "#---- MULTIPART RSYNC FAIL\nFail date : $(date)\nRetry count $retry of $max_retries for:\n$source_file\n" >> "$logfile"
+                echo -e "#---- MULTIPART RSYNC FAIL\nDate : $(date)\nRetry count $retry of $max_retries for:\n$source_file\n" >> "$logfile"
 
                 # Rsync sleep period
                 sleep $rsync_retry_sleep
@@ -735,7 +741,7 @@ function start_multipart_rsync() {
                 multipart_cleanup_local "$source_file"  # Delete local multipart files
 
                 # Log entry
-                echo -e "#---- WARNING - MULTIPART RSYNC FAIL\nFail date : $(date)\nReached retry count limit $retry of $max_retries for:\n$source_file\nSkipping file.\n" >> "$logfile"
+                echo -e "#---- WARNING - MULTIPART RSYNC FAIL\nDate : $(date)\nReached retry count limit $retry of $max_retries for:\n$source_file\nSkipping file.\n" >> "$logfile"
 
                 # Update queue counters
                 decrement "$global_multipart_queue_cnt" "${#multipart_file_LIST[@]}"
@@ -841,7 +847,7 @@ function start_single_rsync() {
                 fi
 
                 # Log entry
-                echo -e "#---- WARNING - RSYNC FAIL\nFail date : $(date)\nReached retry count limit for: $source_file\n" >> "$logfile"
+                echo -e "#---- WARNING - RSYNC FAIL\nDate : $(date)\nReached retry count limit for: $source_file\n" >> "$logfile"
 
                 # Update queue counters (if func run in subshell, not required, use signal)
                 # global_job_cnt=$(( global_job_cnt - 1 ))
@@ -985,7 +991,7 @@ if [ -f "$work_dir/rsync_process_list.txt" ] && [[ $(cat "$work_dir/rsync_proces
     IFS=$'\n' source_files=($(grep -E -v '^\s*$|^\s*#' "$work_dir/rsync_process_list.txt"))
 else
     # Log entry & exit
-    echo -e "#---- WARNING - RSYNC FAIL\nFail date : $(date +"%F %T")\nInput file 'rsync_process_list.txt' empty.\n" >> "$logfile"
+    echo -e "#---- WARNING - RSYNC FAIL\nDate : $(date +"%F %T")\nInput file 'rsync_process_list.txt' empty.\n" >> "$logfile"
     trap cleanup EXIT  # Exit script
 fi
 

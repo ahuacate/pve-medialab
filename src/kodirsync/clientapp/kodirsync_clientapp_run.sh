@@ -88,6 +88,7 @@ logfile="$app_dir/logs/kodirsync-${now}.log"
 
 # Debug file
 debug="$app_dir/logs/debug.log"
+rm -f $debug 2> /dev/null  # Remove old debug log
 
 # Remove log files older than $log_life days
 find "$app_dir/logs" -name "kodirsync-*.log" -type f -mtime +$log_life -delete
