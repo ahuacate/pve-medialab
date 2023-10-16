@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+rsync_connection_type=1
 # ----------------------------------------------------------------------------------
 # Filename:     kodirsync_clientapp_connect.sh
 # Description:  SSH rsync script to download files.
@@ -26,7 +26,7 @@ file="\$HOME/\$file_to_watch"
 
 # Start a loop with a timeout
 start_time=\$(date +%s)
-timeout_seconds=60  # Set the timeout duration in seconds (e.g., 60 seconds)
+timeout_seconds=120  # Set the timeout duration in seconds (e.g., 60 seconds)
 timeout_expired=false
 
 while true; do
@@ -657,6 +657,12 @@ function start_multipart_rsync() {
                 # Next step will watch for the last 'n' multipart to be created on
                 # the remote server before proceeding.
 
+                # Log entry
+                echo -e "#---- MULTIPART RSYNC FAIL\nFail date : $(date)\nRetry count $retry of $max_retries for:\n$source_file\n" >> "$logfile"
+
+                # Rsync sleep period
+                sleep $rsync_retry_sleep
+
                 # Initialize variables to hold the highest count and corresponding entry
                 local highest_count=0
                 local file_to_watch=""
@@ -680,6 +686,12 @@ function start_multipart_rsync() {
                 local modified_script="$(mktemp -p $work_dir)"  # Create a temporary copy of the script
                 cp "$work_dir/watch_for_last_multipart_template.sh" "$modified_script"
                 sed -i "s#\\\$file_to_watch#$file_to_watch#" "$modified_script"
+
+                # Debug
+                echo -e "Multipart retry : $retry of $max_retries (sleep interval ${rsync_retry_sleep}sec)" >> $debug
+                echo -e "Multipart cnt (all) : ${#multipart_file_LIST[@]}" >> $debug
+                echo -e "Highest numbered file : $highest_count" >> $debug
+                echo -e "Multipart file being watch : $file_to_watch\n" >> $debug
 
                 # Watch for the last multipart to be created on server before continuing
                 local j
@@ -723,7 +735,7 @@ function start_multipart_rsync() {
                 multipart_cleanup_local "$source_file"  # Delete local multipart files
 
                 # Log entry
-                echo -e "#---- WARNING - RSYNC FAIL\nFail date : $(date)\nReached retry count limit for: $source_file\n" >> "$logfile"
+                echo -e "#---- WARNING - MULTIPART RSYNC FAIL\nFail date : $(date)\nReached retry count limit $retry of $max_retries for:\n$source_file\nSkipping file.\n" >> "$logfile"
 
                 # Update queue counters
                 decrement "$global_multipart_queue_cnt" "${#multipart_file_LIST[@]}"
@@ -899,6 +911,7 @@ else
     --timeout=120
     --human-readable
     --partial-dir=$dst_dir/rsync_tmp/multipart
+    --no-motd
     --delete
     --exclude '*.partial~'
     --log-file=$logfile
