@@ -39,17 +39,19 @@ mkdir -p $script_dir
 
 # Copy python files to addons dir
 kodi_files=(
-  kodirsync_clientapp_kodi_node_run.py
-  kodirsync_clientapp_kodi_run.py
-  kodirsync_clientapp_kodi_gitupdater.py
-  kodirsync_clientapp_kodi_status.py
-  kodi_icon_start.png
-  kodi_icon_stop.png
-  kodi_icon_idle.png
-  kodi_thumb_node_start.png
-  kodi_thumb_start.png
-  kodi_thumb_updater.png
-  kodi_thumb_status.png
+    kodirsync_clientapp_kodi_libraryscan.py
+    kodirsync_clientapp_kodi_node_run.py
+    kodirsync_clientapp_kodi_run.py
+    kodirsync_clientapp_kodi_gitupdater.py
+    kodirsync_clientapp_kodi_status.py
+    kodi_icon_start.png
+    kodi_icon_stop.png
+    kodi_icon_idle.png
+    kodi_thumb_cleanup.png
+    kodi_thumb_node_start.png
+    kodi_thumb_start.png
+    kodi_thumb_updater.png
+    kodi_thumb_status.png
 )
 for file in "${kodi_files[@]}"; do
     # Copy file
