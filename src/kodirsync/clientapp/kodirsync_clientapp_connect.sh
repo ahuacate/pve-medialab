@@ -1045,7 +1045,7 @@ for ((i = 0; i < ${#source_files[@]}; i++)); do
     [[ "$((source_size * 2))" -lt "$free_space_bytes" ]] && \
     [[ "$(get_value $remaining_video_count)" -le "$((multipart_dl_begin * rsync_threads))" ]] && \
     [[ "$rsync_connection_type" =~ (1|2) ]]; then
-        multipart_option=1  # Multipart enabled
+        multipart_option=0  # Multipart enabled
     else
         multipart_option=0  # Single enabled
     fi
