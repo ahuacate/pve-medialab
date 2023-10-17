@@ -363,8 +363,13 @@ fi
 
 
 #---- Set "$dst_dir/rsync_tmp" dir
+
+# Download dirs
 rsync_tmp="$dst_dir/rsync_tmp"
 mkdir -p "$rsync_tmp/multipart"  # Include a multipart partial rsync dir
+
+# Set permissions for rsync_tmp and multipart directories
+chmod -R 777 "$rsync_tmp"  # Recursively set permissions to rwx for all
 
 
 #---- Check destination storage status (type - '1' for disk, '2' for dir)
@@ -955,7 +960,7 @@ source $app_dir/kodirsync_clientapp_prune.sh
 #---- Perform rsync task
 
 # Create log entry
-echo -e "#---- STORAGE CAPACITY\nTime : $(date)\nTotal dl file cnt : ${#dl_remote_LIST[@]}\nTotal Kodirsync storage capacity : $(($storage_cap / (1024 * 1024 * 1024)))GB\nTotal download size : $(($total_dl_size / (1024 * 1024 * 1024)))GB\nRemaining Kodirsync storage space : $((adjusted_storage_cap / (1024 * 1024 * 1024)))GB\n" >> $logfile
+echo -e "#---- KODIRSYNC JOB INFORMATION\nTime : $(date)\nTotal dl file cnt : ${#dl_remote_LIST[@]}\nTotal Kodirsync storage capacity : $(($storage_cap / (1024 * 1024 * 1024)))GB\nTotal download size : $(($total_dl_size / (1024 * 1024 * 1024)))GB\nRemaining Kodirsync storage space : $((adjusted_storage_cap / (1024 * 1024 * 1024)))GB\n" >> $logfile
 
 # Display msg ( for terminal only)
 echo "Total disk kodirsync storage capacity: $storage_cap bytes or $(($storage_cap / (1024 * 1024 * 1024)))GB"

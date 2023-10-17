@@ -162,11 +162,11 @@ function simple_array_list() {
 
 # Video file format (.ext) list array
 # "${video_format_filter_LIST[@]}"
-simple_array_list "$DIR/video_format_filter.txt" "video_format_filter_LIST"
+simple_array_list "$app_dir/video_format_filter.txt" "video_format_filter_LIST"
 
 # Other file format (.ext) list array
 # "${other_format_filter_LIST[@]}"
-simple_array_list "$DIR/other_format_filter.txt" "other_format_filter_LIST"
+simple_array_list "$app_dir/other_format_filter.txt" "other_format_filter_LIST"
 
 # All file format (.ext) list array
 # "${all_format_filter_LIST[@]}"
@@ -175,54 +175,54 @@ all_format_filter_LIST=( "${video_format_filter_LIST[@]}" "${other_format_filter
 
 # Exclude file list array
 # "${exclude_file_filter[@]}"
-simple_array_list "$DIR/exclude_file_filter.txt" "exclude_file_filter_LIST"
+simple_array_list "$app_dir/exclude_file_filter.txt" "exclude_file_filter_LIST"
 
 # Exclude dir list array
 # "${exclude_dir_filter[@]}"
-simple_array_list "$DIR/exclude_dir_filter.txt" "exclude_dir_filter_LIST"
+simple_array_list "$app_dir/exclude_dir_filter.txt" "exclude_dir_filter_LIST"
 
 # Exclude OS dir list array
 # "${exclude_os_dir_filter[@]}"
-simple_array_list "$DIR/exclude_os_dir_filter.txt" "exclude_os_dir_filter_LIST"
+simple_array_list "$app_dir/exclude_os_dir_filter.txt" "exclude_os_dir_filter_LIST"
 
 
 #---- Create simple regex lists (non-sed)
 
 # Create format filter from text file - video
 # (i.e webm|mkv|mk3d|mka|mks|flv|vob)
-regex_simple_list "$DIR/video_format_filter.txt" "video_format_filter_regex"
+regex_simple_list "$app_dir/video_format_filter.txt" "video_format_filter_regex"
 
 # Create format filter from text file - subtitle
 # (i.e srt|ssa|vtt)
-regex_simple_list "$DIR/subtitle_format_filter.txt" "subtitle_format_filter_regex"
+regex_simple_list "$app_dir/subtitle_format_filter.txt" "subtitle_format_filter_regex"
 
 # Create format filter from text file - image
 # (i.e bmp|tif|jpeg)
-regex_simple_list "$DIR/image_format_filter.txt" "image_format_filter_regex"
+regex_simple_list "$app_dir/image_format_filter.txt" "image_format_filter_regex"
 
 # Create format filter from text file - audio
 # (i.e wav|mp3)
-regex_simple_list "$DIR/audio_format_filter.txt" "audio_format_filter_regex"
+regex_simple_list "$app_dir/audio_format_filter.txt" "audio_format_filter_regex"
 
 # Create format filter from text file - audiobook
 # (i.e m4b|mka)
-regex_simple_list "$DIR/audiobook_format_filter.txt" "audiobook_format_filter_regex"
+regex_simple_list "$app_dir/audiobook_format_filter.txt" "audiobook_format_filter_regex"
 
 # Create filter from text file - other
 # (i.e log)
-regex_simple_list "$DIR/other_format_filter.txt" "other_format_filter_regex"
+regex_simple_list "$app_dir/other_format_filter.txt" "other_format_filter_regex"
 
 # Create exclude filter from text file - filetype
 # (i.e *.partial~|#recycle|.foo_protect)
-regex_simple_list "$DIR/exclude_file_filter.txt" "exclude_file_filter_regex"
+regex_simple_list "$app_dir/exclude_file_filter.txt" "exclude_file_filter_regex"
 
 # Create exclude filter from text file - dir
 # (i.e @eaDir|tmp)
-regex_simple_list "$DIR/exclude_dir_filter.txt" "exclude_dir_filter_regex"
+regex_simple_list "$app_dir/exclude_dir_filter.txt" "exclude_dir_filter_regex"
 
 # Create exclude filter from text file - OS dir
 # (i.e lost+found|images|\#recycle)
-regex_simple_list "$DIR/exclude_os_dir_filter.txt" "exclude_os_dir_filter_regex"
+regex_simple_list "$app_dir/exclude_os_dir_filter.txt" "exclude_os_dir_filter_regex"
 
 # Create dir filter - Kodirsync dirs
 # (i.e kodirsync_storage)
@@ -243,5 +243,5 @@ video_subfolder_dir_filter_regex='video(/|/stream/)?(documentary|movies|musicvid
 
 # Create format filter from text file - iso languages
 # (i.e de\|eng\|it)
-regex_simple_sed_list "$DIR/iso_language_codes.txt" "iso_lang_codes_sed_regex"
+regex_simple_sed_list "$app_dir/iso_language_codes.txt" "iso_lang_codes_sed_regex"
 #-----------------------------------------------------------------------------------

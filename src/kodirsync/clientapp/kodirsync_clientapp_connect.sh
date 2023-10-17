@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-rsync_connection_type=1
 # ----------------------------------------------------------------------------------
 # Filename:     kodirsync_clientapp_connect.sh
 # Description:  SSH rsync script to download files.
@@ -606,7 +605,7 @@ function start_multipart_rsync() {
 
     # Step 5 - Start rsync loop
     local retry
-    for ((retry = 0; retry <= max_retries; retry++)); do
+    for ((retry = 1; retry <= max_retries; retry++)); do
         # Set rsync --bwlimit value
         bw_tune=$(rsync_bwlimit_tuner)
 
@@ -661,7 +660,7 @@ function start_multipart_rsync() {
                 # Fail possibility is a missing 'n'th multipart file. Cause is dl is
                 # faster than remote manufacture of multipart chunks.
                 # Next step will watch for the last 'n' multipart to be created on
-                # the remote server before proceeding.
+                # the remote server before proceeding with rsync of the multipart files.
 
                 # Log entry
                 echo -e "#---- MULTIPART RSYNC FAIL\nDate : $(date)\nRetry count $retry of $max_retries for:\n$source_file\n" >> "$logfile"
@@ -669,49 +668,46 @@ function start_multipart_rsync() {
                 # Rsync sleep period
                 sleep $rsync_retry_sleep
 
-                # Initialize variables to hold the highest count and corresponding entry
-                local highest_count=0
-                local file_to_watch=""
+                # Find last 'n' multipart file on first retry
+                if [ "$retry" = 1 ]; then
+                    # Initialize variables to hold the highest count and corresponding entry
+                    local highest_count=0
+                    local file_to_watch=""
 
-                # Regular expression pattern to match entries ending with ".z[0-9]+"
-                local pattern="\.z([0-9]+)$"
+                    # Regular expression pattern to match entries ending with ".z[0-9]+"
+                    local pattern="\.z([0-9]+)$"
 
-                # Iterate through the array
-                local entry
-                for entry in "${multipart_file_LIST[@]}"; do
-                    if [[ "$entry" =~ $pattern ]]; then
-                        count="${BASH_REMATCH[1]}"
-                        if ((count > highest_count)); then
-                            highest_count="$count"
-                            file_to_watch="$entry"
+                    # Iterate through the array
+                    local entry
+                    for entry in "${multipart_file_LIST[@]}"; do
+                        if [[ "$entry" =~ $pattern ]]; then
+                            count="${BASH_REMATCH[1]}"
+                            if ((count > highest_count)); then
+                                highest_count="$count"
+                                file_to_watch="$entry"
+                            fi
                         fi
-                    fi
-                done
+                    done
 
-                # Replace the placeholder in the script with the actual value
-                local modified_script="$(mktemp -p $work_dir)"  # Create a temporary copy of the script
-                cp "$work_dir/watch_for_last_multipart_template.sh" "$modified_script"
-                sed -i "s#\\\$file_to_watch#$file_to_watch#" "$modified_script"
+                    # Replace the placeholder in the script with the actual value
+                    local modified_script="$(mktemp -p $work_dir)"  # Create a temporary copy of the script
+                    cp "$work_dir/watch_for_last_multipart_template.sh" "$modified_script"
+                    sed -i "s#\\\$file_to_watch#$file_to_watch#" "$modified_script"
 
-                # Debug
-                echo -e "Multipart retry : $retry of $max_retries (sleep interval ${rsync_retry_sleep}sec)" >> $debug
-                echo -e "Multipart cnt (all) : ${#multipart_file_LIST[@]}" >> $debug
-                echo -e "Highest numbered file : $highest_count" >> $debug
-                echo -e "Multipart file being watch : $file_to_watch\n" >> $debug
+                    # Watch for the last multipart to be created on server before continuing
+                    local j
+                    for ((j = 1; j <= ssh_connect_retrycount; j++)); do
+                        "${ssh_cmd[@]}" "$rsync_username@$rsync_address" "bash -s" < "$modified_script"
 
-                # Watch for the last multipart to be created on server before continuing
-                local j
-                for ((j = 1; j <= ssh_connect_retrycount; j++)); do
-                    "${ssh_cmd[@]}" "$rsync_username@$rsync_address" "bash -s" < "$modified_script"
-
-                    # Process ssh exit codes
-                    if [ $? = 0 ]; then
-                        break
-                    elif [ $? -ne 0 ]; then
-                        sleep $ssh_connect_retrysleep
-                        continue  # Continue to the next iteration of the loop
-                    fi
-                done
+                        # Process ssh exit codes
+                        if [ $? = 0 ]; then
+                            break
+                        elif [ $? -ne 0 ]; then
+                            sleep $ssh_connect_retrysleep
+                            continue  # Continue to the next iteration of the loop
+                        fi
+                    done
+                fi
             else
                 # Kill the throttle PID
                 if [ -n "$throttle_pid" ]; then
@@ -873,7 +869,7 @@ if [ "$stor_fs" = exfat ] || [ "$ostype" = 'termux' ]; then
     rsync_args_single=(
     --verbose
     --progress
-    --timeout=120
+    --timeout=$rsync_timeout
     --human-readable
     --partial-dir=$dst_dir/rsync_tmp
     --delete
@@ -888,7 +884,7 @@ if [ "$stor_fs" = exfat ] || [ "$ostype" = 'termux' ]; then
     rsync_args_multipart=(
     --verbose
     --progress
-    --timeout=120
+    --timeout=$rsync_timeout
     --human-readable
     --partial-dir=$dst_dir/rsync_tmp/multipart
     --exclude '*.partial~'
@@ -903,7 +899,7 @@ else
     --archive
     --verbose
     --progress
-    --timeout=120
+    --timeout=$rsync_timeout
     --human-readable
     --partial-dir=$dst_dir/rsync_tmp
     --delete
@@ -917,10 +913,9 @@ else
     --archive
     --verbose
     --progress
-    --timeout=120
+    --timeout=$rsync_timeout
     --human-readable
     --partial-dir=$dst_dir/rsync_tmp/multipart
-    --no-motd
     --delete
     --exclude '*.partial~'
     --log-file=$logfile

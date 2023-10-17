@@ -12,6 +12,15 @@
 #---- Other Files ------------------------------------------------------------------
 #---- Body -------------------------------------------------------------------------
 
+#---- Remove all orphaned, erroneous and unknown mystery files
+
+# Remove mystery files
+while IFS= read file; do
+    rm -f "$file" 2> /dev/null
+    sleep 0.5
+done < <(find "$dst_dir" -regextype posix-extended -not -iregex ".*/(rsync_tmp)(/.*)?$|.*/($exclude_dir_filter_regex)(/.*)?" -type f -regextype posix-extended -not -iregex ".*\.($rsync_part_filter_regex)$|.*\.($video_format_filter_regex|$subtitle_format_filter_regex|$image_format_filter_regex|$audio_format_filter_regex|$audiobook_format_filter_regex)$" -type f)
+
+
 #---- Remove depreciated media files from destination storage
 
 # Remove depreciated $dst_dir files that are not in keep_local_LIST
@@ -78,7 +87,7 @@ for partial_item in "${partial_local_LIST[@]}"; do
 
     # Delete the entry if it should be deleted
     if "$should_delete"; then
-      rm -f "$partial_item"  # Remove rsync partial file
+        rm -f "$partial_item"  # Remove rsync partial file
     fi
 done
 #-----------------------------------------------------------------------------------

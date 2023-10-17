@@ -10,11 +10,6 @@
 #---- Static Variables -------------------------------------------------------------
 #---- Other Variables --------------------------------------------------------------
 #---- Other Files ------------------------------------------------------------------
-
-
-
-
-
 #---- Functions --------------------------------------------------------------------
 
 #---- UTF-8 Ascii cleanup
@@ -29,6 +24,51 @@ cleanup_utf8() {
     echo "$cleaned_input"
 }
 
+#---- Function to run SSH cmd on server
+
+function run_remote_ssh_command() {
+    # run_remote_ssh_command() - Establishes an SSH connection and executes a Bash
+    # command on a remote server.
+    #
+    # This function establishes an SSH connection to a remote server and runs the
+    # specified Bash command on that server. It captures the command's output and
+    # checks for any errors during execution.
+    #
+    # Parameters:
+    #   1. expanded_cmd - The Bash command to be executed on the remote server.
+    #   2. error_handle_cmd - The Bash command to be executed in case of an error
+    #      (e.g., logging, breaking, continuing).
+    #
+    # Global Variables (Must be set before calling this function):
+    #   - "${ssh_cmd[@]}" - An array containing the SSH command and its options.
+    #   - "$rsync_username" - The username for the SSH connection.
+    #   - "$rsync_address" - The address (hostname or IP) of the remote server.
+    #
+    # Example Usage:
+    #   run_remote_ssh_command "ls -l" "echo 'Error occurred on remote server'"
+    #
+    # Notes:
+    # - This function captures both the output of the remote command and its exit
+    #   code. If the remote command exits with a non-zero code, it is considered an
+    #   error, and the error_handle_cmd will be executed, allowing you to handle the
+    #   error as needed (e.g., logging, breaking the script).
+
+    # Set argument parameters
+    local expanded_cmd="$1" # bash cmds
+    local error_handle_cmd="${2:-return 1}"  # on fail, run bash cmd (i.e return 0, return 1). "return 1" if it's not provided
+
+    ssh_result=$(
+    "${ssh_cmd[@]}" "$rsync_username@$rsync_address" "bash -c \"$expanded_cmd\""
+    )
+
+    local check_code="$?"
+    if [ "$check_code" -ne 0 ]; then
+        echo -e "#---- WARNING - SSH ERROR\nError Code ($check_code) : $(date)\nFunction : ${FUNCNAME[${#FUNCNAME[@]} - 1]}\nScript line number : $LINENO\n" >> $logfile  # Print error log
+        eval "$error_handle_cmd"  # Bash command to be executed in case of an error
+    else
+        echo "$ssh_result"  # Print cmd stdin result
+    fi
+}
 
 #---- Get & set remote node variables
 
@@ -403,15 +443,22 @@ done
 ul_node_app_LIST=()  # Initialize array
 while IFS= read -r line; do
     ul_node_app_LIST+=( "$line" )
-done < <(find "$local_app_dir" -regextype posix-extended -not -iregex ".*/($exclude_file_filter_regex)$|.*/\..*$" -regextype posix-extended -not -iregex "(.*/)?($exclude_os_dir_filter_regex)(/.*)?|(.*/)?($exclude_dir_filter_regex)(/.*)?|(.*/logs(/.*)?" -type f -printf '%P\n' 2> /dev/null)
+done < <(find "$local_app_dir" -regextype posix-extended -not -iregex ".*/($exclude_file_filter_regex)$|.*/\..*$" -regextype posix-extended -not -iregex "(.*/)?($exclude_os_dir_filter_regex)(/.*)?|(.*/)?($exclude_dir_filter_regex)(/.*)?|(.*/)?(logs)(/.*)?" -type f -printf '%P\n' 2> /dev/null)
 
 
 #---- Log entries
 
 # Create log entry
-echo -e "#---- NODE CAPACITY\nTime : $(date)\nTotal Kodirsync node capacity : $(($storage_cap / (1024 * 1024 * 1024)))GB\nTotal upload size : $(($total_ul_size / (1024 * 1024 * 1024)))GB\nRemaining Kodirsync node space : $((adjusted_storage_cap / (1024 * 1024 * 1024)))GB\n" >> $logfile
+echo -e "#---- KODIRSYNC NODE JOB INFORMATION
+Date : $(date)
+dl media file count : ${#ul_node_storage_LIST[@]}
+dl app file count : ${#ul_node_app_LIST[@]}
+Total node storage capacity : $(($storage_cap / (1024 * 1024 * 1024)))GB
+Total upload size : $(($total_ul_size / (1024 * 1024 * 1024)))GB
+Remaining node storage space : $((adjusted_storage_cap / (1024 * 1024 * 1024)))GB\n" >> $logfile
 
-# Display msg ( for terminal only)
+
+# Display msg (terminal only)
 echo "Total node storage capacity: $node_dst_max_limit bytes or $(($node_dst_max_limit / (1024 * 1024 * 1024)))GB"
 echo "Total node storage transfer size: $total_ul_size bytes or $(($total_ul_size / (1024 * 1024 * 1024)))GB"
 #-----------------------------------------------------------------------------------
