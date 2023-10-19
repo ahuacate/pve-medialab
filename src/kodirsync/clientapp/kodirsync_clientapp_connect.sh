@@ -315,7 +315,7 @@ function make_multipart_files() {
     local source='.'  # Set current working dir
     local source_filename=$(basename "$source_file")
 
-    # Check for existing  multipart files on remote server
+    # Check for existing multipart files on remote server
     local escaped_source_filename=$(printf "%q" "$source_filename")
     local i 
     for ((i = 0; i <= ssh_connect_retrycount; i++)); do
@@ -417,7 +417,7 @@ function make_multipart_file_LIST() {
     local source_size="$2"
     # Set other variables
     local source='.'
-    local source_filename="$(printf '%q' "$(basename "$source_file")")"  # Escaped filename
+    local source_filename="$(basename "$source_file")"
 
     # Attempt to generate the list of server multipart filenames
     local calc_multipart_cnt=$(( source_size / ((multipart_chunk_size * 1024) * 1024)))  # Calc zip multipart file count
@@ -446,7 +446,7 @@ function make_multipart_file_LIST() {
     n_suffix=$(printf "%02d" "$n_suffix")
 
     # Construct the file_to_watch variable
-    local file_to_watch="${source_filename}.z$n_suffix"
+    local file_to_watch="$(printf '%q' "${source_filename}.z$n_suffix")"
 
     # Replace the placeholder in the script with the actual value
     local modified_script="$(mktemp -p $work_dir)"  # Create a temporary copy of the script
@@ -603,6 +603,7 @@ function start_multipart_rsync() {
         throttle_pid=$!
     fi
 
+
     # Step 5 - Start rsync loop
     local retry
     for ((retry = 1; retry <= max_retries; retry++)); do
@@ -684,7 +685,7 @@ function start_multipart_rsync() {
                             count="${BASH_REMATCH[1]}"
                             if ((count > highest_count)); then
                                 highest_count="$count"
-                                file_to_watch="$entry"
+                                file_to_watch="$(printf '%q' "$entry")"
                             fi
                         fi
                     done
@@ -1044,8 +1045,9 @@ for ((i = 0; i < ${#source_files[@]}; i++)); do
     if [[ "$source_filename" =~ $video_format_filter_regex ]] && \
     [[ "$((source_size * 2))" -lt "$free_space_bytes" ]] && \
     [[ "$(get_value $remaining_video_count)" -le "$((multipart_dl_begin * rsync_threads))" ]] && \
+    [ "$multipart_threads" = 1 ] && \
     [[ "$rsync_connection_type" =~ (1|2) ]]; then
-        multipart_option=0  # Multipart enabled
+        multipart_option=1  # Multipart enabled
     else
         multipart_option=0  # Single enabled
     fi

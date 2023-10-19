@@ -625,19 +625,20 @@ fi
 
 #-----------------------------------------------------------------------------------
 
+#---- Prerequisites
+
+# Create default regex filters
+source $app_dir/kodirsync_clientapp_list1.sh
+
+#---- Body -------------------------------------------------------------------------
+
 #---- Step 1 - Get remote server lists and files
 
 # Get Kodirsync remote server b/w control list file
 get_remote_control_list
 
 
-#---- Step 2 - Create default regex filters
-
-# Create default regex filters
-source $app_dir/kodirsync_clientapp_list1.sh
-
-
-#---- Step 3 - Create Kodirsync control list regex and arrays
+#---- Step 2 - Create Kodirsync control list regex and arrays
 # Whitelist and Blacklist are based on category source and media folder names only.
 # Whitelist and Blacklist do NOT use filenames. Only filename parent folder name.
 # Remote server and local 'kodirsync_control_list.txt' files are combined.
@@ -743,13 +744,14 @@ fi
 black_dir_filter_regex="${result%|}"  # Create '$black_dir_filter_regex' (remove the trailing pipe symbol)
 
 
-#---- Step 4 - Get Kodirsync remote server file list
+#---- Step 3 - Get Kodirsync remote server file list
 # Gets a complete file list, regex filtered, from the remote server.
 
 get_remote_file_LIST
 if [ $? = 1 ]; then
-    # Print display message
-    echo -e "#---- WARNING - Terminal Error\nFunction : get_remote_file_LIST\nCheck log file to resolve the problem.\n"
+    # Log entry
+    echo -e "#---- WARNING - REMOTE FILE LIST\nDate : $(date)\nFailed to retrieve remote file list. Exiting...\n" >> $logfile
+    echo -e "\nFinish Time : $(date)\n#---- JOB FINISHED -----------------------------------------------------------------\n" >> $logfile
     exit 1  # Exit on fail
 fi
 
@@ -960,7 +962,12 @@ source $app_dir/kodirsync_clientapp_prune.sh
 #---- Perform rsync task
 
 # Create log entry
-echo -e "#---- KODIRSYNC JOB INFORMATION\nTime : $(date)\nTotal dl file cnt : ${#dl_remote_LIST[@]}\nTotal Kodirsync storage capacity : $(($storage_cap / (1024 * 1024 * 1024)))GB\nTotal download size : $(($total_dl_size / (1024 * 1024 * 1024)))GB\nRemaining Kodirsync storage space : $((adjusted_storage_cap / (1024 * 1024 * 1024)))GB\n" >> $logfile
+echo -e "#---- KODIRSYNC JOB INFORMATION
+Time : $(date)
+Total dl file cnt : ${#dl_remote_LIST[@]}
+Total Kodirsync storage capacity : $(($storage_cap / (1024 * 1024 * 1024)))GB
+Total download size : $(($total_dl_size / (1024 * 1024 * 1024)))GB
+Remaining Kodirsync storage space : $((adjusted_storage_cap / (1024 * 1024 * 1024)))GB\n" >> $logfile
 
 # Display msg ( for terminal only)
 echo "Total disk kodirsync storage capacity: $storage_cap bytes or $(($storage_cap / (1024 * 1024 * 1024)))GB"

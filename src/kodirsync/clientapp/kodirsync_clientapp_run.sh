@@ -115,6 +115,14 @@ else
     exit 0  # Exit script. OS not supported
 fi
 
+
+# Set PATH environment variables
+if [[ "$ostype" =~ ^.*(\")?(coreelec|libreelec)(\")?.*$ ]]; then
+    echo "Setting PATH"
+    # Set the PATH within the script
+    export PATH="/opt/bin:/usr/bin:$PATH"
+fi
+
 # Check client dependencies (SW and OS version)
 source $app_dir/kodirsync_clientapp_run_deps.sh
 

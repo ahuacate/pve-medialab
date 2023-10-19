@@ -11,9 +11,12 @@
 #---- Dependencies -----------------------------------------------------------------
 
 import os
+import sys
 import subprocess
 import time
-os.system("xfce4-terminal")
+# os.system("xfce4-terminal")
+print(os.environ)
+print("Current working directory:", os.getcwd())
 
 #---- Static Variables -------------------------------------------------------------
 
@@ -101,27 +104,30 @@ def main():
         kodimsg_app_not_found()
         exit(0)
 
+    # Define the log file path
+    log_path = os.path.join(app_dir, 'logs', 'kodi_gui_debug.log')
+
+    # Create the log directory if it doesn't exist
+    log_dir = os.path.dirname(log_path)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
     #---- Run Bash script
-    
+        
     # Display kodi msg
     kodimsg_start()
     
     # Path to the bash script
     bash_script_path = f"{app_dir}/kodirsync_clientapp_run.sh"
+    
+    # Execute the bash script in its own shell and redirect output to a log file
+    os.system(f"bash {bash_script_path} > {log_path} 2>&1")
 
-    # Execute the shell script in a new shell using subprocess.Popen
-    process = subprocess.Popen(["bash", bash_script_path])
-
-    # Wait for the process to finish
-    process.wait()
+    # # Wait for the process to finish
+    # process.wait()
     
     # Display kodi msg
     kodimsg_finish()
-
-    #---- Update Kodi library
-
-    # Call the function - library update
-    # kodi_library_update()
 
 #---- Body -------------------------------------------------------------------------
 
