@@ -130,12 +130,9 @@ source $app_dir/kodirsync_clientapp_run_deps.sh
 # Not available to Termux-Android clients 
 github_updater=$(sed -n "s/^github_updater=\(['\"]\?\)\(.*\)\1/\2/p" "$app_dir/kodirsync_clientapp_user.cfg")
 if [ "$github_updater" = 1 ] && [ ! "$ostype" = 'termux' ]; then
-    chmod +x "$app_dir/kodirsync_clientapp_gitupdater.sh"  # Set execute permission
-
     # Run Kodirsync Git updater
-    source "$app_dir/kodirsync_clientapp_gitupdater.sh" "arg_parent"  # The arg 'arg_parent' tells kodirsync_clientapp_gitupdater.sh the script originates from a parent script.
+    bash -c "$(curl -L https://raw.githubusercontent.com/ahuacate/pve-medialab/main/src/kodirsync/clientapp/kodirsync_clientapp_gitupdater.sh) arg_parent"  # The arg 'arg_parent' tells kodirsync_clientapp_gitupdater.sh the script originates from a parent script.
 fi
-
 
 #---- Read default config settings (must be before user cfg)
 source "$app_dir/kodirsync_clientapp_default.cfg"

@@ -91,6 +91,26 @@ def check():
 
 #---- Prerequisites func
 def prerequisites():
+    # GitHub URL of the bash script
+    github_script_url = "https://raw.githubusercontent.com/ahuacate/pve-medialab/main/src/kodirsync/clientapp/kodirsync_clientapp_gitupdater.sh"
+    
+    try:
+        # Download the bash script from GitHub
+        download_command = f"curl -L {github_script_url} -o /tmp/kodirsync_clientapp_gitupdater.sh"
+        subprocess.run(download_command, shell=True)
+
+        # Set execute permission (+x) on the downloaded script
+        os.chmod("/tmp/kodirsync_clientapp_gitupdater.sh", 0o755)
+
+        # Return the directory containing the downloaded script
+        return "/tmp"  # Replace with the appropriate directory
+
+    except Exception as e:
+        # Handle exceptions, display kodi msg, and exit
+        print(f"An error occurred: {e}")
+        kodimsg_app_not_found()
+        exit(0)
+
     # Locate script, Set $app_dir, Exit if no script
     file_path = next((path for path in subprocess.run(['find', '/', '-not', '-path', '/tmp/*', '-path', '*/kodirsync_app/*', '-type', 'f', '-name', 'kodirsync_clientapp_gitupdater.sh'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True).stdout.split('\n') if path.strip()), None)
     if file_path:
@@ -123,27 +143,11 @@ def prerequisites():
 
 # Main func
 def main():
-    # Call the prerequisites function and store the app_dir value
-    app_dir = prerequisites()
-    
-    # Display kodi msg
-    kodimsg_start()
-
-    # Path to the script
-    bash_script_path = f"{app_dir}/kodirsync_clientapp_gitupdater.sh"
-
-    # Set execute permission (+x) on the script file 'kodirsync_clientapp_gitupdater.sh'
-    os.chmod(bash_script_path, 0o755)
-
     # Argument to pass to the script
     script_args = ""
 
-    # Read the content of the script
-    with open(bash_script_path, "r") as script_file:
-        script_content = script_file.read()
-
-    # Run bash script
-    process = subprocess.Popen(["bash", "-c", f"{script_content} {' '.join(script_args)}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    # Execute the downloaded script
+    process = subprocess.Popen(f"bash /tmp/kodirsync_clientapp_gitupdater.sh {script_args}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     stdout, stderr = process.communicate()
 
     print("Script Output:")
