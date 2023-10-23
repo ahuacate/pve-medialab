@@ -52,7 +52,7 @@ def kodimsg_running():
 
 # Kodi func - 'running'
 def kodimsg_dl():
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,Downloading updates... ,{display_time_long},{icon_green})'])
+    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,Downloading updates, be patient... ,{display_time_long},{icon_green})'])
 
 # Kodi func - 'start'
 def kodimsg_start():
