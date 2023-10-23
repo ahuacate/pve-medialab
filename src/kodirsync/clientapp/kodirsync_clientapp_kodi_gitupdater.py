@@ -50,6 +50,10 @@ def kodimsg_fail():
 def kodimsg_running():
     subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,App already running... ,{display_time_short},{icon_green})'])
 
+# Kodi func - 'running'
+def kodimsg_dl():
+    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,Downloading updates... ,{display_time_long},{icon_green})'])
+
 # Kodi func - 'start'
 def kodimsg_start():
     subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,Starting app updater... ,{display_time_short},{icon_green})'])
@@ -91,6 +95,9 @@ def check():
 
 #---- Prerequisites func
 def prerequisites():
+    # Display kodi msg
+    kodimsg_start()
+
     # GitHub URL of the bash script
     github_script_url = "https://raw.githubusercontent.com/ahuacate/pve-medialab/main/src/kodirsync/clientapp/kodirsync_clientapp_gitupdater.sh"
     
@@ -143,6 +150,9 @@ def prerequisites():
 
 # Main func
 def main():
+    # Display kodi msg
+    kodimsg_dl()
+
     # Argument to pass to the script
     script_args = ""
 
@@ -153,20 +163,12 @@ def main():
     print("Script Output:")
     print(stdout)  # Print the captured output for debugging
 
-    # Capture dl_status from the last line of stdout
-    dl_status_lines = stdout.strip().split('\n')
-    dl_status = dl_status_lines[-1] if dl_status_lines else None
+    return_code = process.returncode  # Get the return code
 
-    if dl_status is None:
-        # Handle case when dl_status is not captured
-        pass
-    elif dl_status == "0":
-        kodimsg_fail()
-    elif dl_status == "1":
-        kodimsg_finish()
+    if return_code == 0:
+        kodimsg_finish()  # Success
     else:
-        # Handle other dl_status values if needed
-        pass
+        kodimsg_fail()  # Failure
 
 #---- Body -------------------------------------------------------------------------
 
