@@ -45,6 +45,7 @@ def kodi_library_update():
     if video_path:
         # Kodi library update and clean
         subprocess.run(['/usr/bin/kodi-send', '-a', f'UpdateLibrary(video)'])
+        time.sleep(1)
         subprocess.run(['/usr/bin/kodi-send', '-a', f'CleanLibrary(video)'])
 
     # Locate video dir, do nothing if it does not exist
@@ -52,6 +53,7 @@ def kodi_library_update():
     if music_path:
         # Kodi library update and clean
         subprocess.run(['/usr/bin/kodi-send', '-a', f'UpdateLibrary(music)'])
+        time.sleep(1)
         subprocess.run(['/usr/bin/kodi-send', '-a', f'CleanLibrary(music)'])
 
     # Display kodi msg

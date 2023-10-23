@@ -8,6 +8,9 @@
 # Must be run using the cmd:
 #    source <( cat ${app_dir}/kodirsync_clientapp_gitupdater.sh )
 
+#---- Source Github
+# bash -c "$(curl -L https://raw.githubusercontent.com/ahuacate/pve-medialab/main/src/kodirsync/clientapp/kodirsync_clientapp_gitupdater.sh)"
+
 #---- Source -----------------------------------------------------------------------
 #---- Dependencies -----------------------------------------------------------------
 
@@ -215,24 +218,6 @@ fi
 
 # Get Kodirsync User permissions
 file_perms=$(ls -ld $app_dir | awk '{print $3 ":" $4}')
-
-# Check for updates on GitHub
-if curl -s -I "https://raw.githubusercontent.com/$git_dl_user/$git_dl_repo/$git_dl_branch/src/kodirsync/clientapp/kodirsync_clientapp_gitupdater.sh" | head -1 | grep -E "(200 OK|HTTP(/2)? 200)" > /dev/null; then
-    # Download the updated script to a temporary location
-    curl -L -o /tmp/kodirsync_clientapp_gitupdater_new.sh "https://raw.githubusercontent.com/$git_dl_user/$git_dl_repo/$git_dl_branch/src/kodirsync/clientapp/kodirsync_clientapp_gitupdater.sh"
-
-    # Check if the download was successful
-    if [ $? -eq 0 ]; then
-        mv /tmp/kodirsync_clientapp_gitupdater_new.sh "$0"  # Replace the old script with the updated one
-        chmod +x "$0"  # Set execute permission for the updated script
-        exec "$0" "$@"  # Restart the script with the updated version
-    fi
-else
-    # Log entry
-    echo -e "#---- GIT SCRIPT UPDATE FINISHED ---------------------------------------------------\n" >> "$logfile"
-    return 0  # Skip updating
-fi
-
 
 #---- Download latest GitHub app files (main branch)
 

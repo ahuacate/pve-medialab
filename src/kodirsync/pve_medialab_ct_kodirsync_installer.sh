@@ -7,7 +7,7 @@
 #---- Bash command to run script ---------------------------------------------------
 
 #---- Source Github
-# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/master/pve_medialab_installer.sh)"
+# bash -c "$(curl -L https://raw.githubusercontent.com/ahuacate/pve-medialab/main/pve_medialab_installer.sh)"
 
 #---- Source local Git
 # /mnt/pve/nas-01-git/ahuacate/pve-medialab/pve_medialab_installer.sh
