@@ -39,7 +39,6 @@ while true; do
             sleep $retry_interval
         fi
     else
-        echo "Script '$0' is not running. Exiting."
         break
     fi
 done
@@ -131,8 +130,10 @@ source $app_dir/kodirsync_clientapp_run_deps.sh
 # Not available to Termux-Android clients 
 github_updater=$(sed -n "s/^github_updater=\(['\"]\?\)\(.*\)\1/\2/p" "$app_dir/kodirsync_clientapp_user.cfg")
 if [ "$github_updater" = 1 ] && [ ! "$ostype" = 'termux' ]; then
+    chmod +x "$app_dir/kodirsync_clientapp_gitupdater.sh"  # Set execute permission
+
     # Run Kodirsync Git updater
-    source <(cat "$app_dir/kodirsync_clientapp_gitupdater.sh") "arg_parent"  # The arg 'arg_parent' tells kodirsync_clientapp_gitupdater.sh the script originates from a parent script.
+    source "$app_dir/kodirsync_clientapp_gitupdater.sh" "arg_parent"  # The arg 'arg_parent' tells kodirsync_clientapp_gitupdater.sh the script originates from a parent script.
 fi
 
 

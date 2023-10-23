@@ -132,6 +132,9 @@ def main():
     # Path to the script
     bash_script_path = f"{app_dir}/kodirsync_clientapp_gitupdater.sh"
 
+    # Set execute permission (+x) on the script file 'kodirsync_clientapp_gitupdater.sh'
+    os.chmod(bash_script_path, 0o755)
+
     # Argument to pass to the script
     script_args = ""
 
