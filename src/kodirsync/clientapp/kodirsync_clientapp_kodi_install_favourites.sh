@@ -33,9 +33,12 @@ fi
 
 #---- Copy files to Kodi addons dir
 
-# Make script folder
-script_dir='/storage/.kodi/addons/script.module.kodirsync'
-mkdir -p $script_dir
+# Make 'script.module.kodirsync' folder
+script_module_kodirsync_dir='/storage/.kodi/addons/script.module.kodirsync'
+mkdir -p "$script_module_kodirsync_dir"
+if [ -e "$script_module_kodirsync_dir" ]; then
+    rm -f -r "$script_module_kodirsync_dir"/*  # Delete all files
+fi
 
 # Copy python files to addons dir
 kodi_files=(
@@ -55,11 +58,11 @@ kodi_files=(
 )
 for file in "${kodi_files[@]}"; do
     # Copy file
-    cp -f "$app_dir/$file" "$script_dir/" 2> /dev/null
+    cp -f -r "$app_dir/$file" "$script_module_kodirsync_dir/" 2> /dev/null
 
     # Set permissions
     if [[ "$file" =~ \.(sh|py)$ ]]; then
-        chmod +x "$script_dir/$file" 2> /dev/null
+        chmod +x "$script_module_kodirsync_dir/$file" 2> /dev/null
     fi
 done
 
@@ -70,7 +73,7 @@ done
 update_status=false
 
 # Add 'Kodirsync start' cmd to Kodi favourites
-entry="<favourite name=\"Kodirsync start\" thumb=\"$script_dir/kodi_thumb_start.png\">RunScript($script_dir/kodirsync_clientapp_kodi_run.py)</favourite>"
+entry="<favourite name=\"Kodirsync start\" thumb=\"$script_module_kodirsync_dir/kodi_thumb_start.png\">RunScript($script_module_kodirsync_dir/kodirsync_clientapp_kodi_run.py)</favourite>"
 # Check if 'Kodirsync run' already exists in the file
 if ! grep -q "<favourite name=\"Kodirsync start\"" "$xml_file"; then
     sed -i "\$i$entry" "$xml_file"  # Add the new entry at the end of the file
@@ -82,7 +85,7 @@ else
 fi
 
 # Add 'Kodirsync node start' cmd to Kodi favourites
-entry="<favourite name=\"Kodirsync node start\" thumb=\"$script_dir/kodi_thumb_node_start.png\">RunScript($script_dir/kodirsync_clientapp_kodi_node_run.py)</favourite>"
+entry="<favourite name=\"Kodirsync node start\" thumb=\"$script_module_kodirsync_dir/kodi_thumb_node_start.png\">RunScript($script_module_kodirsync_dir/kodirsync_clientapp_kodi_node_run.py)</favourite>"
 # Check if 'Kodirsync run' already exists in the file
 if ! grep -q "<favourite name=\"Kodirsync node start\"" "$xml_file"; then
     sed -i "\$i$entry" "$xml_file"  # Add the new entry at the end of the file
@@ -94,7 +97,7 @@ else
 fi
 
 # Add 'Kodirsync status' cmd to Kodi favourites
-entry="<favourite name=\"Kodirsync status\" thumb=\"$script_dir/kodi_thumb_status.png\">RunScript($script_dir/kodirsync_clientapp_kodi_status.py)</favourite>"
+entry="<favourite name=\"Kodirsync status\" thumb=\"$script_module_kodirsync_dir/kodi_thumb_status.png\">RunScript($script_module_kodirsync_dir/kodirsync_clientapp_kodi_status.py)</favourite>"
 # Check if 'Kodirsync run' already exists in the file
 if ! grep -q "<favourite name=\"Kodirsync status\"" "$xml_file"; then
     sed -i "\$i$entry" "$xml_file"  # Add the new entry at the end of the file
@@ -106,7 +109,7 @@ else
 fi
 
 # Add 'Kodirsync sw updater' cmd to Kodi favourites
-entry="<favourite name=\"Kodirsync sw updater\" thumb=\"$script_dir/kodi_thumb_updater.png\">RunScript($script_dir/kodirsync_clientapp_kodi_gitupdater.py)</favourite>"
+entry="<favourite name=\"Kodirsync sw updater\" thumb=\"$script_module_kodirsync_dir/kodi_thumb_updater.png\">RunScript($script_module_kodirsync_dir/kodirsync_clientapp_kodi_gitupdater.py)</favourite>"
 # Check if 'Kodirsync run' already exists in the file
 if ! grep -q "<favourite name=\"Kodirsync sw updater\"" "$xml_file"; then
     sed -i "\$i$entry" "$xml_file"  # Add the new entry at the end of the file
@@ -118,7 +121,7 @@ else
 fi
 
 # Add 'Kodirsync library cleanup' cmd to Kodi favourites
-entry="<favourite name=\"Kodirsync library cleanup\" thumb=\"$script_dir/kodi_thumb_cleanup.png\">RunScript($script_dir/kodirsync_clientapp_kodi_libraryscan.py)</favourite>"
+entry="<favourite name=\"Kodirsync library cleanup\" thumb=\"$script_module_kodirsync_dir/kodi_thumb_cleanup.png\">RunScript($script_module_kodirsync_dir/kodirsync_clientapp_kodi_libraryscan.py)</favourite>"
 # Check if 'Kodirsync run' already exists in the file
 if ! grep -q "<favourite name=\"Kodirsync library cleanup\"" "$xml_file"; then
     sed -i "\$i$entry" "$xml_file"  # Add the new entry at the end of the file
@@ -129,7 +132,7 @@ else
     echo "New entry already exists in XML file '$xml_file'. No changes made."
 fi
 
-# Copy favourites.xml to Profile 'kodirsync'
+# Copy favourites.xml to 'kodirsync' profile
 if [ "$update_status" = true ]; then
     mkdir -p /storage/.kodi/userdata/profiles/kodirsync
     cp -f $xml_file /storage/.kodi/userdata/profiles/kodirsync/

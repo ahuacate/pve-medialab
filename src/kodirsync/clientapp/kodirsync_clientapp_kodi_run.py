@@ -14,9 +14,12 @@ import os
 import sys
 import subprocess
 import time
-# os.system("xfce4-terminal")
-print(os.environ)
-print("Current working directory:", os.getcwd())
+
+# Modify the PATH to include the necessary directories
+# Required when executing bash scripts designed to run on host OS
+new_path = "/opt/bin:/usr/bin:" + os.environ['PATH']
+os.environ['PATH'] = new_path
+
 
 #---- Static Variables -------------------------------------------------------------
 
@@ -104,8 +107,8 @@ def main():
         kodimsg_app_not_found()
         exit(0)
 
-    # Define the log file path
-    log_path = os.path.join(app_dir, 'logs', 'kodi_gui_debug.log')
+    # Define the kodi gui log file path (logs 'kodirsync_clientapp_run.sh')
+    log_path = os.path.join(app_dir, 'logs', 'kodi_start_debug.log')
 
     # Create the log directory if it doesn't exist
     log_dir = os.path.dirname(log_path)
@@ -121,10 +124,8 @@ def main():
     bash_script_path = f"{app_dir}/kodirsync_clientapp_run.sh"
     
     # Execute the bash script in its own shell and redirect output to a log file
-    os.system(f"bash {bash_script_path} > {log_path} 2>&1")
-
-    # # Wait for the process to finish
-    # process.wait()
+    # os.system(f"bash {bash_script_path} > {log_path} 2>&1")  # Version with logging.
+    os.system(f"bash {bash_script_path}")
     
     # Display kodi msg
     kodimsg_finish()

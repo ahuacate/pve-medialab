@@ -539,7 +539,48 @@ function multipart_cleanup_server() {
 
 #---- Function to start rsync processes
 
-# Multipart rsync
+# Function wait for last 'n' multipart file to be created
+wait_nth_multipart_file(){
+    # Initialize variables to hold the highest count and corresponding entry
+    local highest_count=0
+    local file_to_watch=""
+
+    # Regular expression pattern to match entries ending with ".z[0-9]+"
+    local pattern="\.z([0-9]+)$"
+
+    # Iterate through the array
+    local entry
+    for entry in "${multipart_file_LIST[@]}"; do
+        if [[ "$entry" =~ $pattern ]]; then
+            count="${BASH_REMATCH[1]}"
+            if ((count > highest_count)); then
+                highest_count="$count"
+                file_to_watch="$(printf '%q' "$entry")"
+            fi
+        fi
+    done
+
+    # Replace the placeholder in the script with the actual value
+    local modified_script="$(mktemp -p $work_dir)"  # Create a temporary copy of the script
+    cp "$work_dir/watch_for_last_multipart_template.sh" "$modified_script"
+    sed -i "s#\\\$file_to_watch#$file_to_watch#" "$modified_script"
+
+    # Watch for the last multipart to be created on server before continuing
+    local j
+    for ((j = 1; j <= ssh_connect_retrycount; j++)); do
+        "${ssh_cmd[@]}" "$rsync_username@$rsync_address" "bash -s" < "$modified_script"
+
+        # Process ssh exit codes
+        if [ $? = 0 ]; then
+            break
+        elif [ $? -ne 0 ]; then
+            sleep $ssh_connect_retrysleep
+            continue  # Continue to the next iteration of the loop
+        fi
+    done
+}
+
+# Function Multipart rsync
 function start_multipart_rsync() {
     # Set argument parameters
     local source_file="$1"  # file to downloaded
@@ -548,7 +589,7 @@ function start_multipart_rsync() {
     # Set other variables
     local source_filename=$(basename "$source_file")
     local source_dir=$(dirname "$source_file")
-    local max_retries="$rsync_retry_cnt"  # Maximum number of retries (adjust as needed)
+    local max_retries="$rsync_retry_cnt"  # Maximum number of retries per chunk (adjust as needed)
     local source='.'  # Set current working dir
 
     # Step 1 - Create multipart files on remote server
@@ -603,151 +644,136 @@ function start_multipart_rsync() {
         throttle_pid=$!
     fi
 
-
     # Step 5 - Start rsync loop
-    local retry
-    for ((retry = 1; retry <= max_retries; retry++)); do
-        # Set rsync --bwlimit value
-        bw_tune=$(rsync_bwlimit_tuner)
 
-        # Run rsync
-        printf '%s\n' "${multipart_file_LIST[@]}" | xargs -P $rsync_threads -I% rsync -e "$rsync_ssh_cmd" "${rsync_args[@]}" "--bwlimit=$bw_tune" "$rsync_username@$rsync_address:$source/%" "$dst_dir/rsync_tmp"
+    # Set rsync --bwlimit value
+    bw_tune=$(rsync_bwlimit_tuner)
 
-        # Process rsync exit codes
+    # Export individual variables
+    export rsync_ssh_cmd
+    export rsync_username
+    export rsync_address
+    export source
+    export dst_dir
+    export bw_tune
+    export rsync_retry_cnt
+    export rsync_retry_sleep
+    export logfile
+
+    # Function 'multipart_downloader'
+    multipart_downloader() {
+        local part_file="$1"
+        local max_retries=$rsync_retry_cnt  # Set your desired maximum number of retries per chunk here
+
+        for ((retry = 1; retry <= max_retries; retry++)); do
+            rsync -v -e "$rsync_ssh_cmd" "${rsync_args[@]}" "--bwlimit=$bw_tune" "$rsync_username@$rsync_address:$source/$part_file" "$dst_dir/rsync_tmp"
+
+            # Process rsync exit codes
+            if [ $? -eq 0 ]; then
+                return 0  # Return 0 (success) if the rsync command is successful
+            else
+                # Log entry
+                echo -e "Multipart retry count $retry of $max_retries for part:\n$part_file\n" >> "$logfile"
+                if [ $retry = $max_retries ]; then
+                    sleep 120  # Extra long Rsync sleep period on last attempt
+                else
+                    sleep $rsync_retry_sleep  # Rsync sleep period
+                fi
+            fi
+        done
+
+        # Log entry
+        echo -e "#---- MULTIPART FAIL\nDate : $(date)\nDescription : Rsync part fail\nRetry count $retry of $max_retries for part:\n$part_file\n" >> "$logfile"
+        return 1  # Return 1 (failure) if all retry attempts fail
+    }
+
+    # Export the function if necessary
+    export -f multipart_downloader
+
+    # Call the 'multipart_downloader' function using xargs
+    printf '%s\n' "${multipart_file_LIST[@]}" | xargs -P $rsync_threads -I{} bash -c 'multipart_downloader "{}"'
+
+    # Process rsync exit codes
+    if [ $? = 0 ]; then
+        # On rsync success
+        mkdir -p "$dst_dir/$source_dir"   # Wait until the directory is created
+        while [ ! -d "$dst_dir/$source_dir" ]; do
+            sleep 0.5  # Sleep before checking again
+        done
+
+        # Reassemble multipart files to $dst_dir
+        7z e "$rsync_tmp/$source_filename.zip" -o"$dst_dir/$source_dir" -w"$rsync_tmp" -aoa
+
+        # Check the exit status of 7z
         if [ $? = 0 ]; then
-            # On rsync success
-            mkdir -p "$dst_dir/$source_dir"   # Wait until the directory is created
-            while [ ! -d "$dst_dir/$source_dir" ]; do
-                sleep 0.5  # Sleep before checking again
-            done
+            # On 7z success
+            multipart_cleanup_server "$source_file"  # Delete server multipart files
+            multipart_cleanup_local "$source_file"  # Delete local multipart files
 
-            # Reassemble multipart files to $dst_dir
-            7z e "$rsync_tmp/$source_filename.zip" -o"$dst_dir/$source_dir" -w"$rsync_tmp" -aoa
-
-            # Check the exit status of 7z
-            if [ $? = 0 ]; then
-                # On 7z success
-                multipart_cleanup_server "$source_file"  # Delete server multipart files
-                multipart_cleanup_local "$source_file"  # Delete local multipart files
-
-                # Log entry
-                echo -e "#---- MULTIPART SUCCESS\nDate : $(date)\nSource filename : $source_filename\n" >> "$logfile"
-            else
-                # On 7z fail
-                multipart_cleanup_server "$source_file"  # Delete server multipart files
-                multipart_cleanup_local "$source_file"  # Delete local multipart files
-                rm -f "$dst_dir/$source_file" 2> /dev/null || true  # Delete local part destination if exists
-
-                # Log entry
-                echo -e "#---- MULTIPART 7z FAIL\nDate : $(date)\nSource filename : $source_filename\n" >> "$logfile"
-            fi
-
-            # Kill the throttle PID
-            if [ -n "$throttle_pid" ]; then
-                echo "Killing PID and its children: $pid"
-                kill -TERM "$throttle_pid" 2> /dev/null  # Send SIGTERM to the throttle process
-                sleep 0.5  # Wait for a moment before sending SIGKILL if needed
-                kill -KILL "$throttle_pid" 2> /dev/null  # Send SIGKILL to the throttle process
-            fi
-
-            # Update queue counters
-            decrement "$global_multipart_queue_cnt" "${#multipart_file_LIST[@]}"
-            decrement "$global_job_cnt" "${#multipart_file_LIST[@]}"  # Decrement $global_job_cnt
-
-            return 0  # Set exit code
+            # Log entry
+            echo -e "#---- MULTIPART SUCCESS\nDate : $(date)\nSource filename : $source_filename\n" >> "$logfile"
         else
-            # On rsync fail
-            if [ $retry -lt $max_retries ]; then
-                # Fail possibility is a missing 'n'th multipart file. Cause is dl is
-                # faster than remote manufacture of multipart chunks.
-                # Next step will watch for the last 'n' multipart to be created on
-                # the remote server before proceeding with rsync of the multipart files.
+            # On 7z fail
+            multipart_cleanup_server "$source_file"  # Delete server multipart files
+            multipart_cleanup_local "$source_file"  # Delete local multipart files
+            rm -f "$dst_dir/$source_file" 2> /dev/null || true  # Delete local part destination if exists
 
-                # Log entry
-                echo -e "#---- MULTIPART RSYNC FAIL\nDate : $(date)\nRetry count $retry of $max_retries for:\n$source_file\n" >> "$logfile"
-
-                # Rsync sleep period
-                sleep $rsync_retry_sleep
-
-                # Find last 'n' multipart file on first retry
-                if [ "$retry" = 1 ]; then
-                    # Initialize variables to hold the highest count and corresponding entry
-                    local highest_count=0
-                    local file_to_watch=""
-
-                    # Regular expression pattern to match entries ending with ".z[0-9]+"
-                    local pattern="\.z([0-9]+)$"
-
-                    # Iterate through the array
-                    local entry
-                    for entry in "${multipart_file_LIST[@]}"; do
-                        if [[ "$entry" =~ $pattern ]]; then
-                            count="${BASH_REMATCH[1]}"
-                            if ((count > highest_count)); then
-                                highest_count="$count"
-                                file_to_watch="$(printf '%q' "$entry")"
-                            fi
-                        fi
-                    done
-
-                    # Replace the placeholder in the script with the actual value
-                    local modified_script="$(mktemp -p $work_dir)"  # Create a temporary copy of the script
-                    cp "$work_dir/watch_for_last_multipart_template.sh" "$modified_script"
-                    sed -i "s#\\\$file_to_watch#$file_to_watch#" "$modified_script"
-
-                    # Watch for the last multipart to be created on server before continuing
-                    local j
-                    for ((j = 1; j <= ssh_connect_retrycount; j++)); do
-                        "${ssh_cmd[@]}" "$rsync_username@$rsync_address" "bash -s" < "$modified_script"
-
-                        # Process ssh exit codes
-                        if [ $? = 0 ]; then
-                            break
-                        elif [ $? -ne 0 ]; then
-                            sleep $ssh_connect_retrysleep
-                            continue  # Continue to the next iteration of the loop
-                        fi
-                    done
-                fi
-            else
-                # Kill the throttle PID
-                if [ -n "$throttle_pid" ]; then
-                    echo "Killing PID and its children: $pid"
-                    kill -TERM "$throttle_pid" 2> /dev/null  # Send SIGTERM to the throttle process
-                    sleep 0.5  # Wait for a moment before sending SIGKILL if needed
-                    kill -KILL "$throttle_pid" 2> /dev/null  # Send SIGKILL to the throttle process
-                fi
-
-                # Kill PID of rsync/ssh commands
-                local escaped_rsync_match=$(printf "%q" "$source_filename")
-                local rsync_pids=()
-                rsync_pids+=( $(pgrep -f "^(rsync.*${escaped_rsync_match}.*|ssh.*${escaped_rsync_match}.*|xargs.*rsync -e.*)") )
-                # Iterate through the array and send SIGTERM to each PID and its children
-                local pid
-                for pid in "${rsync_pids[@]}"; do
-                    if [ -n "$pid" ]; then
-                        echo "Killing PID and its children: $pid"
-                        kill -TERM "$pid" 2> /dev/null  # Send SIGTERM to the process
-                        sleep 0.5  # Wait for a moment before sending SIGKILL if needed
-                        kill -KILL "$pid" 2> /dev/null  # Send SIGKILL to the process
-                    fi
-                done
-
-                # Delete multipart files
-                multipart_cleanup_server "$source_file"  # Delete server multipart files
-                multipart_cleanup_local "$source_file"  # Delete local multipart files
-
-                # Log entry
-                echo -e "#---- WARNING - MULTIPART RSYNC FAIL\nDate : $(date)\nReached retry count limit $retry of $max_retries for:\n$source_file\nSkipping file.\n" >> "$logfile"
-
-                # Update queue counters
-                decrement "$global_multipart_queue_cnt" "${#multipart_file_LIST[@]}"
-                decrement "$global_job_cnt" "${#multipart_file_LIST[@]}"  # Decrement $global_job_cnt
-
-                return 1  # Set exit code
-            fi
+            # Log entry
+            echo -e "#---- MULTIPART FAIL\nDate : $(date)\nDescription : 7z decompress fail\nSource filename : $source_filename\n" >> "$logfile"
         fi
-    done
+
+        # Kill the throttle PID
+        if [ -n "$throttle_pid" ]; then
+            echo "Killing PID and its children: $pid"
+            kill -TERM "$throttle_pid" 2> /dev/null  # Send SIGTERM to the throttle process
+            sleep 0.5  # Wait for a moment before sending SIGKILL if needed
+            kill -KILL "$throttle_pid" 2> /dev/null  # Send SIGKILL to the throttle process
+        fi
+
+        # Update queue counters
+        decrement "$global_multipart_queue_cnt" "${#multipart_file_LIST[@]}"
+        decrement "$global_job_cnt" "${#multipart_file_LIST[@]}"  # Decrement $global_job_cnt
+
+        return 0  # Set exit code
+    else
+        # On rsync fail
+
+        # Kill the throttle PID
+        if [ -n "$throttle_pid" ]; then
+            echo "Killing PID and its children: $pid"
+            kill -TERM "$throttle_pid" 2> /dev/null  # Send SIGTERM to the throttle process
+            sleep 0.5  # Wait for a moment before sending SIGKILL if needed
+            kill -KILL "$throttle_pid" 2> /dev/null  # Send SIGKILL to the throttle process
+        fi
+
+        # Kill PID of rsync/ssh commands
+        local escaped_rsync_match=$(printf "%q" "$source_filename")
+        local rsync_pids=()
+        rsync_pids+=( $(pgrep -f "^(rsync.*${escaped_rsync_match}.*|ssh.*${escaped_rsync_match}.*|xargs.*rsync -e.*|openssl s_client.*)") )
+        # Iterate through the array and send SIGTERM to each PID and its children
+        local pid
+        for pid in "${rsync_pids[@]}"; do
+            if [ -n "$pid" ]; then
+                echo "Killing PID and its children: $pid"
+                kill -TERM "$pid" 2> /dev/null  # Send SIGTERM to the process
+                sleep 0.5  # Wait for a moment before sending SIGKILL if needed
+                kill -KILL "$pid" 2> /dev/null  # Send SIGKILL to the process
+            fi
+        done
+
+        # Delete multipart files
+        multipart_cleanup_server "$source_file"  # Delete server multipart files
+        multipart_cleanup_local "$source_file"  # Delete local multipart files
+
+        # Log entry
+        echo -e "#---- WARNING - MULTIPART FAIL\nDate : $(date)\nDescription : rsync fail\nReached retry count limit $max_retries of $max_retries for:\n$source_file\nSkipping file.\n" >> "$logfile"
+
+        # Update queue counters
+        decrement "$global_multipart_queue_cnt" "${#multipart_file_LIST[@]}"
+        decrement "$global_job_cnt" "${#multipart_file_LIST[@]}"  # Decrement $global_job_cnt
+
+        return 1  # Set exit code
+    fi
 }
 
 # Single rsync with retry loop
@@ -755,9 +781,14 @@ function start_single_rsync() {
     # Set argument parameters
     local source_file="$1"  # file to downloaded
     local dst_dir="$2"  # final destination base dir
+    local source_size="$3"  # source file size (bytes)
     # Set other variables
-    local max_retries="$rsync_retry_cnt"  # Maximum number of retries (adjust as needed)
     local source='.'  # Set current working dir
+    if [ $source_size -lt 1073741824 ]; then
+        local max_retries="$rsync_retry_cnt"  # Calculate retry cnt relative to file size
+    else
+        local max_retries=$(( (source_size + 1073741824 - 1) / 1073741824 * rsync_retry_cnt ))  # Calculate max_retries (rounding up)
+    fi
 
     # Background throttle subshell to interrupt rsync at specified times
     local throttle_pid
@@ -834,7 +865,7 @@ function start_single_rsync() {
 
             if [[ $retry -lt $max_retries ]]; then
                 # Log entry
-                echo -e "#---- SINGLE RSYNC FAIL\nDate : $(date)\nRetry count $retry of $max_retries for:\n$source_file\n" >> "$logfile"
+                echo -e "#---- SINGLE RSYNC FAIL\nDate : $(date)\nDescription : rsync fail\nRetry count $retry of $max_retries for:\n$source_file\n" >> "$logfile"
 
                 sleep $rsync_retry_sleep  # Apply sleep period before retry
             else
@@ -847,10 +878,7 @@ function start_single_rsync() {
                 fi
 
                 # Log entry
-                echo -e "#---- WARNING - SINGLE RSYNC FAIL\nDate : $(date)\nReached retry count limit for: $source_file\n" >> "$logfile"
-
-                # Update queue counters (if func run in subshell, not required, use signal)
-                # global_job_cnt=$(( global_job_cnt - 1 ))
+                echo -e "#---- WARNING - SINGLE RSYNC FAIL\nDate : $(date)\nDescription : rsync fail\nReached retry count limit for: $source_file\n" >> "$logfile"
 
                 return=1  # Set exit code
             fi
@@ -1068,7 +1096,7 @@ for ((i = 0; i < ${#source_files[@]}; i++)); do
         # Run func 'start_single_rsync' in the background
         (
             rsync_args=("${rsync_args_single[@]}")
-            start_single_rsync "$source_file" "$dst_dir"
+            start_single_rsync "$source_file" "$dst_dir" "$source_size"
 
             # Get the PID of the current subshell
             subshell_pid=$$

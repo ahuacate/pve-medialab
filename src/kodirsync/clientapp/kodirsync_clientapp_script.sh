@@ -755,6 +755,14 @@ if [ $? = 1 ]; then
     exit 1  # Exit on fail
 fi
 
+# Check if any remote content exists
+if [ "${#all_remote_LIST[@]}" = 0 ]; then
+    # Log entry
+    echo -e "#---- WARNING - REMOTE FILE LIST\nDate : $(date)\nNo content in remote file list. Exiting...\n" >> $logfile
+    echo -e "\nFinish Time : $(date)\n#---- JOB FINISHED -----------------------------------------------------------------\n" >> $logfile
+    exit 0  # Exit when no content is available
+fi
+
 
 #---- Step 4 - Setup local base dir shares
 # Create local base dir shares to match remote server shares
@@ -962,7 +970,7 @@ source $app_dir/kodirsync_clientapp_prune.sh
 #---- Perform rsync task
 
 # Create log entry
-echo -e "#---- KODIRSYNC JOB INFORMATION
+echo -e "#---- KODIRSYNC NEW JOB INFORMATION ------------------------------------------------
 Time : $(date)
 Total dl file cnt : ${#dl_remote_LIST[@]}
 Total Kodirsync storage capacity : $(($storage_cap / (1024 * 1024 * 1024)))GB

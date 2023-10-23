@@ -3,7 +3,7 @@
 # Filename:     kodirsync_clientapp_run.sh
 # Description:  Default Kodirsync client run script
 # ----------------------------------------------------------------------------------
-set -x
+
 #---- Source -----------------------------------------------------------------------
 
 DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
@@ -12,26 +12,35 @@ DIR=$( cd "$( dirname "${BASH_SOURCE}" )" && pwd )
 
 #---- Check script is not already running
 
-# Check for existing running script pid
-script_sleep_time=3000  # Script sleep time (sec)
-script_cnt_timeout=10  # Script timeout count limit
-c=0
-while [ 1 ]; do
-    # Get current script pid
-    pid=$(pgrep -f "$(basename $0)"| grep -x -v $$)
+# Define the script timeout in seconds
+timeout=3600  # 1 hour
 
-    # Filter non-existent pid(s)
-    pid=$(echo "$pid" | xargs -n1 sh -c 'kill -0 "$1" 2>/dev/null && echo "$1"' --)
+# Define the retry interval in seconds
+retry_interval=60  # 1 minute
 
-    if [ -n "$pid" ]; then
-        # Print screen msg
-        echo -e "Script '"$(basename $0)"' is already running with pid ${pid}.\nTrying again in ${script_sleep_time} seconds (Attempt: $((${c} + 1)) of ${script_cnt_timeout})."
+# Initialize the timer
+start_time=$(date +%s)
 
-        # Set sleep period or timeout
-        ((c++)) && ((c==${script_cnt_timeout})) && exit 0
-        sleep $script_sleep_time
+# Define a function to check if the script is running
+is_script_running() {
+    pgrep -f "$0" | grep -v "$$"
+}
+
+# Main loop to check if the script is running
+while true; do
+    if is_script_running; then
+        current_time=$(date +%s)
+        elapsed_time=$((current_time - start_time))
+        if [ $elapsed_time -ge $timeout ]; then
+            echo "Script '$0' is still running after $timeout seconds. Exiting."
+            exit 1
+        else
+            echo "Script '$0' is still running. Waiting $retry_interval seconds."
+            sleep $retry_interval
+        fi
     else
-        break  # Clear to run script
+        echo "Script '$0' is not running. Exiting."
+        break
     fi
 done
 
@@ -113,14 +122,6 @@ elif [ "$(uname)" == "Linux" ] && [ ! $(command -v termux-info >/dev/null 2>&1; 
 else
     echo -e "\e[93m[WARNING]\e[39m \e[97mKodirsync is supported on CoreELEC, LibreELEC, Linux and Termux only.\nBye...\n\e[39m"
     exit 0  # Exit script. OS not supported
-fi
-
-
-# Set PATH environment variables
-if [[ "$ostype" =~ ^.*(\")?(coreelec|libreelec)(\")?.*$ ]]; then
-    echo "Setting PATH"
-    # Set the PATH within the script
-    export PATH="/opt/bin:/usr/bin:$PATH"
 fi
 
 # Check client dependencies (SW and OS version)

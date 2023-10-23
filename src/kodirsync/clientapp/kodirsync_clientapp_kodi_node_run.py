@@ -11,9 +11,14 @@
 #---- Dependencies -----------------------------------------------------------------
 
 import os
+import sys
 import subprocess
 import time
-os.system("xfce4-terminal")
+
+# Modify the PATH to include the necessary directories
+# Required when executing bash scripts designed to run on host OS
+new_path = "/opt/bin:/usr/bin:" + os.environ['PATH']
+os.environ['PATH'] = new_path
 
 #---- Static Variables -------------------------------------------------------------
 
@@ -106,18 +111,10 @@ def main():
     bash_script_path = f"{app_dir}/kodirsync_clientapp_node_run.sh"
 
     # Execute the shell script in a new shell using subprocess.Popen
-    process = subprocess.Popen(["bash", bash_script_path])
-
-    # Wait for the process to finish
-    process.wait()
+    os.system(f"bash {bash_script_path}") 
     
     # Display kodi msg
     kodimsg_finish()
-
-    #---- Update Kodi library
-
-    # Call the function - library update
-    #kodi_library_update()
 
 #---- Body -------------------------------------------------------------------------
 

@@ -27,16 +27,26 @@ git_dl_user='ahuacate'      # Git user
 git_dl_repo='pve-medialab'  # Git repository
 git_dl_branch='main'        # Git branch
 
+
+#---- Other Variables --------------------------------------------------------------
+
 # Set $app_dir
 if [ -z "$app_dir" ]; then
     app_dir=$(find / -type d -name kodirsync_app -not -path "/storage/*" -not -path "/tmp/*")
+fi
+
+# Check if $app_dir is still empty
+if [ -z "$app_dir" ]; then
+    # Print display message
+    echo "kodirsync_app directory not found. Exiting the script."
+    exit 1  # Exit the script with a non-zero status
 fi
 
 # Log files
 now=$(date +"%F")
 logfile="$app_dir/logs/kodirsync-${now}.log"
 
-#---- Other Variables --------------------------------------------------------------
+
 #---- Other Files ------------------------------------------------------------------
 
 # Git Update files
@@ -85,6 +95,7 @@ git_update_LIST=(
     kodirsync_clientapp_script.sh
     kodirsync_clientapp_uninstall_elec.sh
     kodirsync_clientapp_uninstall_linux.sh
+    kodirsync_clientapp_user.cfg
     kodirsync_control_list.tmpl
     kodirsync_node_install_storage.sh
     kodi_icon_idle.png
@@ -105,23 +116,6 @@ git_update_LIST=(
     termux_widget/Update-Widget.bash
 )
 
-# Kodi addon update files
-kodi_addon_file_LIST=()  # Initialize array
-kodi_addon_file_LIST=(
-    kodirsync_clientapp_kodi_libraryscan.py
-    kodirsync_clientapp_kodi_run.py
-    kodirsync_clientapp_kodi_node_run.py
-    kodirsync_clientapp_kodi_gitupdater.py
-    kodirsync_clientapp_kodi_status.py
-    kodi_icon_start.png
-    kodi_icon_stop.png
-    kodi_icon_idle.png
-    kodi_thumb_cleanup.png
-    kodi_thumb_node_start.png
-    kodi_thumb_start.png
-    kodi_thumb_updater.png
-    kodi_thumb_status.png
-)
 
 #---- Functions --------------------------------------------------------------------
 
@@ -173,11 +167,9 @@ function dl_github_updates(){
 
         # If all retries fail, log an error
         if [ "$success" = false ]; then
-            error_MSG="#---- WARNING - GIT SCRIPT UPDATE FAIL"
-            error_MSG+="\nGitHub connection issues: Check your internet connection and try again."
-            error_MSG+="\nProceeded with the current installed version."
-            
-            echo -e "$error_MSG" >> "$logfile"
+            # Log entry
+            echo -e "#---- WARNING - GIT SCRIPT UPDATE FAIL\nGitHub connection issues: Check your internet connection and try again.\nProceeding with the current installed version." >> "$logfile"
+
             echo "Skipping GitHub updates. Proceeding with the current installed version..."
             return 1
         fi
@@ -194,11 +186,6 @@ echo -e "#---- GIT SCRIPT UPDATE -----------------------------------------------
 
 #---- Prerequisites
 
-# Create temp work dir (if missing)
-if [ -z "$work_dir" ]; then
-    work_dir=$(mktemp -dt -p /tmp kodirsync-XXXXXX)
-fi
-
 # Check for existing Kodirsync events
 # List of script names or keywords to check
 # 'kodirsync_id' and 'kodirsync_node' will discover any rsync or ssh events (associates with key name)
@@ -206,12 +193,8 @@ script_names=(
   kodirsync_id
   kodirsync_node
 )
-
-# Check $script_names list
 for script_name in "${script_names[@]}"; do
-    # Get PIDs of running scripts except the current one ($$)
-    pids=$(pgrep -f "$script_name" | grep -v "$$")
-
+    pids=$(pgrep -f "$script_name" | grep -v "$$")  # Get PIDs of running scripts except the current one ($$)
     # If PIDs exist
     if [ -n "$pids" ]; then
         for pid in $pids; do
@@ -219,6 +202,16 @@ for script_name in "${script_names[@]}"; do
         done
     fi
 done
+
+# Create temp work dir (if missing)
+if [ -z "$work_dir" ]; then
+    work_dir=$(mktemp -dt -p /tmp kodirsync-XXXXXX)
+fi
+
+# Backup 'kodirsync_clientapp_user.cfg' to $work_dir
+if [ -e "$app_dir/kodirsync_clientapp_user.cfg" ]; then
+    cp -f "$app_dir/kodirsync_clientapp_user.cfg" "$work_dir/kodirsync_clientapp_user.cfg.old"
+fi
 
 # Get Kodirsync User permissions
 file_perms=$(ls -ld $app_dir | awk '{print $3 ":" $4}')
@@ -229,59 +222,60 @@ file_perms=$(ls -ld $app_dir | awk '{print $3 ":" $4}')
 # Run GitHub updater
 dl_github_updates "$git_dl_user" "$git_dl_repo" "$git_dl_branch"
 if [ $? = 1 ]; then
+    # Log entry
+    echo -e "#---- GIT SCRIPT UPDATE FINISHED ---------------------------------------------------\n" >> "$logfile"
     return  # Process exit codes
 fi
 
 
-#---- If GitHub download successful
-
-# Create log entry
-display_MSG=( "$(echo -e "Start time : $(date)\nApp files update completed\n")" )
-printf "%s\n" "${display_MSG[@]}" >> $logfile
+#---- Remove files in $app_dir (keeping ssh keys & user config)
 
 # Exclude regex of files and dirs
-exclude_update_file_regex='.*\.(key|ppk|pub|crt|db)$|.*kodirsync_id_ed25519$|.*kodirsync_node_rsa_key$|.*/kodirsync_clientapp_user.cfg(.old)?$|.*/kodirsync_control_list.txt$'
+exclude_update_file_regex='.*\.(key|ppk|pub|crt|db)$|.*kodirsync_id_ed25519$|.*kodirsync_node_rsa_key$|.*/kodirsync_clientapp_user.cfg.old$|.*/kodirsync_control_list.txt$'
 exclude_update_dir_regex='\.*|cache|\#recycle|\@eaDir|lost+found|images|logs'
 
 # Remove old local app files
 find "$app_dir" -regextype posix-extended -not -iregex ".*/($exclude_update_dir_regex)/.*" -type f -regextype posix-extended -not -iregex ".*/($exclude_update_file_regex)" -exec rm -f {} \;
 
-# Proceed with updating
+
+#---- Update $app_dir with latest files
+
+# Copy GitHub latest files to $app_dir
 for source_file in "${git_update_LIST[@]}"; do
-    # Set other variables
-    source_filename=$(basename "$source_file")
-    source_dir=$(dirname "$source_file")
-
-    # Check if $source_file is for Kodi addons folder
-    match=false
-    for entry in "${kodi_addon_file_LIST[@]}"; do
-        if [[ "$entry" == "$source_filename" ]]; then
-            match=true
-            break
-        fi
-    done
-    if [ "$match" = true ] && [ -d "/storage/.kodi/addons" ]; then
-        kodi_script_dir='/storage/.kodi/addons/script.module.kodirsync'
-        mkdir -p $kodi_script_dir  # Make Kodi addons script folder
-        cp -f -r "$work_dir/$source_file" "$kodi_script_dir/" 2> /dev/null  # Overwrite existing file
-        
-        # Set permissions
-        if [[ "$source_filename" =~ \.(sh|py)$ ]]; then
-            chmod +x "$kodi_script_dir/$source_filename" 2> /dev/null  # Chmod +x any exec file
-        fi
-
-        continue  # Proceed to next entry
-    fi
-
-    # Copy $source_file to App dir
+    # Copy $entry to App dir
     cp -f -r "$work_dir/$source_file" "$app_dir/$source_file"
     chown "$file_perms" "$app_dir/$source_file"
 
-    # Set permissions
-    if [[ "$source_filename" =~ ^.*\.(sh|cfg|bash|py)$ ]]; then
-        chmod +x "$app_dir/$source_file"  # Chmod +x any exec file
+    # Set executable file permissions
+    if [[ "$source_file" =~ ^.*\.(sh|cfg|bash|py)$ ]]; then
+        chmod +x "$app_dir/$source_file" 2> /dev/null  # Chmod +x any exec file
     fi
 done
+
+#---- Update new GitHub User config file ( kodirsync_clientapp_user.cfg ) with old user values
+
+if [ -e "$work_dir/kodirsync_clientapp_user.cfg.old" ]; then
+    old_config_file="$work_dir/kodirsync_clientapp_user.cfg.old"
+    new_config_file="$app_dir/kodirsync_clientapp_user.cfg"
+
+    # Loop through the lines in the old config file
+    while IFS= read -r line; do
+        # Check if the line is a valid variable assignment (no # and no leading space)
+        if [[ $line =~ ^[^#\ ]+= ]]; then
+            # Extract the variable name and value
+            variable_name="${line%%=*}"
+            variable_value="${line#*=}"
+
+            # Check if the variable exists in the new configuration file
+            if grep -q "^$variable_name=" "$new_config_file"; then
+                # Variable exists in the new config, update its value
+                awk -v var="$variable_name" -v val="$variable_value" -F '=' '$1 == var {$2=val}1' OFS='=' "$new_config_file" > "$new_config_file.tmp" && mv "$new_config_file.tmp" "$new_config_file"
+            fi
+        fi
+    done < "$old_config_file"
+
+    cp -f "$work_dir/kodirsync_clientapp_user.cfg.old" "$app_dir/kodirsync_clientapp_user.cfg.old"  # Copy backup to $app_dir (overwrite any previous copy)
+fi
 
 
 #---- Update entries in kodi favourites.xml

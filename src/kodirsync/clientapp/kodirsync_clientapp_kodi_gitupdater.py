@@ -12,6 +12,11 @@
 import os
 import subprocess
 
+# Modify the PATH to include the necessary directories
+# Required when executing bash scripts designed to run on host OS
+new_path = "/opt/bin:/usr/bin:" + os.environ['PATH']
+os.environ['PATH'] = new_path
+
 #---- Static Variables -------------------------------------------------------------
 
 # Kodi msg display time duration (m/s)

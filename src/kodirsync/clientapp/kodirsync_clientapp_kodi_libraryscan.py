@@ -38,13 +38,21 @@ def kodi_library_update():
     # Display kodi msg
     subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync, Starting library scan... ,{display_time_short},{icon_green})'], check=True)
 
-    # Kodi library clean
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'CleanLibrary(video)'], check=True)
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'CleanLibrary(music)'], check=True)
+    # # Kodi library update
 
-    # Kodi library update
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'UpdateLibrary(video)'], check=True)
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'UpdateLibrary(music)'], check=True)
+    # Locate video dir, do nothing if it does not exist
+    video_path = next((path for path in subprocess.run(['find', '/', '-not', '-path', '/tmp/*', '-path', '*/kodirsync_storage/video/*', '-type', 'd'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True).stdout.split('\n') if path.strip()), None)
+    if video_path:
+        # Kodi library update and clean
+        subprocess.run(['/usr/bin/kodi-send', '-a', f'UpdateLibrary(video)'])
+        subprocess.run(['/usr/bin/kodi-send', '-a', f'CleanLibrary(video)'])
+
+    # Locate video dir, do nothing if it does not exist
+    music_path = next((path for path in subprocess.run(['find', '/', '-not', '-path', '/tmp/*', '-path', '*/kodirsync_storage/music/*', '-type', 'd'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True).stdout.split('\n') if path.strip()), None)
+    if music_path:
+        # Kodi library update and clean
+        subprocess.run(['/usr/bin/kodi-send', '-a', f'UpdateLibrary(music)'])
+        subprocess.run(['/usr/bin/kodi-send', '-a', f'CleanLibrary(music)'])
 
     # Display kodi msg
     subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync, Media libraries updated... ,{display_time_short},{icon_green})'], check=True)

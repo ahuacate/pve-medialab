@@ -238,7 +238,7 @@ if [ -e "$work_dir/kodirsync_clientapp_user.cfg.old" ]; then
         fi
     done < "$old_config_file"
 
-    cp "$work_dir/kodirsync_clientapp_user.cfg.old" "$app_dir/kodirsync_clientapp_user.cfg.old"  # Copy backup to $app_dir
+    cp -f "$work_dir/kodirsync_clientapp_user.cfg.old" "$app_dir/kodirsync_clientapp_user.cfg.old"  # Copy backup to $app_dir
 fi
 
 
