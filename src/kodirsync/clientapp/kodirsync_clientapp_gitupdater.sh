@@ -22,6 +22,17 @@ if [ "$day_of_month" != "07" ] && [ ! -z "$1" ]; then
     return
 fi
 
+#---- Cleanup trap function
+if [ ! -z "$1" ]; then
+    cleanup() {
+        # Add cleanup actions here
+        rm -Rf "$work_dir" 2> /dev/null
+    }
+
+    # Set up trap to call the cleanup function on script exit or specific signals
+    trap cleanup EXIT SIGHUP SIGINT SIGTERM
+fi
+
 
 #---- Static Variables -------------------------------------------------------------
 
