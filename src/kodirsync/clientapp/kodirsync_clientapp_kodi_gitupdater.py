@@ -11,6 +11,7 @@
 
 import os
 import subprocess
+import shutil
 
 # Modify the PATH to include the necessary directories
 # Required when executing bash scripts designed to run on host OS
@@ -48,11 +49,11 @@ def kodimsg_fail():
 
 # Kodi func - 'running'
 def kodimsg_running():
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,App already running... ,{display_time_short},{icon_green})'])
+    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,Another Kodirsync App is currently running. Try again later... ,{display_time_short},{icon_green})'])
 
 # Kodi func - 'running'
 def kodimsg_dl():
-    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,Downloading updates, be patient... ,{display_time_short},{icon_green})'])
+    subprocess.run(['/usr/bin/kodi-send', '-a', f'Notification(Kodirsync,Downloading latest updates in progress... ,{display_time_long},{icon_green})'])
 
 # Kodi func - 'start'
 def kodimsg_start():
@@ -74,7 +75,10 @@ def check():
     # List of processes to check for (script names without path)
     processes_to_check = [
         "kodirsync_clientapp_run.sh",
+        "kodirsync_clientapp_kodi_run.py",
         "kodirsync_clientapp_node_run.sh",
+        "kodirsync_clientapp_kodi_node_run.py",
+        "kodirsync_clientapp_kodi_libraryscan.py",
         "kodirsync_clientapp_kodi_gitupdater.sh" 
     ]
 
@@ -92,6 +96,19 @@ def check():
         kodimsg_running()
         exit(0)
 
+#---- Cleanup func
+def cleanup():
+    tmp_dir = "/tmp"
+    try:
+        for filename in os.listdir(tmp_dir):
+            file_path = os.path.join(tmp_dir, filename)
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        print("Cleanup successful")
+    except Exception as e:
+        print(f"Cleanup failed with error: {e}")
 
 #---- Prerequisites func
 def prerequisites():
@@ -148,7 +165,7 @@ def prerequisites():
         exit(0)
 
 
-# Main func
+#---- Main func
 def main():
     # Display kodi msg
     kodimsg_dl()
@@ -169,6 +186,8 @@ def main():
         kodimsg_finish()  # Success
     else:
         kodimsg_fail()  # Failure
+    
+    cleanup()  # Cleanup temporary files
 
 #---- Body -------------------------------------------------------------------------
 
