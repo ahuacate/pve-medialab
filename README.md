@@ -127,12 +127,13 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
         - [14.4.11. Node sync. What is it?](#14411-node-sync-what-is-it)
     - [14.5. Developer fix](#145-developer-fix)
 - [15. Vidcoderr LXC](#15-vidcoderr-lxc)
-    - [15.1. Setup Vidcoderr](#151-setup-vidcoderr)
-    - [15.2. Vidcoderr FAQ](#152-vidcoderr-faq)
-        - [15.2.1. Uploading hangs the web uploader page.](#1521-uploading-hangs-the-web-uploader-page)
-        - [15.2.2. How do I check if Vidcoderr is encoding?](#1522-how-do-i-check-if-vidcoderr-is-encoding)
-        - [15.2.3. What's the best setting to get the smallest file size and quality balance?](#1523-whats-the-best-setting-to-get-the-smallest-file-size-and-quality-balance)
-        - [15.2.4. Can I change the time between processing for new content?](#1524-can-i-change-the-time-between-processing-for-new-content)
+    - [15.1. Enabling IOMMU​](#151-enabling-iommu​)
+    - [15.2. Setup Vidcoderr](#152-setup-vidcoderr)
+    - [15.3. Vidcoderr FAQ](#153-vidcoderr-faq)
+        - [15.3.1. Uploading hangs the web uploader page.](#1531-uploading-hangs-the-web-uploader-page)
+        - [15.3.2. How do I check if Vidcoderr is encoding?](#1532-how-do-i-check-if-vidcoderr-is-encoding)
+        - [15.3.3. What's the best setting to get the smallest file size and quality balance?](#1533-whats-the-best-setting-to-get-the-smallest-file-size-and-quality-balance)
+        - [15.3.4. Can I change the time between processing for new content?](#1534-can-i-change-the-time-between-processing-for-new-content)
 
 <!-- /TOC -->
 <hr>
@@ -842,24 +843,39 @@ By utilizing this feature, you can optimize your video files for seamless stream
 
 The Vidcoderr platform comes equipped with a useful file pruning feature that applies to all video files located within the /video/stream folder. By default, the platform will prune (delete) any files that are older than 30 days. This helps to ensure that your video stream library stays organized and up-to-date, without accumulating unnecessary or outdated content.
 
-## 15.1. Setup Vidcoderr
+## 15.1. Enabling IOMMU​
+If you want to use hardware acceleration, which you will, you must edit your PVE hosts grub. Take the following steps in a CLI:
+```
+nano /etc/default/grub
+# Add intel_iommu=on to GRUB_CMDLINE_LINUX_DEFAULT="quiet"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on"
+```
+Write Out the settings and Exit.
+```
+# Run the command update-grub to finalize changes
+update-grub
+```
+Reboot your PVE host. Now follow these instructions [here](https://pve.proxmox.com/wiki/PCI(e)_Passthrough).
+
+
+## 15.2. Setup Vidcoderr
 A Vidcoderr toolbox is available. Tasks include:
 * Run our Vidcoderr `Setup Assistant`
 * Update Vidcoderr (includes Vidcoderr software updates, host LXC updates and any patches)
 
 The User can modify, tweak or change any Vidcoderr settings within the configuration file: `/usr/local/bin/vidcoderr/vidcoderr.ini` ( Vidcoderr requires a restart after editing ).
 
-## 15.2. Vidcoderr FAQ
-### 15.2.1. Uploading hangs the web uploader page.
+## 15.3. Vidcoderr FAQ
+### 15.3.1. Uploading hangs the web uploader page.
 If you are uploading a video file using the frontend interface at `http://vidcoderr.local:8000/`, your browser's loading icon will continue to spin until the upload task has been completed. The speed at which the upload is completed will depend on a number of factors, including your computer's network connection speed to the Vidcoderr LXC and the size of the video file being uploaded.
 
-### 15.2.2. How do I check if Vidcoderr is encoding?
+### 15.3.2. How do I check if Vidcoderr is encoding?
 To check whether Vidcoderr is currently encoding a video file, the easiest method is to monitor the CPU usage in Proxmox. Start by selecting the Vidcoderr LXC, and then navigate to the summary tab. If the CPU usage meter displays a value of 0.00%, then Vidcoderr is currently idle and not processing any video files. However, if the CPU usage meter displays a value above 0.00%, then it's likely that Vidcoderr is currently in the process of encoding a video file.
 
-### 15.2.3. What's the best setting to get the smallest file size and quality balance?
+### 15.3.3. What's the best setting to get the smallest file size and quality balance?
 Use HEVC 10-bit.
 
-### 15.2.4. Can I change the time between processing for new content?
+### 15.3.4. Can I change the time between processing for new content?
 Yes. Vidcoderr runs its scripts using a system.d timer. The default setting is 6 hourly. Use a Linux CLI editor like Nano to edit the value in '/etc/systemd/system/vidcoderr_watchdir_std.timer'. The steps in a Vidcoderr CLI are:
 
 ```
