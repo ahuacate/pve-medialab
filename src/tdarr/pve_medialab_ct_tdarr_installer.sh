@@ -178,35 +178,6 @@ video:All video libraries (i.e movies, series, homevideos)
 EOF
 
 #---- Body -------------------------------------------------------------------------
-# PCT start and wait loop command
-function pct_start_waitloop() {
-    local ct_status
-    ct_status=$(pct status $CTID)
-
-    if [ "$ct_status" = 'status: stopped' ]; then
-        msg "Starting CT $CTID..."
-        pct start $CTID
-        msg "Waiting for CT $CTID to start..."
-
-        while true; do
-            ct_status=$(pct status $CTID)
-            if [ "$ct_status" = 'status: running' ]; then
-                info "CT $CTID status: ${GREEN}running${NC}"
-                echo
-                break
-            elif [ "$ct_status" = 'status: stopped' ]; then
-                # echo -n .
-                sleep 2
-            else
-                warn "CT $CTID status: ${YELLOW}$ct_status${NC}"
-                echo
-                break
-            fi
-        done
-    else
-        info "CT $CTID is already running"
-    fi
-}
 
 #---- Introduction
 source $COMMON_PVE_SRC_DIR/pvesource_ct_intro.sh
@@ -237,7 +208,7 @@ source $COMMON_PVE_SRC_DIR/pvesource_ct_createbindmounts.sh
 source $COMMON_PVE_SRC_DIR/pvesource_ct_medialab_vaapipassthru.sh
 
 #---- Configure New CT OS
-# source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
+source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 
 #---- Create MediaLab Group and User
 source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addmedialabuser.sh
@@ -253,7 +224,7 @@ pct exec $CTID -- tar -zxf /tmp/${GIT_REPO}.tar.gz -C /tmp
 echo
 
 
-#---- Run SW install
+#---- Run Tdarr SW install
 
 # Tdarr SW
 pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/$GIT_REPO/src/tdarr/tdarr_sw.sh"
@@ -274,26 +245,20 @@ fi
 
 #---- Setup Tdarr
 
-# Reboot Tdarr
-echo "hello1"
-pct_stop_waitloop  # Stop Tdarr CT
-sleep 2
-echo "hello2"
 pct_start_waitloop  # Start Tdarr CT
 
+# Pushing setup scripts to CT
+msg "Pushing configuration scripts to CT..."
+pct push $CTID /tmp/${GIT_REPO}.tar.gz /tmp/${GIT_REPO}.tar.gz
+pct exec $CTID -- tar -zxf /tmp/${GIT_REPO}.tar.gz -C /tmp
+echo
 
-# # Pushing setup scripts to CT
-# msg "Pushing configuration scripts to CT..."
-# pct push $CTID /tmp/${GIT_REPO}.tar.gz /tmp/${GIT_REPO}.tar.gz
-# pct exec $CTID -- tar -zxf /tmp/${GIT_REPO}.tar.gz -C /tmp
-# echo
-# echo "hello4"
 
-# # Tdarr config
-# pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/$GIT_REPO/src/tdarr/config/tdarr_config.sh"
+# Tdarr config
+pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/$GIT_REPO/src/tdarr/config/tdarr_config.sh"
 
-# #---- Reboot Tdarr
-# pct reboot $CTID
+#---- Reboot Tdarr
+pct reboot $CTID
 
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status"
@@ -357,3 +322,37 @@ printf '%s\n' "${display_permission_error_MSG[@]}"
 printf '%s\n' "${display_chattr_error_MSG[@]}"
 source $COMMON_PVE_SRC_DIR/pvesource_error_log.sh
 #-----------------------------------------------------------------------------------
+# CTID=105
+# GIT_REPO='pve-medialab'
+# REPO_PKG_NAME=tdarr
+# APP_USERNAME=media
+# APP_GRPNAME=medialab
+
+# su - media -c '/opt/tdarr/Tdarr_Server/Tdarr_Server'
+# su - media -c '/opt/tdarr/Tdarr_Node/Tdarr_Node'
+# crudini --set /opt/tdarr/configs/Tdarr_Node_Config.json "" VAAPI_ARG 0
+# app_uid=media
+# app_guid=medialab
+
+
+# mkdir -p /tmp/{input,output,cache}
+# wget -P /tmp/input https://samples.tdarr.io/api/v1/samples/sample__2160__libx264__aac__30s__video.avi
+# input='/tmp/input/sample__2160__libx264__aac__30s__video.avi'
+# output='/tmp/output/output.mp4'
+
+# mkdir -p /tmp/{input,output,cache}
+# wget -P /tmp/input https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_30MB.mp4
+# input='/tmp/input/Big_Buck_Bunny_1080_10s_30MB.mp4'
+# output='/tmp/output/output.mp4'
+
+
+
+# ffmpeg -hwaccel qsv -qsv_device /dev/dri/renderD128 -c:v h264_qsv -i $input -c:v h264_qsv $output
+
+# /opt/tdarr/Tdarr_Node/node_modules/@ffmpeg-installer/linux-x64/ffmpeg -loglevel verbose -i $input -c:v h264_qsv -global_quality 18 -rdo 1 -preset:v fast -y $output
+
+# /opt/tdarr/Tdarr_Node/node_modules/@ffmpeg-installer/linux-x64/ffmpeg -loglevel verbose -i $input -c:v hevc_qsv -global_quality 18 -rdo 1 -preset:v fast -y $output
+
+# ffmpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -i $input -c:v h264_vaapi -b:v 2M -maxrate 2M $output
+
+# ffmpeg -init_hw_device vaapi=intel:/dev/dri/renderD128 -init_hw_device -hwaccel vaapi -hwaccel_device intel -i $input -f null -

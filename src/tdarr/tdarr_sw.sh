@@ -142,16 +142,16 @@ wget -q --show-progress -O /usr/share/keyrings/gpg-pub-moritzbunkus.gpg https://
 apt-get -y update
 apt-get install -y mkvtoolnix
 
-# # HandBrake CLI
-# apt-get install -y autoconf automake autopoint appstream build-essential cmake git libass-dev libbz2-dev libfontconfig1-dev libfreetype6-dev libfribidi-dev libharfbuzz-dev libjansson-dev liblzma-dev libmp3lame-dev libnuma-dev libogg-dev libopus-dev libsamplerate-dev libspeex-dev libtheora-dev libtool libtool-bin libturbojpeg0-dev libvorbis-dev libx264-dev libxml2-dev libvpx-dev m4 make meson nasm ninja-build patch pkg-config tar zlib1g-dev clang  # Dependencies
-# apt-get install -y libva-dev libdrm-dev  # Intel Quick Sync Video support, install the QSV dependencies
-# apt-get install -y handbrake-cli  # HandBrake app
+# HandBrake CLI
+apt-get install -y autoconf automake autopoint appstream build-essential cmake git libass-dev libbz2-dev libfontconfig1-dev libfreetype6-dev libfribidi-dev libharfbuzz-dev libjansson-dev liblzma-dev libmp3lame-dev libnuma-dev libogg-dev libopus-dev libsamplerate-dev libspeex-dev libtheora-dev libtool libtool-bin libturbojpeg0-dev libvorbis-dev libx264-dev libxml2-dev libvpx-dev m4 make meson nasm ninja-build patch pkg-config tar zlib1g-dev clang  # Dependencies
+apt-get install -y libva-dev libdrm-dev  # Intel Quick Sync Video support, install the QSV dependencies
+apt-get install -y handbrake-cli  # HandBrake app
 
-# # FFmpeg vers6
-# apt-get install -y software-properties-common
-# add-apt-repository --yes ppa:ubuntuhandbook1/ffmpeg6
-# apt-get update -y
-# apt-get install -y ffmpeg
+# FFmpeg vers6
+apt-get install -y software-properties-common
+add-apt-repository --yes ppa:ubuntuhandbook1/ffmpeg6
+apt-get update -y
+apt-get install -y ffmpeg
 
 
 # # # Install sudo
@@ -180,12 +180,41 @@ apt-get install -y mkvtoolnix
 mkdir -p /opt/tdarr/server  # Create CT tdarr dir
 chown -R $app_uid:$app_guid /opt/tdarr  # Set permissions
 chmod -R u+w /opt/tdarr
-wget --show-progress -P /opt/tdarr https://f000.backblazeb2.com/file/tdarrs/versions/2.00.15/linux_x64/Tdarr_Updater.zip
+# Download Tdarr installer
+attempts=3  # Set the number of retry attempts
+for ((i=1; i<=attempts; i++)); do
+    if wget --show-progress -P /opt/tdarr https://f000.backblazeb2.com/file/tdarrs/versions/2.00.15/linux_x64/Tdarr_Updater.zip; then
+        echo "Download successful on attempt $i."
+        break  # Exit the loop if the download is successful
+    else
+        echo "Download failed on attempt $i. Retrying..."
+    fi
+
+    if [ "$i" -eq "$attempts" ]; then
+        echo "Download failed after $attempts attempts. Check for issues."
+        return 1
+    fi
+done
 unzip /opt/tdarr/Tdarr_Updater.zip -d /opt/tdarr
 rm -rf /opt/tdarr/Tdarr_Updater.zip
-chmod +x /opt/tdarr/Tdarr_Updater
-/opt/tdarr/Tdarr_Updater 2>/dev/null  # Run installer
-chown -R $app_uid:$app_guid /opt/tdarr  # Set ownership & rights
+chmod +x /opt/tdarr/Tdarr_Updater 
+# Run installer
+attempts=3  # Set the number of retry attempts
+for ((i=1; i<=attempts; i++)); do
+    if /opt/tdarr/Tdarr_Updater 2>/dev/null; then
+        chown -R $app_uid:$app_guid /opt/tdarr  # Set ownership & rights
+        echo "Updater ran successfully on attempt $i."
+        break  # Exit the loop if the updater runs successfully
+    else
+        echo "Updater failed on attempt $i. Retrying..."
+    fi
+
+    if [ "$i" -eq "$attempts" ]; then
+        echo "Updater failed after $attempts attempts. Check for issues."
+        return 1
+    fi
+done
+
 
 # Create services
 service_path="/etc/systemd/system/tdarr-server.service"
@@ -238,37 +267,3 @@ systemctl enable -q tdarr-node.service
 pct_start_systemctl tdarr-server.service
 pct_start_systemctl tdarr-node.service
 #-----------------------------------------------------------------------------------
-# CTID=105
-# GIT_REPO='pve-medialab'
-# REPO_PKG_NAME=tdarr
-# APP_USERNAME=media
-# APP_GRPNAME=medialab
-
-# su - media -c '/opt/tdarr/Tdarr_Server/Tdarr_Server'
-# su - media -c '/opt/tdarr/Tdarr_Node/Tdarr_Node'
-# crudini --set /opt/tdarr/configs/Tdarr_Node_Config.json "" VAAPI_ARG 0
-# app_uid=media
-# app_guid=medialab
-
-
-# mkdir -p /tmp/{input,output,cache}
-# wget -P /tmp/input https://samples.tdarr.io/api/v1/samples/sample__2160__libx264__aac__30s__video.avi
-# input='/tmp/input/sample__2160__libx264__aac__30s__video.avi'
-# output='/tmp/output/output.mp4'
-
-# mkdir -p /tmp/{input,output,cache}
-# wget -P /tmp/input https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_30MB.mp4
-# input='/tmp/input/Big_Buck_Bunny_1080_10s_30MB.mp4'
-# output='/tmp/output/output.mp4'
-
-
-
-# ffmpeg -hwaccel qsv -qsv_device /dev/dri/renderD128 -c:v h264_qsv -i $input -c:v h264_qsv $output
-
-# ffmpeg -loglevel verbose -i $input -c:v h264_qsv -global_quality 18 -rdo 1 -preset:v fast -y $output
-
-# ffmpeg -loglevel verbose -i $input -c:v hevc_qsv -global_quality 18 -rdo 1 -preset:v fast -y $output
-
-# ffmpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -i $input -c:v h264_vaapi -b:v 2M -maxrate 2M $output
-
-# ffmpeg -init_hw_device vaapi=intel:/dev/dri/renderD128 -init_hw_device -hwaccel vaapi -hwaccel_device intel -i $input -f null -
