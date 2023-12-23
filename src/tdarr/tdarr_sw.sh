@@ -134,6 +134,10 @@ fi
 
 #---- Tdarr prerequisites
 
+# Install NPM
+apt-get install -y nodejs
+apt-get install -y npm
+
 # Required by CCExtractor to check files for closed captions
 apt-get install -y libtesseract-dev
 
@@ -143,7 +147,7 @@ apt-get -y update
 apt-get install -y mkvtoolnix
 
 # HandBrake CLI
-apt-get install -y autoconf automake autopoint appstream build-essential cmake git libass-dev libbz2-dev libfontconfig1-dev libfreetype6-dev libfribidi-dev libharfbuzz-dev libjansson-dev liblzma-dev libmp3lame-dev libnuma-dev libogg-dev libopus-dev libsamplerate-dev libspeex-dev libtheora-dev libtool libtool-bin libturbojpeg0-dev libvorbis-dev libx264-dev libxml2-dev libvpx-dev m4 make meson nasm ninja-build patch pkg-config tar zlib1g-dev clang  # Dependencies
+apt-get install -y autoconf automake autopoint appstream build-essential cmake git libass-dev libbz2-dev libfontconfig1-dev libfreetype6-dev libfribidi-dev libharfbuzz-dev libjansson-dev liblzma-dev libmp3lame-dev libnuma-dev libogg-dev libopus-dev libsamplerate-dev libspeex-dev libtheora-dev libtool libtool-bin libturbojpeg0-dev libvorbis-dev libx264-dev libxml2-dev libvpx-dev m4 make meson nasm ninja-build patch pkg-config tar zlib1g-dev clang libnvidia-encode-495  # Dependencies
 apt-get install -y libva-dev libdrm-dev  # Intel Quick Sync Video support, install the QSV dependencies
 apt-get install -y handbrake-cli  # HandBrake app
 
@@ -151,53 +155,66 @@ apt-get install -y handbrake-cli  # HandBrake app
 apt-get install -y software-properties-common
 add-apt-repository --yes ppa:ubuntuhandbook1/ffmpeg6
 apt-get update -y
+apt-get upgrade -y
 apt-get install -y ffmpeg
 
 
-# # # Install sudo
-# # apt-get install sudo -y
+# # FFmpeg static
+# ffmpeg_tar=ffmpeg-git-amd64-static.tar.xz
+# src_url='https://www.johnvansickle.com/ffmpeg/builds'
+# attempts=3  # Set the number of retry attempts
+# for ((i=1; i<=attempts; i++)); do
+#     if wget --show-progress -P $DIR $src_url/$ffmpeg_tar; then
+#             rm /bin/ffmpeg 2> /dev/null
+#             tar xvf $DIR/$ffmpeg_tar -C $DIR  # Extract the tar file to /tmp
+#             mv $(find $DIR -name ffmpeg -type f) /bin  # Move ffmpeg to /bin
+#             chmod +x /bin/ffmpeg  # Make ffmpeg executable
+#             echo "Download successful on attempt $i of $attempts"
+#             # Testing purposes only
+#             /bin/ffmpeg -h encoder=hevc_vaapi
+#             /bin/ffmpeg -hwaccels
+#             break  # Exit the loop if the download is successful
+#     else
+#         echo "Download failed on attempt $i of $attempts. Retrying..."
+#         rm -f $DIR/$ffmpeg_tar 2> /dev/null  # Remove partial file
+#     fi
 
-# # # Install mc
-# # apt-get install mc -y
-
-# # # Install openCL
-# # apt-get install ocl-icd-libopencl1 -y
-# # apt-get install intel-opencl-icd -y
-# exit 0
-# sudo apt-get install -y curl sudo mc ocl-icd-libopencl1 intel-opencl-icd libmfx1 libmfxgen1 libvpl2 libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri libglapi-mesa libgles2-mesa-dev libglx-mesa0 libigdgmm12 libxatracker2 mesa-va-drivers mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all vainfo hwinfo clinfo
-
-
-# /bin/HandBrakeCLI
-
-
-
-
+#     if [ "$i" -eq "$attempts" ]; then
+#         echo "Download failed after $attempts attempts. Check internet connection for issues."
+#         exit 1
+#     fi
+# done
 
 
 #---- Install Tdarr
 
-# Install Tdarr sw
+# Prepare Tdar dir
 mkdir -p /opt/tdarr/server  # Create CT tdarr dir
 chown -R $app_uid:$app_guid /opt/tdarr  # Set permissions
 chmod -R u+w /opt/tdarr
+
 # Download Tdarr installer
 attempts=3  # Set the number of retry attempts
 for ((i=1; i<=attempts; i++)); do
     if wget --show-progress -P /opt/tdarr https://f000.backblazeb2.com/file/tdarrs/versions/2.00.15/linux_x64/Tdarr_Updater.zip; then
-        echo "Download successful on attempt $i."
+        echo "Download successful on attempt $i of $attempts"
         break  # Exit the loop if the download is successful
     else
-        echo "Download failed on attempt $i. Retrying..."
+        echo "Download failed on attempt $i of $attempts. Retrying..."
+        rm -f /opt/tdarr/Tdarr_Updater.zip  # Remove partial file
     fi
 
     if [ "$i" -eq "$attempts" ]; then
-        echo "Download failed after $attempts attempts. Check for issues."
-        return 1
+        echo "Download failed after $attempts attempts. Check internet connection for issues."
+        exit 1
     fi
 done
+
+# Unzip installer dl
 unzip /opt/tdarr/Tdarr_Updater.zip -d /opt/tdarr
 rm -rf /opt/tdarr/Tdarr_Updater.zip
 chmod +x /opt/tdarr/Tdarr_Updater 
+
 # Run installer
 attempts=3  # Set the number of retry attempts
 for ((i=1; i<=attempts; i++)); do
@@ -211,7 +228,7 @@ for ((i=1; i<=attempts; i++)); do
 
     if [ "$i" -eq "$attempts" ]; then
         echo "Updater failed after $attempts attempts. Check for issues."
-        return 1
+        exit 1
     fi
 done
 

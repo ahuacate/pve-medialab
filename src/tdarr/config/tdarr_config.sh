@@ -51,15 +51,15 @@ if [ "$(which ffmpeg)" = '/bin/ffmpeg' ]; then
     jq -r '.ffmpegPath = "/bin/ffmpeg"' /opt/tdarr/configs/Tdarr_Server_Config.json > tmp.json && mv tmp.json /opt/tdarr/configs/Tdarr_Server_Config.json  # Server Handbrake
 fi
 
-# DL plugin
-plugin_name="Tdarr_Plugin_Ahuacate_FFMPEG_QSV_HEVC.js"
-if [ -e "$DIR/$plugin_name" ]; then
-    cp -f "$DIR/$plugin_name" "/opt/tdarr/server/Tdarr/Plugins/Local/"
-    chown $app_uid:$app_guid /opt/tdarr/server/Tdarr/Plugins/Local/$plugin_name  # Set ownership & rights
-    chmod 666 /opt/tdarr/server/Tdarr/Plugins/Local/$plugin_name
+# Copy Tdarr custom plugins
+if ls "$DIR"/plugins/Tdarr_Plugin_ahuacate_*.js 1> /dev/null 2>&1; then
+    cp "$DIR"/plugins/Tdarr_Plugin_ahuacate_*.js "/opt/tdarr/server/Tdarr/Plugins/Local/"  # Copy files matching the pattern
+    chown $app_uid:$app_guid /opt/tdarr/server/Tdarr/Plugins/Local/*  # Set ownership & rights
+    chmod 666 /opt/tdarr/server/Tdarr/Plugins/Local/*
 fi
 
 # Restart services - to build tdarr config/settings files
 pct_start_systemctl tdarr-server.service
 pct_start_systemctl tdarr-node.service
+wait 5
 #-----------------------------------------------------------------------------------

@@ -196,9 +196,8 @@ source $COMMON_PVE_SRC_DIR/pvesource_ct_createvm.sh
 section "Pre-Configure ${HOSTNAME^} ${VM_TYPE^^}"
 
 # MediaLab CT unprivileged mapping
-if [ "$CT_UNPRIVILEGED" = '1' ]
-then
-  source $COMMON_PVE_SRC_DIR/pvesource_ct_medialab_ctidmapping.sh
+if [ "$CT_UNPRIVILEGED" = '1' ]; then
+    source $COMMON_PVE_SRC_DIR/pvesource_ct_medialab_ctidmapping.sh
 fi
 
 # Create CT Bind Mounts
@@ -212,6 +211,7 @@ source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntubasics.sh
 
 #---- Create MediaLab Group and User
 source $COMMON_PVE_SRC_DIR/pvesource_ct_ubuntu_addmedialabuser.sh
+
 
 #---- Tdarr ------------------------------------------------------------------------
 
@@ -228,6 +228,7 @@ echo
 
 # Tdarr SW
 pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME && /tmp/$GIT_REPO/src/tdarr/tdarr_sw.sh"
+
 
 #---- Copy preset settings file to CT and NAS
 
@@ -275,44 +276,22 @@ fi
 # Web access URL
 display_msg1=( "http://$(pct exec $CTID -- hostname).$(pct exec $CTID -- hostname -d):$port/" )
 display_msg1+=( "http://$(pct exec $CTID -- hostname -I | sed -r 's/\s+//g'):$port/ ($ip_type)" )
-# Backup preset file
-if [ ! -z ${backup_file+x} ]; then
-    display_msg2=( "Local: $backup_file" )
-else
-    display_msg2=( "Local: 'ahuacate preset file not available'" )
-fi
+
 # Backup preset description
-display_msg3=( "--  Media library presets (sources)" \
-"    - series to stream" \
-"    - movies to stream" \
-"    - documentary to stream" \
-"    - pron to stream" \
-"    - public/autoadd/tdarr/in_unsorted to public/autoadd/tdarr/out_unsorted" \
-"    - public/autoadd/tdarr/in_homevideo to video/homevideo" \
-"--  Homevideo transcoding is preset for best quality (longer transcode times)" \
-"--  Preset library sources require enabling (default is disabled)" \
-"--  HEVC 10bit is the default video codec" \
+display_msg2=( "--  Tdarr custom plugins" \
+"--  HEVC 10bit support" \
+"--  HDR support (rescale but not HDR to SDR tone mapping)" \
 "--  Encoder preset for Intel qsv and vaapi" \
-"--  Customization required depending on hardware (i.e nVidia, Intel qsv or vaapi)" \
-"--  Tdarr backup destination: /mnt/backup/$REPO_PKG_NAME (preset to use NAS)" )
-# Check CT domain
-if [ ! "$(hostname -d)" = 'local' ]
-then 
-display_msg3+=( "--  Note: The default preset file uses the '.local' domain." \
-"    User must edit ${REPO_PKG_NAME,,^} app settings to use '.$(hostname -d)'" )
-fi
+"--  Customization required depending on hardware (i.e nVidia, Intel qsv or vaapi)" )
+
 
 msg_box "${REPO_PKG_NAME^} installation was a success. The first start-up may take a few seconds so be patient. Web-interface is available on:
 
 $(printf '%s\n' "${display_msg1[@]}" | indent2)
 
-If the ${REPO_PKG_NAME^} settings preset file is available use the Medialab toolbox to install the Ahuacate presets. Alternatively, go to ${REPO_PKG_NAME^} WebGUI 'Backup' and follow the instructions to restore the ahuacate backup filename:
+The installation comprises our custom Tdarr plugins designed for transcoding streaming video files. Detailed setup guides and recommended settings can be found on our GitHub page.
 
 $(printf '%s\n' "${display_msg2[@]}" | indent2)
-
-The ${REPO_PKG_NAME^} setting preset file configures:
-
-$(printf '%s\n' "${display_msg3[@]}" | indent2)
 
 More information here: https://github.com/ahuacate/medialab"
 
@@ -322,37 +301,3 @@ printf '%s\n' "${display_permission_error_MSG[@]}"
 printf '%s\n' "${display_chattr_error_MSG[@]}"
 source $COMMON_PVE_SRC_DIR/pvesource_error_log.sh
 #-----------------------------------------------------------------------------------
-# CTID=105
-# GIT_REPO='pve-medialab'
-# REPO_PKG_NAME=tdarr
-# APP_USERNAME=media
-# APP_GRPNAME=medialab
-
-# su - media -c '/opt/tdarr/Tdarr_Server/Tdarr_Server'
-# su - media -c '/opt/tdarr/Tdarr_Node/Tdarr_Node'
-# crudini --set /opt/tdarr/configs/Tdarr_Node_Config.json "" VAAPI_ARG 0
-# app_uid=media
-# app_guid=medialab
-
-
-# mkdir -p /tmp/{input,output,cache}
-# wget -P /tmp/input https://samples.tdarr.io/api/v1/samples/sample__2160__libx264__aac__30s__video.avi
-# input='/tmp/input/sample__2160__libx264__aac__30s__video.avi'
-# output='/tmp/output/output.mp4'
-
-# mkdir -p /tmp/{input,output,cache}
-# wget -P /tmp/input https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_30MB.mp4
-# input='/tmp/input/Big_Buck_Bunny_1080_10s_30MB.mp4'
-# output='/tmp/output/output.mp4'
-
-
-
-# ffmpeg -hwaccel qsv -qsv_device /dev/dri/renderD128 -c:v h264_qsv -i $input -c:v h264_qsv $output
-
-# /opt/tdarr/Tdarr_Node/node_modules/@ffmpeg-installer/linux-x64/ffmpeg -loglevel verbose -i $input -c:v h264_qsv -global_quality 18 -rdo 1 -preset:v fast -y $output
-
-# /opt/tdarr/Tdarr_Node/node_modules/@ffmpeg-installer/linux-x64/ffmpeg -loglevel verbose -i $input -c:v hevc_qsv -global_quality 18 -rdo 1 -preset:v fast -y $output
-
-# ffmpeg -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -i $input -c:v h264_vaapi -b:v 2M -maxrate 2M $output
-
-# ffmpeg -init_hw_device vaapi=intel:/dev/dri/renderD128 -init_hw_device -hwaccel vaapi -hwaccel_device intel -i $input -f null -
