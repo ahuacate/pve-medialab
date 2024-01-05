@@ -35,6 +35,11 @@ apt-get install crudini -y
 # Install Zip/7zip/unrar
 apt-get install p7zip-full p7zip-rar -y
 
+# Install par2-turbo
+add-apt-repository ppa:jcfp/sab-addons -y
+apt-get update -y
+apt-get install par2-turbo -y
+
 
 #---- Install SABnzbd
 

@@ -6,6 +6,8 @@ However, before you begin using Medialab, it's crucial to ensure that your netwo
 
 <h2>Prerequisites</h2>
 
+Read about our <a href="https://github.com/ahuacate/common/tree/main/pve/src/local_about_our_build.md" target="_blank">system-wide requirements</a> before proceeding any further.
+
 **Network Prerequisites**
 - [ ] Layer 2/3 Network Switches
 
@@ -134,7 +136,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
         - [16.3.2. Node options](#1632-node-options)
         - [16.3.3. Ahuacate Plugin Stack](#1633-ahuacate-plugin-stack)
         - [16.3.4. Ahuacate stack settings](#1634-ahuacate-stack-settings)
-- [17. Vidcoderr LXC](#17-vidcoderr-lxc)
+- [17. Vidcoderr LXC (Depreciated)](#17-vidcoderr-lxc-depreciated)
     - [17.1. Enabling IOMMU​](#171-enabling-iommu​)
     - [17.2. Setup Vidcoderr](#172-setup-vidcoderr)
     - [17.3. Vidcoderr FAQ](#173-vidcoderr-faq)
@@ -886,7 +888,7 @@ Note: When using 'Migz-Clean subtitle streams' in conjunction with Ahuacate plug
 
 ---
 
-# 17. Vidcoderr LXC
+# 17. Vidcoderr LXC (Depreciated)
 
 Depreciated. Replaced with Tdarr.
 
