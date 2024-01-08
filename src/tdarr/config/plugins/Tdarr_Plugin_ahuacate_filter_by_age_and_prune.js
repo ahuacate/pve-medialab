@@ -8,12 +8,28 @@ const details = () => ({
   Type: 'Video',
   Operation: 'Filter',
   Description: `
-  This plugin prevents processing files older than preset number of days. \n\n
+  This plugin prevents processing files newer and older than preset number of days. \n\n
   The plugin also automatically deletes files older than a specified age from your library output folder. It also deletes empty folders from your library output folder.`,
   Version: '1.00',
   Tags: 'pre-processing,filter,configurable',
   Inputs: [
     // (Optional) Inputs you'd like the user to enter to allow your plugin to be easily configurable from the UI
+    {
+      name: 'Min_Input_Age_Days',
+      type: 'number',
+      defaultValue: 3,
+      inputUI: {
+        type: 'text',
+      },
+      tooltip: `Specify the minimum age in days for Tdarr to disregard new files based on their modified date. For example, if you input 3, the plugin will only handle files modified 3 days or older, excluding files modified within the last 3 days from processing. This allows time for any faulty file to be discovered, removed or updated before Tdarr encoding.
+                  \\n Your input value must be less than your 'Min_Prune_Age_Days' and  value.
+                    \\nExample:\\n
+                    0 (disabled)
+                    \\nExample:\\n
+                    3 (recommended)
+                    \\nExample:\\n
+                    7`,
+    },
     {
       name: 'Max_Input_Age_Days',
       type: 'number',
@@ -21,7 +37,7 @@ const details = () => ({
       inputUI: {
         type: 'text',
       },
-      tooltip: `Specify the number of days for Tdarr to scan for new files based on their modified date. If you input 14, the plugin will only process files modified within the last 14 days. Files older than 14 days will be excluded from processing.
+      tooltip: `Define the number of days for Tdarr to scan for new files based on their modified date. For instance, if you input 14, the plugin will handle files modified within the range from 'Min_Input_Age_Days' up to the last 14 days, excluding files older than 14 days from processing.
                   \\n Your input value must be less than your 'Min_Prune_Age_Days' value.
                     \\nExample:\\n
                     7
@@ -84,6 +100,14 @@ const plugin = (file, librarySettings, inputs, otherArguments) => {
   // Set up required variables.
   // let fileName = file.file; // sets source file name
   let outputDir = librarySettings.output; // gets destination folder
+
+  // Check if Min_Input_Age_Days is valid
+  if (inputs.Min_Input_Age_Days !== 0) {
+    if (inputs.Max_Input_Age_Days <= inputs.Min_Input_Age_Days) {
+      inputs.Min_Input_Age_Days = '0';  // Adjust Min_Input_Age_Days to 0 if input error
+      response.infoLog += `Adjusted Min_Input_Age_Days to be 0 due to invalid user input. New value: ${inputs.Min_Input_Age_Days}\n`;
+    }
+  }
 
   // Check if pruning is enabled and validate Min_Prune_Age_Days
   if (inputs.Min_Prune_Age_Days !== 0) {
@@ -195,19 +219,38 @@ const plugin = (file, librarySettings, inputs, otherArguments) => {
   // const deleteFolderPath = librarySettings.output;
   deleteEmptyFolders(outputDir, dirsToAlwaysDeleteArray);
 
-  // Filter input by age 'Max_Input_Age_Days'
+  // // Filter input by age 'Max_Input_Age_Days'
+  // const age = Date.now() - file.statSync.mtimeMs;
+  // const reqage = Number(inputs.Max_Input_Age_Days) * 86400000;
+  // if (age < reqage) {
+  //   response.infoLog += 'File modified date young enough. Moving to the next plugin \n';
+  //   response.infoLog += `File age: ${age} \n`;
+  //   response.infoLog += `Required file age: ${reqage} \n`;
+  //   response.infoLog += `Output folder: ${librarySettings.output} \n`;
+  //   response.processFile = true;
+  // } else {
+  //   response.infoLog += 'File modified date not young enough. Skipping file \n';
+  //   response.infoLog += `File age: ${age} \n`;
+  //   response.infoLog += `Required file age: ${reqage} \n`;
+  //   response.infoLog += `Output folder: ${librarySettings.output} \n`;
+  //   response.processFile = false;
+  // }
+
+  // Filter input by age range 'Min_Input_Age_Days' to 'Max_Input_Age_Days'
   const age = Date.now() - file.statSync.mtimeMs;
-  const reqage = Number(inputs.Max_Input_Age_Days) * 86400000;
-  if (age < reqage) {
-    response.infoLog += 'File modified date young enough. Moving to the next plugin \n';
+  const minAge = Number(inputs.Min_Input_Age_Days) * 86400000;
+  const maxAge = Number(inputs.Max_Input_Age_Days) * 86400000;
+
+  if (age >= minAge && age <= maxAge) {
+    response.infoLog += 'File age within the specified range. Moving to the next plugin \n';
     response.infoLog += `File age: ${age} \n`;
-    response.infoLog += `Required file age: ${reqage} \n`;
+    response.infoLog += `Required age range: ${minAge} to ${maxAge} \n`;
     response.infoLog += `Output folder: ${librarySettings.output} \n`;
     response.processFile = true;
   } else {
-    response.infoLog += 'File modified date not young enough. Skipping file \n';
+    response.infoLog += 'File age outside the specified range. Skipping file \n';
     response.infoLog += `File age: ${age} \n`;
-    response.infoLog += `Required file age: ${reqage} \n`;
+    response.infoLog += `Required age range: ${minAge} to ${maxAge} \n`;
     response.infoLog += `Output folder: ${librarySettings.output} \n`;
     response.processFile = false;
   }
