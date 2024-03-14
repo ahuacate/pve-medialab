@@ -7,9 +7,10 @@ const details = () => ({
   Name: 'Ahua-Transcode a video file',
   Type: 'Video',
   Operation: 'Transcode',
-  Description: `Transcode a video only using ffmpeg. Va-api iGPU transcoding will be used if possible`,
+  Description: `Transcode a video exclusively using ffmpeg, utilizing Va-api iGPU transcoding when available.
+  The preset defaults are optimized for streaming video transcodes, employing the HEVC codec. Video remux when source is within bitrate range.`,
   Version: '1.0',
-  Tags: 'pre-processing,ffmpeg,video only,nvenc h265,configurable',
+  Tags: 'pre-processing,ffmpeg,video only,nvenc h265,remux,configurable',
   Inputs: [
     {
       name: 'target_codec',
@@ -31,6 +32,24 @@ const details = () => ({
                   h264 - older generation, most common video compression standard`,
     },
     {
+      name: 'enable_QP_CQ_Control',
+      type: 'boolean',
+      defaultValue: false,
+      inputUI: {
+        type: 'dropdown',
+        options: [
+          'false',
+          'true',
+        ],
+      },
+      tooltip: `Enable or disable "cq" (constant quantization) and "qp" (quantization parameter) control parameters.
+                  \\n CQ and QP are used in video encoding to manage the quality of the encoded video.
+                  \\n This plugin uses either depending on the encoder used.
+                  \\n Enable this option for higher quality video transcodes (archiving, main video library).
+                  \\n Disable for small video transcodes (streaming video library).
+                  \\n Select your quality parameter value in "Target_Q_Value" option.`
+    },
+    {
       name: 'Target_Q_Value',
       type: 'number',
       defaultValue: 23,
@@ -47,12 +66,15 @@ const details = () => ({
       tooltip: `In FFmpeg, "cq" (constant quantization) and "qp" (quantization parameter) are control parameters
                   \\n used in video encoding to manage the quality of the encoded video.
                   \\n This plugin uses either depending on the encoder used.
+                  \\n This plugin requires "enable_QP_CQ_Control' to be enabled.
                   \\n The bitrate in CQ and QP modes are not fixed; it varies based on the complexity of the video.
                   \\n In CQ mode, the encoder will allocate more bits to complex scenes and fewer bits to
                   \\n less complex scenes.
                   \\n In QP mode, the parameter defines how much information to discard from a given block
                   \\n of pixels (a Macroblock). This leads to a hugely varying bitrate over the entire sequence.
                   \\n This results in a variable bitrate while maintaining a constant quality.
+                  \\n QP is disabled when the input video is too small and may contain artifacts resulting in
+                  \\n unnecessary large output video files.
                       \\nExample:\\n
                       19 - High Quality, Large File Size
                       \\nExample:\\n
@@ -183,15 +205,16 @@ const details = () => ({
     {
       name: 'bitrate_cutoff',
       type: 'number',
-      defaultValue: 0,
+      defaultValue: 3000,
       inputUI: {
         type: 'text',
       },
-      tooltip: `Specify bitrate cutoff, files with a current bitrate lower then this will not be transcoded.
+      tooltip: `Specify bitrate cutoff, input files with a video bitrate lower than this setting
+                  \\n will not be transcoded. A remux will be performed if possible.
                   \\n Rate is in kbps.
-                  \\n Leave empty to disable.
+                  \\n Leave empty (0) to disable.
                       \\nExample:\\n
-                      6000
+                      3000 (default)
                       \\nExample:\\n
                       4000`,
     },
@@ -542,11 +565,14 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
   let videoFrameRate = numerator / denominator;
   let videoFrameRateFactor = 0.875;  // factor to convert high frame rate to low standard frame rate
   let bitrateThrottle = '';
+  let targetBitrate ='';
   let bolScaleVideo = false;
   let videoResizeFactor = 1;  // Initialize to 1
   let videoFilters = '';
   let otherTags = '';
   let quantizationType = '';
+  let outputDir = librarySettings.output; // gets output/destination dir
+  let inputDir = librarySettings.input; // gets input dir
 
 
   // Calculate bitrate throttle (cutoff fps is 35)
@@ -597,6 +623,7 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
     videoWidth = videoNewWidth;
   } else if (inputs.Max_Video_Height === 'original') {
     videoResizeFactor = 1;  // Apply no resize factor
+    response.infoLog += `☑Video Resolution: ${videoWidth}x${videoHeight} (resize factor:1) \n`;
   }
 
   // The formula essentially multiplies the file size in bytes by 8 (to convert to bits)
@@ -604,31 +631,47 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
   // The result is the average bitrate of the video in bits per second (bps).
   // For non hevc source videos a multiplier factor of x2 is applied.
   if (file.ffProbeData.streams[videoIdx].codec_name === 'hevc') {
-      currentBitrate = ((file.file_size * 1024 * 1024 * 8) / duration) * 2;
-      response.infoLog += `☑Current input HEVC bitrate is ${currentBitrate} \n`;
+    currentBitrate = Math.round(((file.file_size * 1024 * 1024 * 8) / duration) * 2);
+    response.infoLog += `☑Input file bitrate: ${currentBitrate} (hevc) \n`;
   } else {
-      currentBitrate = (file.file_size * 1024 * 1024 * 8) / duration;
-      response.infoLog += `☑Current input bitrate is ${currentBitrate} (non hevc) \n`;
+    currentBitrate = Math.round((file.file_size * 1024 * 1024 * 8) / duration);
+    response.infoLog += `☑Input file bitrate: ${currentBitrate} (non-hevc) \n`;
   }
 
-  // Apply user setting size limit 'inputs.Max_Video_Height'
-  let targetBitrate = ((currentBitrate * videoResizeFactor) * inputs.target_bitrate_multiplier);
-
   // Check 'targetBitrate' doesn't exceed 'bitrateThrottle'
-  if (inputs.target_bitrate_throttle) {
-    if (targetBitrate > bitrateThrottle) {
-      targetBitrate = bitrateThrottle;  // Override and set to 'bitrateThrottle'
-      response.infoLog += `☑Bitrate throttle applied: ${targetBitrate} bits \n`;
-      response.infoLog += `Video frame rate is: ${videoFrameRate} \n`;
-    } else {
-      response.infoLog += `☑Bitrate throttle not applied. Target bitrate: ${targetBitrate} bits \n`;
-      response.infoLog += `Video frame rate is: ${videoFrameRate} \n`;
+  if (Math.round(currentBitrate * videoResizeFactor) > bitrateThrottle) {
+    // Override and set to apply 'bitrateThrottle'
+    if (inputs.target_codec === 'hevc') {
+      targetBitrate = Math.round(bitrateThrottle * inputs.target_bitrate_multiplier);
+    } else if (inputs.target_codec === 'h264') {
+      targetBitrate = bitrateThrottle;
+    }
+    response.infoLog += `☑Bitrate throttle: enabled \n`;
+    response.infoLog += `☑Output file throttle bitrate: ${bitrateThrottle} \n`;
+    response.infoLog += `☑Video frame rate: ${videoFrameRate}fps \n`;
+  } else {
+    if (inputs.target_codec === 'hevc') {
+      targetBitrate = Math.round((currentBitrate * videoResizeFactor) * inputs.target_bitrate_multiplier);
+    } else if (inputs.target_codec === 'h264') {
+      targetBitrate = Math.round(currentBitrate * videoResizeFactor);
+    }
+    response.infoLog += `☑Bitrate throttle: disabled \n`;
+    response.infoLog += `☑Video frame rate: ${videoFrameRate}fps \n`;
+  }
+
+  // Check if source file bitrate is too slow to support QP or CP quantization
+  // With low quality source video (artifacts), ffmpeg -qp may create a file size
+  // greater than source file.
+  // So solution is to disable -qp option and use target, min, max bitrate only.
+  if (inputs.enable_QP_CQ_Control) {
+    if (2 * targetBitrate > currentBitrate) {
+      inputs.enable_QP_CQ_Control = false;
     }
   }
 
   // Allow some leeway under and over the targetBitrate.
-  const minimumBitrate = (targetBitrate * 0.7);
-  const maximumBitrate = (targetBitrate * 1.3);
+  const minimumBitrate = Math.round(targetBitrate * 0.7);
+  const maximumBitrate = Math.round(targetBitrate * 1.3);
 
   // If Container .ts or .avi set genpts to fix unknown timestamp
   if (inputs.container === 'ts' || inputs.container === 'avi') {
@@ -642,13 +685,19 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
     return response;
   }
 
-  // Check if inputs.bitrate cutoff has something entered.
+  // Check if inputs.bitrate cutoff is not disabled (0)
   // (Entered means user actually wants something to happen, empty would disable this).
   // Checks if currentBitrate is below inputs.bitrate_cutoff.
   // If so then cancel plugin without touching original files.
-  if (currentBitrate <= inputs.bitrate_cutoff) {
-    response.infoLog += `Current bitrate is below set cutoff of ${inputs.bitrate_cutoff}. Cancelling plugin. \n`;
-    return response;
+  if (inputs.bitrate_cutoff) {
+    if (
+      inputs.bitrate_cutoff !== 0 &&
+      currentBitrate <= inputs.bitrate_cutoff * 1000 &&
+      inputDir === outputDir
+    ) {
+      response.infoLog += `Current bitrate is below set cutoff of ${inputs.bitrate_cutoff}. Cancelling plugin. \n`;
+      return response;
+    }
   }
 
   // Check if force_conform option is checked.
@@ -711,7 +760,7 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
   // The -cq (Constant Quantization Parameter) is specific to the x264 video codec,
   // and its scale typically ranges from 0 to 51.
   // The -qp (Quantization Parameter) is used in various video codecs,
-  // including H.264 and H.265 (HEVC). he -qp value typically ranges from 0 to 51.
+  // including H.264 and H.265 (HEVC). The -qp value typically ranges from 0 to 51.
   // The lower the value, the higher the quality and larger the file size.
   // Conversely, higher values result in lower quality and smaller file sizes.
   if (inputs.target_codec === 'hevc') {
@@ -822,28 +871,45 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
         }
       }
 
-      // Check if encoder is 'libx265' or 'libx264'
-      if (encoderProperties.encoder.includes('libx265')) {
-        otherTags += '-rc-lookahead:v 32';  // lookahead rate control
-      }
-      if (encoderProperties.encoder.includes('libx264')) {
-        otherTags += '-rc-lookahead:v 32';  // lookahead rate control
-      }
+      // // Check if encoder is 'libx265' or 'libx264'
+      // if (encoderProperties.encoder.includes('libx265')) {
+      //   otherTags += '-rc-lookahead:v 32';  // lookahead rate control
+      // }
+      // if (encoderProperties.encoder.includes('libx264')) {
+      //   otherTags += '-rc-lookahead:v 32';  // lookahead rate control
+      // }
 
       
       //// Remux ////
 
+      // Check if input & output codec are the same and if input bitrate is within
+      // a range no video transcode is performed. Remux only.
+      if (inputs.bitrate_cutoff) {
+        if (
+          inputs.target_codec === file.ffProbeData.streams[i].codec_name &&
+          file.ffProbeData.streams[i].height >= 0.9 * videoHeight &&
+          file.ffProbeData.streams[i].height <= 1.1 * videoHeight &&
+          currentBitrate < inputs.bitrate_cutoff * 1000
+        ) {
+          response.infoLog += `File is in ${inputs.target_codec} and within bitrate range.\n`;
+          response.infoLog += `Remux only to ${inputs.container} container.\n`;
+          response.preset = `<io> -map 0 -c copy ${extraArguments} -metadata comment=ahuacate_transcode`;
+          response.processFile = true;
+          return response;
+        }
+      }
+
       // Check if codec of stream is HDR AND check if file.container does NOT match inputs.container.
-      // If so remux file.
+      // Remux only.
       if (
         inputs.target_codec === file.ffProbeData.streams[i].codec_name &&
         inputs.target_bitrate_multiplier === '1' &&
         bolScaleVideo === false &&
         streamHdr === true
       ) {
-        response.infoLog += `File is in ${inputs.target_codec} and `
-          + `in ${inputs.container} container. Remuxing. \n`;
-        response.preset = `<io> -map 0 -c copy ${extraArguments}`;
+        response.infoLog += `File is in ${inputs.target_codec}.\n`;
+        response.infoLog += `Remux only to ${inputs.container} container.\n`;
+        response.preset = `<io> -map 0 -c copy ${extraArguments} -metadata comment=ahuacate_transcode`;
         response.processFile = true;
         return response;
       }
@@ -865,14 +931,16 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
 
   // Set bitrateSettings variable using bitrate information calculated earlier.
   bitrateSettings = `-b:v ${targetBitrate} -minrate ${minimumBitrate} `
-    + `-maxrate ${maximumBitrate} -bufsize ${currentBitrate}`;
+    + `-maxrate ${maximumBitrate} -bufsize ${targetBitrate}`;
   // Print to infoLog information around file & bitrate settings.
-  response.infoLog += `☑Container for output selected as ${inputs.container}. \n`;
-  response.infoLog += `☑Current bitrate = ${currentBitrate} \n`;
-  response.infoLog += '☑Bitrate settings: \n';
+  response.infoLog += `☑Output container type: ${inputs.container}. \n`;
+  response.infoLog += `☑Input file bitrate: ${currentBitrate} \n`;
+  response.infoLog += `☑Quantization parameter: ${inputs.enable_QP_CQ_Control ? 'enabled' : 'disabled'} \n`;
+  response.infoLog += '☑Bitrate transcode settings: \n';
   response.infoLog += `Target = ${targetBitrate} \n`;
   response.infoLog += `Minimum = ${minimumBitrate} \n`;
   response.infoLog += `Maximum = ${maximumBitrate} \n`;
+  response.infoLog += `Bufsize = ${targetBitrate} \n`;
   if (bolScaleVideo === true) {
       response.infoLog += `Video scale = ${videoWidth}:${videoHeight} \n`;
   }
@@ -897,7 +965,13 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
     }
   }
 
-  const vEncode = `${quantizationType} ${inputs.Target_Q_Value} ${bitrateSettings}`;
+
+
+
+  // const vEncode = `${quantizationType} ${inputs.Target_Q_Value} ${bitrateSettings}`;
+  const vEncode = inputs.enable_QP_CQ_Control
+    ? `${quantizationType} ${inputs.Target_Q_Value} ${bitrateSettings}`
+    : bitrateSettings;
   const videoFiltersOption = videoFilters ? `-vf '${videoFilters}'` : '';
   const otherTagsOption = otherTags ? otherTags.split('-').filter(tag => tag).map(tag => `-${tag}`).join(' ') : '';
   const metaDataComment = `-metadata comment=ahuacate_transcode`;

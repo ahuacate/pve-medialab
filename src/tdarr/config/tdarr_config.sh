@@ -61,5 +61,4 @@ fi
 # Restart services - to build tdarr config/settings files
 pct_start_systemctl tdarr-server.service
 pct_start_systemctl tdarr-node.service
-wait 5
 #-----------------------------------------------------------------------------------

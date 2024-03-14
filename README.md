@@ -66,7 +66,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
 <!-- TOC -->
 
 - [1. About our MediaLab CT Applications](#1-about-our-medialab-ct-applications)
-- [2. Preparing you network](#2-preparing-you-network)
+- [2. Preparing your network](#2-preparing-your-network)
     - [2.1. Storage Folder Structure](#21-storage-folder-structure)
     - [2.2. Unprivileged CTs and File Permissions](#22-unprivileged-cts-and-file-permissions)
         - [2.2.1. Unprivileged Container Mapping - medialab GUID](#221-unprivileged-container-mapping---medialab-guid)
@@ -134,8 +134,13 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
     - [16.3. Ahucate Node settings (CPU & iGPU)](#163-ahucate-node-settings-cpu--igpu)
         - [16.3.1. Node main settings](#1631-node-main-settings)
         - [16.3.2. Node options](#1632-node-options)
-        - [16.3.3. Ahuacate Plugin Stack](#1633-ahuacate-plugin-stack)
-        - [16.3.4. Ahuacate stack settings](#1634-ahuacate-stack-settings)
+        - [16.3.2. Staging section](#1632-staging-section)
+        - [16.3.3. Ahuacate stream settings](#1633-ahuacate-stream-settings)
+            - [16.3.3.1. Source](#16331-source)
+            - [16.3.3.2. Transcode cache](#16332-transcode-cache)
+            - [16.3.3.3. Output folder](#16333-output-folder)
+            - [16.3.3.4. Filters](#16334-filters)
+            - [16.3.3.5. Transcode options](#16335-transcode-options)
 - [17. Vidcoderr LXC (Depreciated)](#17-vidcoderr-lxc-depreciated)
     - [17.1. Enabling IOMMU​](#171-enabling-iommu​)
     - [17.2. Setup Vidcoderr](#172-setup-vidcoderr)
@@ -155,7 +160,7 @@ The majority of LXCs come equipped with a pre-set configuration file. To access 
 
 > application_name_backup_v3.2.2.0000_0000.00.00_00.00.00.zip
 
-# 2. Preparing you network
+# 2. Preparing your network
 To ensure a successful installation of the LXC application, Medialab requires that you have completed the following prerequisites at some point:
 1. Preparation of your NAS using either [PVE NAS](https://github.com/ahuacate/pve-nas) or [NAS Hardmetal](https://github.com/ahuacate/nas-hardmetal)
 2. Setting up your PVE storage on your PVE Host, as outlined in [PVE storage](https://github.com/ahuacate/pve-host)
@@ -862,29 +867,65 @@ Ahuacate custom plugins require the following Tdarr settings.
 -- Health Check Engine: 1x CPU, 0x GPU
 
 ### 16.3.2. Node options
-1. Navigate to `Tdarr` > `Transcode engine` > `Options`:
+1. Navigate to `Tdarr` > `Nodes Section` > `Transcode engine` > `Options`:
 -- Specify the hardware encoding type: Any (nvenc,qsv,vaapi)
 -- GPU worker limit: 100
 -- Allow GPU workers to do CPU tasks: enable
 -- Always move failed transcodes to the Transcode Error tab: enable
 -- Low FFmpeg/HandBrake process priority: disable
 
-### 16.3.3. Ahuacate Plugin Stack
-Here is my Tdarr plugin library stack I use for my stream media.
+### 16.3.2. Staging section
+1. Navigate to `Tdarr` > `Staging Section`:
+-- Auto accept successful transcodes: enable
+
+### 16.3.3. Ahuacate stream settings
+Here's the Tdarr plugin library stack and settings utilized for streaming media. In this instance, I generate compact HEVC stream video files from my video series source folder.
+
+#### 16.3.3.1. Source
+1. Navigate to `Tdarr` > `Libraries` > `Library+` or select library > `Source`.
+Key settings are:
+-- Scanner Settings: @eaDir,cache,recycle,#recycle,.Trash,lost+found,.DS_store,metadata,SYNOINDEX_MEDIA_INFO
+-- Run an hourly Scan: enable (required for PVE NFS NAS storage mounts because inotify probably doesn't work)
+-- Hold files after scanning: 259200
+
+It is crucial to incorporate the provided information. The retention period setting of `259200` seconds enables other applications to replace existing video files with higher-quality versions. Additionally, the Scanner settings are essential to exclude hidden files in Linux.
+
+```
+@eaDir,cache,recycle,#recycle,.Trash,lost+found,.DS_store,metadata,SYNOINDEX_MEDIA_INFO
+```
 
 ![alt text](./images/Tdarr_01.png)
 
+#### 16.3.3.2. Transcode cache
+1. Navigate to `Tdarr` > `Libraries` > `Select library` > `Transcode cache`.
+Key settings are:
+-- Transcode cache: /mnt/transcode/tdarr
+
+#### 16.3.3.3. Output folder
+1. Navigate to `Tdarr` > `Libraries` > `Select library` > `Output folder`.
+Key settings are:
+-- Output Folder: enable
+-- Copy to output if conditions already met: disable
+-- Delete source file: disable (dangerous setting!)
+-- Record history: enable
+-- Output dir: /mnt/video/stream/documentary/series
+
+#### 16.3.3.4. Filters
+1. Navigate to `Tdarr` > `Libraries` > `Select library` > `Filters`.
+Key settings are:
+-- Filters at scan level: mkv,mp4,mov,m4v,mpg,mpeg,avi,flv,webm,wmv,vob,evo,iso,m2ts,ts
+
+#### 16.3.3.5. Transcode options
+1. Navigate to `Tdarr` > `Libraries` > `Select library` > `Transcode options`.
+Your Tdarr plugin stack overview should look like this:
+
 ![alt text](./images/Tdarr_02.png)
 
+Your Tdarr plugin stack settings should be as follows:
+
+> Note: When using 'Migz-Clean subtitle streams' in conjunction with Ahuacate plugins you MUST INCLUDE both ISO language 2 and 3 letter codes. For English use 'eng,en'.
+
 ![alt text](./images/Tdarr_03.png)
-
-![alt text](./images/Tdarr_04.png)
-
-### 16.3.4. Ahuacate stack settings
-
-Note: When using 'Migz-Clean subtitle streams' in conjunction with Ahuacate plugins you MUST INCLUDE both ISO language 2 and 3 letter codes. For English use 'eng,en'.
-
-![alt text](./images/Tdarr_05.png)
 
 ---
 

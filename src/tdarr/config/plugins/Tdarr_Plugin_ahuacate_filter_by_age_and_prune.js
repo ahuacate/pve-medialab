@@ -17,16 +17,16 @@ const details = () => ({
     {
       name: 'Min_Input_Age_Days',
       type: 'number',
-      defaultValue: 3,
+      defaultValue: 0,
       inputUI: {
         type: 'text',
       },
-      tooltip: `Specify the minimum age in days for Tdarr to disregard new files based on their modified date. For example, if you input 3, the plugin will only handle files modified 3 days or older, excluding files modified within the last 3 days from processing. This allows time for any faulty file to be discovered, removed or updated before Tdarr encoding.
+      tooltip: `We recommend you use the inbuilt Tdarr WebGUI option "Hold files after scanning" and set it to 259200(s), equivalent to 3 days. If you choose to use this plugin option, then specify the minimum age in days for Tdarr to disregard new files based on their modified date. For example, if you input 3, the plugin will only handle files modified 3 days or older, excluding files modified within the last 3 days from processing. This allows time for a new file to be discovered, removed or updated by the user, Sonarr or Radarr before Tdarr encoding.
                   \\n Your input value must be less than your 'Min_Prune_Age_Days' and  value.
                     \\nExample:\\n
-                    0 (disabled)
+                    0 (recommended - use Tdarr option "Hold files after scanning")
                     \\nExample:\\n
-                    3 (recommended)
+                    3
                     \\nExample:\\n
                     7`,
     },
@@ -79,7 +79,7 @@ const details = () => ({
       inputUI: {
         type: 'text',
       },
-      tooltip: `Specify the names of dirs you want to always delete in your output folder. These could temporary rubbish bin folders such as '.Trash-1000' and '.recycle'. Ensure each entry is separated by a comma (,) and starts and ends with no spaces. By default, the Synology NAS "@eaDir" is already included.
+      tooltip: `Specify the names of dirs you want to always delete in your output folder. These could be temporary rubbish bin folders such as '.Trash-1000' and '.recycle'. Ensure each entry is separated by a comma (,) and starts and ends with no spaces. By default, the Synology NAS "@eaDir" is already included.
                   \\nExample:\\n
                   rubbish,.recycle,.Trash-1000`,
     },
@@ -122,18 +122,26 @@ const plugin = (file, librarySettings, inputs, otherArguments) => {
   const cleanedFilesToExclude = (typeof rawFilesToExclude === 'string' ? rawFilesToExclude : '').trim();  // Remove spaces at the beginning and end of the input string
   const filesToExclude = cleanedFilesToExclude.replace(/,\s*/g, ',');  // Remove spaces after commas
   const filesToExcludeArray = filesToExclude.split(',');  // Split the cleaned string into an array using ',' as the delimiter
-  if (!filesToExcludeArray.includes('.foo_protect')) {
-    filesToExcludeArray.push('.foo_protect');  // Ensure ".foo_protect" is always included in the array
-  }
+  const alwaysExcludedFiles = [".foo_protect", "*partial*"];  // Ensure file names are always included in the array
+  alwaysExcludedFiles.forEach(file => {
+    const regex = new RegExp(file.replace(/\*/g, '.*'), 'i');  // Convert * to .* in the regex
+    if (!filesToExcludeArray.some(existingFile => regex.test(existingFile))) {
+      filesToExcludeArray.push(file);
+    }
+  });
 
   // Assuming inputs.Dirs_To_Always_Prune is a string with filenames separated by ','
   const rawDirsToAlwaysDelete = inputs.Dirs_To_Always_Prune;
   const cleanedDirsToAlwaysDelete = (typeof rawDirsToAlwaysDelete === 'string' ? rawDirsToAlwaysDelete : '').trim();  // Remove spaces at the beginning and end of the input string
   const dirsToAlwaysDelete = cleanedDirsToAlwaysDelete.replace(/,\s*/g, ',');  // Remove spaces after commas
   const dirsToAlwaysDeleteArray = dirsToAlwaysDelete.split(',');  // Split the cleaned string into an array using ',' as the delimiter
-  if (!dirsToAlwaysDeleteArray.includes('@eaDir')) {
-    dirsToAlwaysDeleteArray.push('@eaDir');  // Ensure "@eaDir" is always included in the array
-  }
+  const alwaysIncludedDirs = ["@eaDir", "cache", "recycle", "#recycle", ".Trash", "lost+found", ".DS_store", "metadata", "SYNOINDEX_MEDIA_INFO"];  // Ensure dir names are always included in the array
+  alwaysIncludedDirs.forEach(dir => {
+    if (!dirsToAlwaysDeleteArray.includes(dir)) {
+      dirsToAlwaysDeleteArray.push(dir);
+    }
+  });
+  
 
   // Function to prune files older than a specified age from a folder
   const pruneOldFiles = async (outputDir, minAge, filesToExcludeArray) => {
@@ -218,23 +226,6 @@ const plugin = (file, librarySettings, inputs, otherArguments) => {
   // Delete empty folders
   // const deleteFolderPath = librarySettings.output;
   deleteEmptyFolders(outputDir, dirsToAlwaysDeleteArray);
-
-  // // Filter input by age 'Max_Input_Age_Days'
-  // const age = Date.now() - file.statSync.mtimeMs;
-  // const reqage = Number(inputs.Max_Input_Age_Days) * 86400000;
-  // if (age < reqage) {
-  //   response.infoLog += 'File modified date young enough. Moving to the next plugin \n';
-  //   response.infoLog += `File age: ${age} \n`;
-  //   response.infoLog += `Required file age: ${reqage} \n`;
-  //   response.infoLog += `Output folder: ${librarySettings.output} \n`;
-  //   response.processFile = true;
-  // } else {
-  //   response.infoLog += 'File modified date not young enough. Skipping file \n';
-  //   response.infoLog += `File age: ${age} \n`;
-  //   response.infoLog += `Required file age: ${reqage} \n`;
-  //   response.infoLog += `Output folder: ${librarySettings.output} \n`;
-  //   response.processFile = false;
-  // }
 
   // Filter input by age range 'Min_Input_Age_Days' to 'Max_Input_Age_Days'
   const age = Date.now() - file.statSync.mtimeMs;

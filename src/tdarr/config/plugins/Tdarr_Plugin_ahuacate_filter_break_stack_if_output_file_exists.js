@@ -32,15 +32,17 @@ const cleanFileName = (response, outputDir, fileName) => {
     const cleanedFileName = `${tvSeriesMatch[1]}`;
     response.infoLog += `TV Series match: ${cleanedFileName}\n`;
     response.cleanedFileNameArray.push(cleanedFileName);
+    return response;
   }
 
-  // Check if there's an IMDb ID in square brackets
+  // Check if there's an IMDb ID in square bracketscleanedFileNameArray
   const imdbIdMatch = /\[imdbid-tt(\d+)\]/.exec(fileName);
   if (imdbIdMatch) {
     const cleanedFileName = fileName.replace(/(\[imdbid-tt\d+\]).*$/, '$1').trim();
     // Check if the cleanedFileName includes the TV series pattern
     if (!/(s\d{2}[ex]?\d{2})/i.test(cleanedFileName)) {
       response.cleanedFileNameArray.push(cleanedFileName);
+      return response;
     }
   }
 
@@ -51,6 +53,7 @@ const cleanFileName = (response, outputDir, fileName) => {
     // Check if the cleanedFileName includes the TV series pattern
     if (!/(s\d{2}[ex]?\d{2})/i.test(cleanedFileName)) {
       response.cleanedFileNameArray.push(cleanedFileName);
+      return response;
     }
   }
 
@@ -132,8 +135,6 @@ const doesFileExistInOutputDir = (outputDir, cleanedFileNameArray, originalExten
 
   return checkFile(outputDir);
 };
-
-
 
 
 const plugin = (file, librarySettings, inputs, otherArguments) => {
