@@ -932,6 +932,10 @@ Your Tdarr plugin stack settings should be as follows:
 
 When creating a manual source input such as `public/autoadd/tdarr/(in_movies or in_series)` we recommend you add the local plugin `Ahua-action remove empty, small dirs or folders` at the end of the plugin flow. This plugin cleans up any empty or erroneous folders left behind in your source and output folders.
 
+Example for 'stream-in-series' shown below:
+
+![alt text](./images/Tdarr_04.png)
+
 ---
 
 # 17. Vidcoderr LXC (Depreciated)
