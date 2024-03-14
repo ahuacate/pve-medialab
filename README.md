@@ -131,7 +131,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
 - [16. Tdarr LXC](#16-tdarr-lxc)
     - [16.1. Setup Tdarr](#161-setup-tdarr)
     - [16.2. Ahuacate Custom Plugins](#162-ahuacate-custom-plugins)
-    - [16.3. Ahucate Node settings (CPU & iGPU)](#163-ahucate-node-settings-cpu--igpu)
+    - [16.3. Ahuacate Node settings (CPU & iGPU)](#163-ahuacate-node-settings-cpu--igpu)
         - [16.3.1. Node main settings](#1631-node-main-settings)
         - [16.3.2. Node options](#1632-node-options)
         - [16.3.2. Staging section](#1632-staging-section)
@@ -140,7 +140,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
             - [16.3.3.2. Transcode cache](#16332-transcode-cache)
             - [16.3.3.3. Output folder](#16333-output-folder)
             - [16.3.3.4. Filters](#16334-filters)
-            - [16.3.3.5. Transcode options](#16335-transcode-options)
+            - [16.3.3.5. Transcode plugin options](#16335-transcode-plugin-options)
 - [17. Vidcoderr LXC (Depreciated)](#17-vidcoderr-lxc-depreciated)
     - [17.1. Enabling IOMMU​](#171-enabling-iommu​)
     - [17.2. Setup Vidcoderr](#172-setup-vidcoderr)
@@ -839,7 +839,7 @@ Tdarr is a versatile transcoding application designed for cross-platform use. It
 The Tdarr website is [here](https://home.tdarr.io/).
 
 ## 16.1. Setup Tdarr
-In your web browser URL type `http://tdarr.local:8265/#/` or `http://ct_ip_address:8265/#/`. The Radarr WebGUI will appear.
+In your web browser URL type `http://tdarr.local:8265/#/` or `http://ct_ip_address:8265/#/`. The Tdarr WebGUI will appear.
 
 ## 16.2. Ahuacate Custom Plugins
 Included are our Ahuacate custom plugins to create a managed video stream library. The new plugins are available in your Tdarr local Classic Plugins tab. When used in sequence with other community plugins Ahuacate plugin options include:
@@ -853,10 +853,13 @@ Included are our Ahuacate custom plugins to create a managed video stream librar
     * This plugin consolidates audio tracks into a single unified track and converts the audio to the desired format. It packages the single audio track within the video file container, aiming to minimize the size of the video container.
 3. Tdarr_Plugin_ahuacate_action_video_transcode
     * Transcode a video only using FFmpeg. Va-api iGPU transcoding will be used if possible.
+4. Tdarr_Plugin_ahuacate_action_remove_empty_dirs
+    * This plugin removes small and empty folders from your source and output directory. It is designed for the deletion of empty folders containing erroneous left over files, ensuring your directory structure remains clean and organized.
+    * The plugin is better used in public/autoadd/tdarr category folders folders.
 
 We recommend you always use the  Matroska Video file container, also known as MKV, because it encapsulates both audio and subtitles into one file.
 
-## 16.3. Ahucate Node settings (CPU & iGPU)
+## 16.3. Ahuacate Node settings (CPU & iGPU)
 The following settings are tested using an Intel N100 iGPU. For my requirements, I do not use the CPU for transcoding other than required processing tasks. This keeps the CPU overhead low for running other Proxmox LXCs and VMs.
 
 Ahuacate custom plugins require the following Tdarr settings.
@@ -915,7 +918,7 @@ Key settings are:
 Key settings are:
 -- Filters at scan level: mkv,mp4,mov,m4v,mpg,mpeg,avi,flv,webm,wmv,vob,evo,iso,m2ts,ts
 
-#### 16.3.3.5. Transcode options
+#### 16.3.3.5. Transcode plugin options
 1. Navigate to `Tdarr` > `Libraries` > `Select library` > `Transcode options`.
 Your Tdarr plugin stack overview should look like this:
 
@@ -926,6 +929,8 @@ Your Tdarr plugin stack settings should be as follows:
 > Note: When using 'Migz-Clean subtitle streams' in conjunction with Ahuacate plugins you MUST INCLUDE both ISO language 2 and 3 letter codes. For English use 'eng,en'.
 
 ![alt text](./images/Tdarr_03.png)
+
+When creating a manual source input such as `public/autoadd/tdarr/(in_movies or in_series)` we recommend you add the local plugin `Ahua-action remove empty, small dirs or folders` at the end of the plugin flow. This plugin cleans up any empty or erroneous folders left behind in your source and output folders.
 
 ---
 

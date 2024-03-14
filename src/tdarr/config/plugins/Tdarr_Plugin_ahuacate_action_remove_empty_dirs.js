@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 const details = () => ({
-  id: 'Tdarr_Plugin_ahuacate_filter_remove_empty_dirs',
+  id: 'Tdarr_Plugin_ahuacate_action_remove_empty_dirs',
   Stage: 'Post-processing',
-  Name: 'Ahua-Filter remove empty, small dirs or folders',
+  Name: 'Ahua-Action remove empty, small dirs or folders',
   Type: 'Video',
   Operation: 'Post-processing',
   Description: `
