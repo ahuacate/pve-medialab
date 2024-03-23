@@ -116,17 +116,30 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
     }
   };
 
-  // Function to get the size of a folder
+  // Function to get the size of a folder recursively
   const getFolderSize = async (folderPath) => {
     let size = 0;
-    const files = await fs.promises.readdir(folderPath);
-    for (const file of files) {
-        const filePath = path.join(folderPath, file);
-        const fileStat = await fs.promises.stat(filePath);
-        size += fileStat.size;
+
+    // Read all files and subdirectories in the folder
+    const entries = await fs.promises.readdir(folderPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const entryPath = path.join(folderPath, entry.name);
+
+        // If the entry is a file, add its size to the total size
+        if (entry.isFile()) {
+            const stats = await fs.promises.stat(entryPath);
+            size += stats.size;
+        }
+        // If the entry is a directory, recursively get its size
+        else if (entry.isDirectory()) {
+            size += await getFolderSize(entryPath);
+        }
     }
+
     return size / 1024; // Convert bytes to kilobytes
   };
+
 
   // Call deleteEmptyFolders for each path
   await deleteEmptyFolders(outputDir, dirsToAlwaysDeleteArray, filesToExcludeArray, maxDirSize);
