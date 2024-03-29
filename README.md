@@ -847,17 +847,20 @@ Included are our Ahuacate custom plugins to create a managed video stream librar
 1. Tdarr_Plugin_ahuacate_filter_by_age_and_prune
     * This plugin prevents processing source files older than a preset number of days.
     * The plugin automatically deletes files older than a specified age from your library output folder. It also deletes empty folders from your library output folder.
+    * This plugin is designed for automatic transcoding of your main movie or series library. It is not for '/public/audoadd/tdarr/in_series' type inputs.
 2. Tdarr_Plugin_ahuacate_filter_break_stack_if_output_file_exists
     * Ahua-Filter breaks out of the plugin stack if a matching video output file already exists.
 3. Tdarr_Plugin_ahuacate_action_audio_transcode
     * This plugin consolidates audio tracks into a single unified track and converts the audio to the desired format. It packages the single audio track within the video file container, aiming to minimize the size of the video container.
-3. Tdarr_Plugin_ahuacate_action_video_transcode
-    * Transcode a video only using FFmpeg. Va-api iGPU transcoding will be used if possible.
-4. Tdarr_Plugin_ahuacate_action_remove_empty_dirs
-    * This plugin removes small and empty folders from your source and output directory. It is designed for the deletion of empty folders containing erroneous left over files, ensuring your directory structure remains clean and organized.
-    * The plugin is better used in public/autoadd/tdarr category folders folders.
+4. Tdarr_Plugin_ahuacate_action_video_transcode
+    * Transcode a video only using FFmpeg. Va-api iGPU transcoding will be used if possible (if enabled).
+5. Tdarr_Plugin_ahuacate_add_subtitle_to_mkv
+    * This plugin integrates SRT subtitle languages into your Matroska MKV video container. SRT subtitle files should adhere to the iso6391 or iso6392 language format, such as 'filename.eng.srt' or 'filename.en.srt'. Select your language.
+6. Tdarr_Plugin_ahuacate_action_remove_empty_dirs
+    * This plugin removes small and empty folders from your source and output directory. It is designed for the deletion of empty folders containing erroneous leftover files, ensuring your directory structure remains clean and organized.
+    * The plugin is best used for `public/autoadd/tdarr` category folders folders.
 
-We recommend you always use the  Matroska Video file container, also known as MKV, because it encapsulates both audio and subtitles into one file.
+We recommend you always use the  Matroska Video file container, also known as MKV, because it encapsulates both audio and subtitles into one file. If you want quality video transcodes then disable iGPU to obtain x264/265 for far superior compression and outstanding video quality.
 
 ## 16.3. Ahuacate Node settings (CPU & iGPU)
 The following settings are tested using an Intel N100 iGPU. For my requirements, I do not use the CPU for transcoding other than required processing tasks. This keeps the CPU overhead low for running other Proxmox LXCs and VMs.
@@ -890,8 +893,9 @@ Key settings are:
 -- Scanner Settings: @eaDir,cache,recycle,#recycle,.Trash,lost+found,.DS_store,metadata,SYNOINDEX_MEDIA_INFO
 -- Run an hourly Scan: enable (required for PVE NFS NAS storage mounts because inotify probably doesn't work)
 -- Hold files after scanning: 259200
+-- Closed Caption Check: Enable (closed captions can cause a processing headache. Best remove them whenever possible using the community 'Tdarr_Plugin_x7ac_Remove_Closed_Caption' plugin.)
 
-It is crucial to incorporate the provided information. The retention period setting of `259200` seconds enables other applications to replace existing video files with higher-quality versions. Additionally, the Scanner settings are essential to exclude hidden files in Linux.
+It is crucial to incorporate the provided information. The retention period setting of `259200` seconds enables other media management applications, such as Sonarr or Radarr, to replace or upgrade existing video files with higher-quality versions. Additionally, the Scanner settings are essential to exclude hidden files in Linux.
 
 ```
 @eaDir,cache,recycle,#recycle,.Trash,lost+found,.DS_store,metadata,SYNOINDEX_MEDIA_INFO
@@ -928,13 +932,12 @@ Your Tdarr plugin stack settings should be as follows:
 
 > Note: When using 'Migz-Clean subtitle streams' in conjunction with Ahuacate plugins you MUST INCLUDE both ISO language 2 and 3 letter codes. For English use 'eng,en'.
 
+> Note: The sample is for transcoding a series. For series I enable GPU transcoding in the plugin 'Tdarr_Plugin_ahuacate_action_video_transcode
+Ahua-Transcode a video file' switch 'try_use_gpu'. For movies I disable this to achieve a better quality output.
+
 ![alt text](./images/Tdarr_03.png)
 
-When creating a manual source input such as `public/autoadd/tdarr/(in_movies or in_series)` we recommend you add the local plugin `Ahua-action remove empty, small dirs or folders` at the end of the plugin flow. This plugin cleans up any empty or erroneous folders left behind in your source and output folders.
-
-Example for 'stream-in-series' shown below:
-
-![alt text](./images/Tdarr_04.png)
+When creating a manual source input such as `public/autoadd/tdarr/(in_movies or in_series)` we recommend you add the local plugin `Ahua-action remove empty, small dirs or folders` at the beginning of the plugin flow. This plugin cleans up any empty or erroneous folders left behind in your source and output folders.
 
 ---
 

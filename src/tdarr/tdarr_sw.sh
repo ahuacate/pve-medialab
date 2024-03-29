@@ -158,6 +158,12 @@ apt-get update -y
 apt-get upgrade -y
 apt-get install -y ffmpeg
 
+# Install CCextractor
+apt-get install -y ccextractor
+
+# Install mkvpropedit
+apt-get install -y mkvtoolnix
+
 
 # # FFmpeg static
 # ffmpeg_tar=ffmpeg-git-amd64-static.tar.xz

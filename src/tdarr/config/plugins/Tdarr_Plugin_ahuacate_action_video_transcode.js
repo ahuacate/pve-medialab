@@ -785,7 +785,7 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
     if (codec_type === 'video') {
       // Check if plugin already performed and if so skip plugin (stops loop issue)
       let comment = file.mediaInfo.track[i].Comment
-      if (comment === 'ahuacate_transcode') {
+      if (comment && comment.match(/ahuacate.video.transcode/i)) {
         // response.processFile = false;
         response.infoLog += `File already processed by plugin: ${details().id} \n`;
         return response;
@@ -851,6 +851,7 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
       //   }
       // }
 
+      // Fix video filter ending
       if (videoFilters.endsWith(',')) {
         videoFilters = videoFilters.slice(0, -1);  // Remove the trailing comma if it exists
       }
@@ -893,7 +894,7 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
         ) {
           response.infoLog += `File is in ${inputs.target_codec} and within bitrate range.\n`;
           response.infoLog += `Remux only to ${inputs.container} container.\n`;
-          response.preset = `<io> -map 0 -c copy ${extraArguments} -metadata comment=ahuacate_transcode`;
+          response.preset = `<io> -map_metadata -1 -map 0 -c copy ${extraArguments} -metadata comment=ahuacate.video.transcode`;
           response.processFile = true;
           return response;
         }
@@ -909,7 +910,7 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
       ) {
         response.infoLog += `File is in ${inputs.target_codec}.\n`;
         response.infoLog += `Remux only to ${inputs.container} container.\n`;
-        response.preset = `<io> -map 0 -c copy ${extraArguments} -metadata comment=ahuacate_transcode`;
+        response.preset = `<io> -map_metadata -1 -map 0 -c copy ${extraArguments} -metadata comment=ahuacate.video.transcode`;
         response.processFile = true;
         return response;
       }
@@ -974,10 +975,10 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
     : bitrateSettings;
   const videoFiltersOption = videoFilters ? `-vf '${videoFilters}'` : '';
   const otherTagsOption = otherTags ? otherTags.split('-').filter(tag => tag).map(tag => `-${tag}`).join(' ') : '';
-  const metaDataComment = `-metadata comment=ahuacate_transcode`;
+  const metaDataComment = `-metadata comment=ahuacate.video.transcode`;
 
   response.preset += ` ${encoderProperties.inputArgs ? encoderProperties.inputArgs : ''} ${genpts}<io>`
-    + ` -map 0 -c copy -c:v ${encoderProperties.encoder}`
+    + ` -map_metadata -1 -map 0 -c copy -c:v ${encoderProperties.encoder}`
     + ` ${encoderProperties.outputArgs ? encoderProperties.outputArgs : ''}`
     + ` ${vEncode}`
     + ` ${videoFiltersOption}`  // Add videoFilters if it has entries

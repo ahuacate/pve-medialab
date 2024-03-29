@@ -98,6 +98,21 @@ const cleanFileName = (response, outputDir, fileName) => {
 //   return checkFile(outputDir);
 // };
 
+// Check if Ahua transcode plugin already performed and if so break
+const hasBeenTranscoded = (file) => {
+  // Iterate through the tracks of the file
+  for (const track of file.mediaInfo.track) {
+      // Check if the track has a 'Comment' field
+      if (track.Comment) {
+          // Check if the 'Comment' field contains the specified string
+          if (track.Comment.match(/ahuacate\.video\.transcode/i)) {
+              return true; // File has been transcoded
+          }
+      }
+  }
+  return false; // File has not been transcoded
+};
+
 // Function to check if any video file in the output directory matches cleanedFileNameArray
 const doesFileExistInOutputDir = (outputDir, cleanedFileNameArray, originalExtension) => {
   const videoExtensions = ['.mp4', '.mkv', '.ts', '.avi'];
@@ -154,6 +169,7 @@ const plugin = (file, librarySettings, inputs, otherArguments) => {
     cleanedFileName: '',
   };
 
+
   // Clean up the file name
   cleanFileName(response, outputDir, fileName);
 
@@ -168,6 +184,14 @@ const plugin = (file, librarySettings, inputs, otherArguments) => {
     response.infoLog += `☑File already exists in the output directory: ${fileName}`;
   } else {
     response.infoLog += `☑File does not exist in the output directory: ${fileName}`;
+  }
+
+  // Check if file has been transcoded
+  if (hasBeenTranscoded(file)) {
+    response.processFile = false;
+    response.infoLog += `☒File has already been transcoded: ${fileName}`;
+  } else {
+    response.infoLog += `☑File has not been transcoded: ${fileName}`;
   }
 
   // Always return the response
