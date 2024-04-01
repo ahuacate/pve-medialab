@@ -834,7 +834,40 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
 
       // Add video scale
       if (bolScaleVideo === true) {
-        videoFilters += `scale_vaapi=-2:${videoHeight},`;  // Add video resize variable if required
+        if (encoderProperties.encoder.includes('hevc_vaapi')) {
+          // Handle hevc_vaapi case
+          videoFilters += `scale_vaapi=-2:${videoHeight},`;
+        } else if (encoderProperties.encoder.includes('hevc_qsv')) {
+          // Handle hevc_qsv case
+          videoFilters += `scale_qsv=-2:${videoHeight},`;
+        } else if (encoderProperties.encoder.includes('hevc_nvenc')) {
+          // Handle hevc_nvenc case
+          videoFilters += `scale_npp=-2:${videoHeight},`;
+        } else if (encoderProperties.encoder.includes('libx265')) {
+          // Handle libx265 case
+          videoFilters += `scale=-2:${videoHeight},`;
+        } else if (encoderProperties.encoder.includes('libx264')) {
+          // Handle libx264 case
+          videoFilters += `scale=-2:${videoHeight},`;
+        } else if (encoderProperties.encoder.includes('h264_qsv')) {
+          // Handle h264_qsv case
+          videoFilters += `scale_qsv=-2:${videoHeight},`;
+        } else if (encoderProperties.encoder.includes('h264_nvenc')) {
+          // Handle h264_nvenc case
+          videoFilters += `scale_npp=-2:${videoHeight},`;
+        } else if (encoderProperties.encoder.includes('hevc_amf')) {
+          // Handle hevc_amf case
+          videoFilters += `scale=-2:${videoHeight},`;
+        } else if (encoderProperties.encoder.includes('h264_amf')) {
+          // Handle h264_amf case
+          videoFilters += `scale=-2:${videoHeight},`;
+        } else if (encoderProperties.encoder.includes('h264_videotoolbox')) {
+          // Handle h264_videotoolbox case
+          videoFilters += `scale='iw*min(1920/iw\,1080/ih)':${videoHeight},`;
+        } else {
+          // Handle any other case
+          videoFilters += `scale=-2:${videoHeight},`; // or any other default option
+        }
       }
 
       // // Non HDR stream
