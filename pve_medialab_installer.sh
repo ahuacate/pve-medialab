@@ -37,6 +37,7 @@ GIT_COMMON='0'
 # Fields must match GIT_APP_SCRIPT dir and filename:
 # i.e .../<build_type>/${GIT_REPO}_<vm_type>_<app_name>_installer.sh '(i.e .../ubuntu/pve_nas_ct_nas_installer.sh')
 vm_LIST=( "deluge:deluge:ct:deluge torrent downloader"
+"bazarr:bazarr:ct:subtitle manager for Sonarr and Radarr"
 "jellyfin:jellyfin:ct:jellyfin media server"
 "lidarr:lidarr:ct:lidarr music collection manager"
 "notifiarr:notifiarr:ct:notifiarr client"
