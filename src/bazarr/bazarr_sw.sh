@@ -49,7 +49,7 @@ unzip bazarr.zip -d /opt/bazarr
 cd /opt/bazarr
 
 # Install the Python requirements:
-python3 -m pip install -r requirements.txt
+python3 -m pip install --no-warn-script-location -r requirements.txt
 
 # Chown user/group
 chown -R $app_uid:$app_guid /opt/bazarr

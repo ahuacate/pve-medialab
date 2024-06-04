@@ -217,7 +217,7 @@ section "Install ${REPO_PKG_NAME^} software"
 #---- Prerequisites
 
 # Pushing scripts to CT
-msg "Pushing repo scripts to NAS CT..."
+msg "Pushing repo scripts to CT..."
 pct push $CTID $REPO_TEMP/${GIT_REPO}.tar.gz /tmp/${GIT_REPO}.tar.gz
 pct exec $CTID -- tar -zxf /tmp/${GIT_REPO}.tar.gz -C /tmp
 

@@ -171,6 +171,7 @@ while IFS= read -r line; do
 done << EOF
 # Example
 backup:CT settings backup storage
+video:All video libraries (i.e movies, series, homevideos)
 EOF
 
 #---- Body -------------------------------------------------------------------------
@@ -217,7 +218,7 @@ section "Install ${REPO_PKG_NAME^} software"
 #---- Prerequisites
 
 # Pushing scripts to CT
-msg "Pushing repo scripts to NAS CT..."
+msg "Pushing repo scripts to CT..."
 pct push $CTID $REPO_TEMP/${GIT_REPO}.tar.gz /tmp/${GIT_REPO}.tar.gz
 pct exec $CTID -- tar -zxf /tmp/${GIT_REPO}.tar.gz -C /tmp
 
@@ -229,18 +230,17 @@ pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP
 pct_check_systemctl "bazarr.service"
 
 
-# #---- Copy preset settings file to CT and NAS
-# if [ $(find "$SRC_DIR/$REPO_PKG_NAME/config/" -name "${REPO_PKG_NAME}_backup_*.zip" -type f) ]
-# then
-#   pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME"
-#   pct exec $CTID -- bash -c "su -c 'mkdir -p /mnt/backup/$REPO_PKG_NAME' $APP_USERNAME"
-#   pct exec $CTID -- bash -c "su -c 'mkdir -p /var/lib/$REPO_PKG_NAME/Backups/manual' $APP_USERNAME"
-#   # Copy App backup ahuacate settings file to CT & NAS
-#   backup_file=$(find $SRC_DIR/$REPO_PKG_NAME/config/ -name "${REPO_PKG_NAME}_backup_*.zip" -type f -exec basename {} 2> /dev/null \;)
-#   pct push $CTID $SRC_DIR/$REPO_PKG_NAME/config/$backup_file /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file
-#   pct exec $CTID -- chown "$APP_USERNAME":"$APP_GRPNAME" /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file
-#   pct exec $CTID -- bash -c "su -c 'cp /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file /mnt/backup/$REPO_PKG_NAME/$backup_file' $APP_USERNAME 2> /dev/null"
-# fi
+#---- Copy preset settings file to CT and NAS
+if [ $(find "$SRC_DIR/$REPO_PKG_NAME/config/" -name "${REPO_PKG_NAME}_backup_*.zip" -type f) ]; then
+  pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME"
+  pct exec $CTID -- bash -c "su -c 'mkdir -p /mnt/backup/$REPO_PKG_NAME' $APP_USERNAME"
+  pct exec $CTID -- bash -c "su -c 'mkdir -p /var/lib/$REPO_PKG_NAME/Backups/manual' $APP_USERNAME"
+  # Copy App backup ahuacate settings file to CT & NAS
+  backup_file=$(find $SRC_DIR/$REPO_PKG_NAME/config/ -name "${REPO_PKG_NAME}_backup_*.zip" -type f -exec basename {} 2> /dev/null \;)
+  pct push $CTID $SRC_DIR/$REPO_PKG_NAME/config/$backup_file /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file
+  pct exec $CTID -- chown "$APP_USERNAME":"$APP_GRPNAME" /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file
+  pct exec $CTID -- bash -c "su -c 'cp /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file /mnt/backup/$REPO_PKG_NAME/$backup_file' $APP_USERNAME 2> /dev/null"
+fi
 
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status"
@@ -268,7 +268,7 @@ fi
 # Backup preset description
 display_msg3=( "--  General ${REPO_PKG_NAME^} configuration and settings" \
 "--  Includes Ahuacate customization" \
-"--  Presets for Radarr, Sonarr, Lidarr" \
+"--  Presets for Radarr, Sonarr" \
 "--  Sets backup destination: /mnt/backup/$REPO_PKG_NAME (preset to use NAS)" \
 "--  Doesn't include 3rd party account details (i.e subtitle source accounts)" )
 # Check CT domain
