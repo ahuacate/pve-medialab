@@ -291,9 +291,8 @@ The ${REPO_PKG_NAME^} setting preset file configures:
 
 $(printf '%s\n' "${display_msg3[@]}" | indent2)
 
-You MUST set your Servarr applications (i.e Radarr, Sonarr) with your Bazarr API key. Prowlarr also requires each Servarr client API key.
-
 $(if [ ! -z ${CT_PASSWORD+x} ]; then echo "The default ${REPO_PKG_NAME^} CT root password is: '$CT_PASSWORD'"; fi)
+
 More information here: https://github.com/ahuacate/medialab and https://trash-guides.info/Bazarr/"
 
 # Display Installation error report

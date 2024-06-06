@@ -31,11 +31,14 @@ apt-get update -y
 apt-get dist-upgrade -y
 
 # Add Bazarr prerequisite apps
-apt-get install 7zip python3-dev python3-pip python3-distutils unrar unzip -y
+apt-get install 7zip python3-dev python3-pip python3-distutils unrar unzip zip -y
 apt-get install libxml2-dev libxslt1-dev python3-dev python3-libxml2 python3-lxml unrar-free ffmpeg libatlas-base-dev -y
 
 # Install Python
 apt-get install python3.8 -y
+
+# Install mediainfo
+apt-get install mediainfo -y
 
 
 #---- Install Bazarr

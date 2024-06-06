@@ -90,7 +90,7 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
 - [11. Radarr LXC](#11-radarr-lxc)
     - [11.1. Setup Radarr](#111-setup-radarr)
 - [12. Bazarr LXC](#12-bazarr-lxc)
-    - [12.1. Setup Radarr](#121-setup-radarr)
+    - [12.1. Setup Bazarr](#121-setup-bazarr)
 - [13. Lidarr LXC](#13-lidarr-lxc)
     - [13.1. Setup Lidarr](#131-setup-lidarr)
 - [14. Readarr LXC](#14-readarr-lxc)
@@ -436,7 +436,7 @@ Also, check out [Trash Guides](https://trash-guides.info/) - guides for the Serv
 # 12. Bazarr LXC
 Bazarr is a companion application to Sonarr and Radarr that manages and downloads subtitles based on your requirements. 
 
-## 12.1. Setup Radarr
+## 12.1. Setup Bazarr
 In your web browser URL type `http://bazarr.local:6767` or `http://ct_ip_address:6767`. The Bazarr WebGUI will appear.
 
 An out-of-the-box setting preset file could be included. Go to the Bazarr WebGUI `System` > `Backup` and restore the backup filename ( use the restore icon to the right of the backup file ):
@@ -444,6 +444,24 @@ An out-of-the-box setting preset file could be included. Go to the Bazarr WebGUI
 *  *bazarr_backup_vX.X.X.0000_0000.00.00_00.00.00.zip*
 
 > The out-of-the-box setting preset file may or may not exist. If it doesn't exist then you must configure the application manually.
+
+To finish your configuration after restoring from our backup file complete the following.
+
+1. Navigate to `Settings` > `Providers`:
+-- Providers: Add all your subtitle source providers. I use OpenSubtitles.com which requires registration key, Gestdown and Supersubtitles. Or select from these [charts](https://wiki.bazarr.media/bazarr-stats/).
+-- Anti-Captcha Options:
+-- Anti-Captcha provider: `Anti-Captcha`
+-- Account Key: insert key
+
+2. Navigate to `Settings` > `Sonarr`:
+-- Use Sonarr: `enabled`
+-- Host: `sonarr` or host in Docker cases
+-- API Key: insert Sonarr API key
+
+3. Navigate to `Settings` > `Radarr`:
+-- Use Sonarr: `enabled`
+-- Host: `radarr` or host in Docker cases
+-- API Key: insert Radarr API key
 
 Also, check out [Trash Guides](https://trash-guides.info/) - guides for the Servarr range of apps.
 
@@ -458,6 +476,10 @@ In your web browser URL type `http://lidarr.local:8686` or `http://ct_ip_address
 An out-of-the-box setting preset file could be included. Go to the Lidarr WebGUI `System` > `Backup` and restore the backup filename ( use the restore icon to the right of the backup file ):
 
 *  *lidarr_backup_vX.X.X.0000_0000.00.00_00.00.00.zip*
+
+> The out-of-the-box setting preset file may or may not exist. If it doesn't exist then you must configure the application manually.
+
+Next, perform the following steps after restoring the backup file:
 
 > The out-of-the-box setting preset file may or may not exist. If it doesn't exist then you must configure the application manually.
 
