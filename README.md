@@ -448,7 +448,7 @@ An out-of-the-box setting preset file could be included. Go to the Bazarr WebGUI
 To finish your configuration after restoring from our backup file complete the following.
 
 1. Navigate to `Settings` > `Providers`:
--- Providers: Add all your subtitle source providers. I use OpenSubtitles.com which requires registration key, Gestdown and Supersubtitles. Or select from these [charts](https://wiki.bazarr.media/bazarr-stats/).
+-- Providers: Add all your subtitle source providers. I use OpenSubtitles.com which requires a registration key, Gestdown and Supersubtitles. Or select from these [charts](https://wiki.bazarr.media/bazarr-stats/).
 -- Anti-Captcha Options:
 -- Anti-Captcha provider: `Anti-Captcha`
 -- Account Key: insert key

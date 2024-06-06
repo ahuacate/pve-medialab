@@ -75,8 +75,7 @@ fi
 
 
 #---- Create App backup folder on NAS
-if [ -d "/mnt/backup" ]
-then
+if [ -d "/mnt/backup" ]; then
   su - $app_uid -c "mkdir -p /mnt/backup/$REPO_PKG_NAME"
 fi
 #-----------------------------------------------------------------------------------

@@ -234,13 +234,15 @@ pct_check_systemctl "bazarr.service"
 if [ $(find "$SRC_DIR/$REPO_PKG_NAME/config/" -name "${REPO_PKG_NAME}_backup_*.zip" -type f) ]; then
   pct exec $CTID -- bash -c "export REPO_PKG_NAME=$REPO_PKG_NAME APP_USERNAME=$APP_USERNAME APP_GRPNAME=$APP_GRPNAME"
   pct exec $CTID -- bash -c "su -c 'mkdir -p /mnt/backup/$REPO_PKG_NAME' $APP_USERNAME"
-  pct exec $CTID -- bash -c "su -c 'mkdir -p /var/lib/$REPO_PKG_NAME/Backups/manual' $APP_USERNAME"
   # Copy App backup ahuacate settings file to CT & NAS
   backup_file=$(find $SRC_DIR/$REPO_PKG_NAME/config/ -name "${REPO_PKG_NAME}_backup_*.zip" -type f -exec basename {} 2> /dev/null \;)
-  pct push $CTID $SRC_DIR/$REPO_PKG_NAME/config/$backup_file /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file
-  pct exec $CTID -- chown "$APP_USERNAME":"$APP_GRPNAME" /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file
-  pct exec $CTID -- bash -c "su -c 'cp /var/lib/$REPO_PKG_NAME/Backups/manual/$backup_file /mnt/backup/$REPO_PKG_NAME/$backup_file' $APP_USERNAME 2> /dev/null"
+  pct exec $CTID -- bash -c "su -c 'mkdir -p /opt/bazarr/data/backup' $APP_USERNAME 2> /dev/null"
+  pct exec $CTID -- chown -R "$APP_USERNAME":"$APP_GRPNAME" /opt/bazarr/data/backup
+  pct push $CTID "$SRC_DIR/$REPO_PKG_NAME/config/$backup_file" "/opt/bazarr/data/backup/$backup_file"
+  pct exec $CTID -- chown "$APP_USERNAME":"$APP_GRPNAME" /opt/bazarr/data/backup/$backup_file
+  pct exec $CTID -- bash -c "su -c 'cp /opt/bazarr/data/backup/$backup_file /mnt/backup/$REPO_PKG_NAME/$backup_file' $APP_USERNAME 2> /dev/null"
 fi
+
 
 #---- Finish Line ------------------------------------------------------------------
 section "Completion Status"
@@ -268,8 +270,8 @@ fi
 # Backup preset description
 display_msg3=( "--  General ${REPO_PKG_NAME^} configuration and settings" \
 "--  Includes Ahuacate customization" \
-"--  Presets for Radarr, Sonarr" \
 "--  Sets backup destination: /mnt/backup/$REPO_PKG_NAME (preset to use NAS)" \
+"--  Presets for Radarr, Sonarr need enabling" \
 "--  Doesn't include 3rd party account details (i.e subtitle source accounts)" )
 # Check CT domain
 if [ ! "$(hostname -d)" = 'local' ]
