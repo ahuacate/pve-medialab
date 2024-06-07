@@ -48,6 +48,9 @@ wget https://github.com/morpheus65535/bazarr/releases/latest/download/bazarr.zip
 
 # Create the Bazarr directory
 mkdir /opt/bazarr
+mkdir -p /opt/bazarr/data/backup $app_uid
+chown -R $app_uid:$app_guid /opt/bazarr/data/backup
+chmod 775 /opt/bazarr/data/backup
 unzip bazarr.zip -d /opt/bazarr
 cd /opt/bazarr
 

@@ -236,10 +236,9 @@ if [ $(find "$SRC_DIR/$REPO_PKG_NAME/config/" -name "${REPO_PKG_NAME}_backup_*.z
   pct exec $CTID -- bash -c "su -c 'mkdir -p /mnt/backup/$REPO_PKG_NAME' $APP_USERNAME"
   # Copy App backup ahuacate settings file to CT & NAS
   backup_file=$(find $SRC_DIR/$REPO_PKG_NAME/config/ -name "${REPO_PKG_NAME}_backup_*.zip" -type f -exec basename {} 2> /dev/null \;)
-  pct exec $CTID -- bash -c "su -c 'mkdir -p /opt/bazarr/data/backup' $APP_USERNAME 2> /dev/null"
-  pct exec $CTID -- chown -R "$APP_USERNAME":"$APP_GRPNAME" /opt/bazarr/data/backup
   pct push $CTID "$SRC_DIR/$REPO_PKG_NAME/config/$backup_file" "/opt/bazarr/data/backup/$backup_file"
   pct exec $CTID -- chown "$APP_USERNAME":"$APP_GRPNAME" /opt/bazarr/data/backup/$backup_file
+  pct exec $CTID -- chmod 664 /opt/bazarr/data/backup/$backup_file
   pct exec $CTID -- bash -c "su -c 'cp /opt/bazarr/data/backup/$backup_file /mnt/backup/$REPO_PKG_NAME/$backup_file' $APP_USERNAME 2> /dev/null"
 fi
 
