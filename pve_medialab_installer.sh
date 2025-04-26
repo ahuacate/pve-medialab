@@ -49,10 +49,7 @@ vm_LIST=( "deluge:deluge:ct:deluge torrent downloader"
 "sonarr:sonarr:ct:sonarr v3 series collection manager"
 "sonarr4:sonarr4:ct:sonarr v4 beta series collection manager (recommended)"
 "tdarr:tdarr:ct:transcoding app for automating media library transcode/remux management"
-"vidcoderr:vidcoderr:ct:video transcoder application"
-"whisparr:whisparr:ct:naughty movie collection manager"
-"kodirsync:kodirsync:ct:remote media library synchronizing tool"
-"geterr:geterr:ct:flexget rss downloader, filebot renamer tool (includes MVGroup recipe)" )
+"whisparr:whisparr:ct:naughty movie collection manager" )
 
 #-----------------------------------------------------------------------------------
 # NO NOT EDIT HERE DOWN

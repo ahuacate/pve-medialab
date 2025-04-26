@@ -95,62 +95,19 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/pve-medialab/m
     - [13.1. Setup Lidarr](#131-setup-lidarr)
 - [14. Readarr LXC](#14-readarr-lxc)
     - [14.1. Setup Readarr](#141-setup-readarr)
-- [15. Geterr LXC](#15-geterr-lxc)
-    - [15.1. Easy Script installer](#151-easy-script-installer)
-    - [15.2. Install Geterr](#152-install-geterr)
-    - [15.3. CLI Tasks](#153-cli-tasks)
-        - [15.3.1. Activate FileBot](#1531-activate-filebot)
-    - [15.4. FlexGet recipes](#154-flexget-recipes)
-    - [15.5. Documentary & News downloader - "recipe_00"](#155-documentary--news-downloader---recipe_00)
-        - [15.5.1. File Permissions](#1551-file-permissions)
-        - [15.5.2. Setup 'recipe_00'](#1552-setup-recipe_00)
-        - [15.5.3. Input credentials - variable_default.yml](#1553-input-credentials---variable_defaultyml)
-    - [15.6. Geterr FAQ](#156-geterr-faq)
-        - [15.6.1. How is Geterr FlexGet and FileBot run?](#1561-how-is-geterr-flexget-and-filebot-run)
-        - [15.6.2. How to check the status of FlexGet?](#1562-how-to-check-the-status-of-flexget)
-        - [15.6.3. Is the "recipe_00" package frequently updated?](#1563-is-the-recipe_00-package-frequently-updated)
-        - [15.6.4. Can I add my own csv list to improve FileBOt identification?](#1564-can-i-add-my-own-csv-list-to-improve-filebot-identification)
-        - [15.6.5. Can I customize "recipe_00"?](#1565-can-i-customize-recipe_00)
-        - [15.6.6. Can I copy "recipe_00" to another recipe name.](#1566-can-i-copy-recipe_00-to-another-recipe-name)
-        - [15.6.7. Does "recipe_00" auto prune documentary media?](#1567-does-recipe_00-auto-prune-documentary-media)
-- [16. Kodirsync LXC](#16-kodirsync-lxc)
-    - [16.1. Features](#161-features)
-    - [16.2. Kodirsync management](#162-kodirsync-management)
-    - [16.3. Android-Termux](#163-android-termux)
-    - [16.4. Kodirsync FAQ](#164-kodirsync-faq)
-        - [16.4.1. How do I create a new user?](#1641-how-do-i-create-a-new-user)
-        - [16.4.2. Can I change the frequency and time when Kodirsync runs?](#1642-can-i-change-the-frequency-and-time-when-kodirsync-runs)
-        - [16.4.3. Can I connect my USB storage disk to my Android phone?](#1643-can-i-connect-my-usb-storage-disk-to-my-android-phone)
-        - [16.4.4. Can I connect my USB storage disk to my Apple phone?](#1644-can-i-connect-my-usb-storage-disk-to-my-apple-phone)
-        - [16.4.5. What is parallel rsync synchronization?](#1645-what-is-parallel-rsync-synchronization)
-        - [16.4.6. What is parallel multipart rsync sychronisation?](#1646-what-is-parallel-multipart-rsync-sychronisation)
-        - [16.4.7. How do I change a user's media share access?](#1647-how-do-i-change-a-users-media-share-access)
-        - [16.4.8. Can I delete a user account?](#1648-can-i-delete-a-user-account)
-        - [16.4.9. How do I change Kodirsync remote connection access service type?](#1649-how-do-i-change-kodirsync-remote-connection-access-service-type)
-        - [16.4.10. Why are the dates and times of my downloaded files different from the originals?](#16410-why-are-the-dates-and-times-of-my-downloaded-files-different-from-the-originals)
-        - [16.4.11. Node sync. What is it?](#16411-node-sync-what-is-it)
-    - [16.5. Developer fix](#165-developer-fix)
-- [17. Tdarr LXC](#17-tdarr-lxc)
-    - [17.1. Setup Tdarr](#171-setup-tdarr)
-    - [17.2. Ahuacate Custom Plugins](#172-ahuacate-custom-plugins)
-    - [17.3. Ahuacate Node settings (CPU & iGPU)](#173-ahuacate-node-settings-cpu--igpu)
-        - [17.3.1. Node main settings](#1731-node-main-settings)
-        - [17.3.2. Node options](#1732-node-options)
-        - [17.3.3. Staging section](#1733-staging-section)
-        - [17.3.4. Ahuacate stream settings](#1734-ahuacate-stream-settings)
-            - [17.3.4.1. Source](#17341-source)
-            - [17.3.4.2. Transcode cache](#17342-transcode-cache)
-            - [17.3.4.3. Output folder](#17343-output-folder)
-            - [17.3.4.4. Filters](#17344-filters)
-            - [17.3.4.5. Transcode plugin options](#17345-transcode-plugin-options)
-- [18. Vidcoderr LXC (Depreciated)](#18-vidcoderr-lxc-depreciated)
-    - [18.1. Enabling IOMMU​](#181-enabling-iommu​)
-    - [18.2. Setup Vidcoderr](#182-setup-vidcoderr)
-    - [18.3. Vidcoderr FAQ](#183-vidcoderr-faq)
-        - [18.3.1. Uploading hangs the web uploader page.](#1831-uploading-hangs-the-web-uploader-page)
-        - [18.3.2. How do I check if Vidcoderr is encoding?](#1832-how-do-i-check-if-vidcoderr-is-encoding)
-        - [18.3.3. What's the best setting to get the smallest file size and quality balance?](#1833-whats-the-best-setting-to-get-the-smallest-file-size-and-quality-balance)
-        - [18.3.4. Can I change the time between processing for new content?](#1834-can-i-change-the-time-between-processing-for-new-content)
+- [15. Tdarr LXC](#15-tdarr-lxc)
+    - [15.1. Setup Tdarr](#151-setup-tdarr)
+    - [15.2. Ahuacate Custom Plugins](#152-ahuacate-custom-plugins)
+    - [15.3. Ahuacate Node settings (CPU & iGPU)](#153-ahuacate-node-settings-cpu--igpu)
+        - [15.3.1. Node main settings](#1531-node-main-settings)
+        - [15.3.2. Node options](#1532-node-options)
+        - [15.3.3. Staging section](#1533-staging-section)
+        - [15.3.4. Ahuacate stream settings](#1534-ahuacate-stream-settings)
+            - [15.3.4.1. Source](#15341-source)
+            - [15.3.4.2. Transcode cache](#15342-transcode-cache)
+            - [15.3.4.3. Output folder](#15343-output-folder)
+            - [15.3.4.4. Filters](#15344-filters)
+            - [15.3.4.5. Transcode plugin options](#15345-transcode-plugin-options)
 
 <!-- /TOC -->
 <hr>
@@ -499,389 +456,16 @@ An out-of-the-box setting preset file could be included. Go to the Readarr WebGU
 
 ---
 
-
-# 15. Geterr LXC
-Geterr is our FlexGet and FileBot package. Created for the downloading of RSS feeds and genres like Documentary or News using Trakt.
-
-Geterr is an addition to Radarr and Sonarr, not a replacement.
-
-FlexGet supports torrents, nzbs, podcasts, comics, TV, movies, RSS, HTML, CSV, and more. FileBot is an outstanding media renaming tool for media.
-
-You will require a [Filebot license](https://www.filebot.net/). For only $6.00 USD per year, it's a no-brainer.
-
-Included is our MVGroup documentary RSS recipe named `recipe_00`. It is enabled by default.
-
-## 15.1. Easy Script installer
-There is none for Geterr. FlexGet requires CLI knowledge.
-
-## 15.2. Install Geterr
-
-1. Open a PVE host SSH shell.
-2. Install our `Deluge LXC` (must be our Deluge build).
-3. Install `Geterr`.
-
-Use our Medialab Easy Script Installer for both tasks.
-
-## 15.3. CLI Tasks
-The user must have Linux CLI skills and knowledge about using nano or vi editors. For this tutorial we nano. 
-
-1. Open a PVE host SSH shell.
-2. Type the following:
--- `pct list` (Make a note of Geterr CTID)
--- `pct enter CTID`
--- `su - media` (Changes your shell to media user)
-3. Nano commands.
--- `nano /path/to/filename`
--- `ctrl o` to save
--- `ctrl x` to exit
-
-### 15.3.1. Activate FileBot
-
-Read about FileBot activation [here](https://www.filebot.net/forums/viewtopic.php?t=6121). Use the CLI method and paste your key into your Geterr shell window. Make sure you use notepad++ to copy your license key into memory if you're using MS Windows.
-1. Open a PVE host SSH shell.
-2. Type the following:
--- `pct list` (Make a note of Geterr CTID)
--- `pct enter CTID`
--- `su - media` (Changes your shell to media user)
--- `filebot --license`
-Follow the screen prompts. To paste use right mouse button to paste FileBot license key from memory.
-
-Check your activation with this command:
--- `su - media` (only if your are not user media)
--- `sh -c "filebot -script fn:sysinfo"`
-
-````
-### Results ....
-
-FileBot 5.0.1 (r9665)
-JNA Native: 6.1.4
-MediaInfo: 22.12
-Tools: NONE
-Extended Attributes: OK
-Unicode Filesystem: OK
-Script Bundle: 2023-03-28 (r895)
-Groovy: 4.0.9
-JRE: OpenJDK Runtime Environment 18.0.2-ea
-JVM: OpenJDK 64-Bit Server VM
-CPU/MEM: 1 Core / 4.0 GB Max Memory / 28 MB Used Memory
-OS: Linux (amd64)
-HW: Linux geterr 5.15.102-1-pve #1 SMP PVE 5.15.102-1 (2023-03-14T13:48Z) x86_64 x86_64 x86_64 GNU/Linux
-CPU/MEM: Intel(R) Core(TM) i3-3225 CPU @ 3.30GHz [MemTotal: 536 MB | MemFree: 186 MB | MemAvailable: 351 MB | SwapTotal: 536 MB | SwapFree: 536 MB]
-STORAGE: ext4 [/] @ 3.4 GB | nfs4 [/mnt/downloads] @ 168 GB | nfs4 [/mnt/public] @ 168 GB | nfs4 [/mnt/video] @ 168 GB
-UID/GID: uid=1605(media) gid=65605(medialab) groups=65605(medialab)
-DATA: /home/media/filebot/data/1605
-Package: TAR
-License: FileBot License PXXXXXX (Valid-Until: 2024-03-19)
-Done ヾ(＠⌒ー⌒＠)ノ
-````
-
-## 15.4. FlexGet recipes
-
-Geterr relies on a straightforward folder structure that contains FlexGet recipes. Each recipe is considered an individual FlexGet deployment.
-
-The default Documentary and News build is referred to as "recipe_00". If you want to set up "recipe_00", read on to learn how.
-
-To store the necessary FlexGet and FileBot scripts, as well as the config.yml file for FlexGet, create a recipe folder using our naming convention (i.e recipe_XX).
-
-You can activate a recipe by editing the `/home/media/.flexget/cookbook/cookbook.ini` file.
-
-```
-/home/media/.flexget
-└── cookbook
-    ├── recipe_00
-    ├── recipe_01
-    └── recipe_02
-```
-
-## 15.5. Documentary & News downloader - "recipe_00"
-
-Our Documentary and News downloader is called "recipe_00", and it is designed to download the latest torrent content from MVGroup and use your own Trakt lists.
-
-MVGroup offers a vast collection of documentaries, news, science, and history viewing. However, their torrent file naming conventions can be quite peculiar, which poses challenges when trying to identify the content with popular databases such as TMDB, TVDB, TV Maze or IMDB. To address this issue, our "recipe_00" package was created out of frustration. It employs preprocessing regex renaming and post-production by FileBot to attempt to rename the downloaded files, making them easier to identify and manage in Jellyfin, Emby or Plex.
-
-In addition, `recipe_00` uses Trakt lists. With your own Trakt lists, you can manage your favorite documentary, news, history or science-related series or movies.
-
-### 15.5.1. File Permissions
-Always perform all edits under user 'media' to avoid problems.
-
-```
-su - media
-```
-
-### 15.5.2. Setup 'recipe_00'
-
-`recipe_00` configuration file is: `~/.flexget/cookbook/recipe_00/variables_default.yml`.
-
-You must have the following credentials ready.
-
-<h5><b>Trakt credentials</b></h5>
-
-Log into your Trakt account and create two Trakt lists named (all lowercase, naming must be identical):
-
-* `documentary-series`
-* `documentary-movie`
-
-
-Make the above lists public in your Trakt account website settings.
-
-Use these two lists for documentary, news, science, history and alike genre content only. FlexGet will retrieve any series or movie added to these two lists daily. It's important to note your Trakt lists will be in addition to whatever is available at MVGroup, and no duplicates will occur.
-
-<h5><b>Trakt FlexGet authorization</b></h5>
-
-Follow these instructions to complete Trakt Authentication for your Geterr LXC: [here](https://flexget.com/Trakt_Authentication).
-
-
-
-1. In a Geterr shell type the following as user 'media'. Follow the onscreen terminal instructions.
-
-```
-# Su to user media
-su - media
-
-# CD to to your recipe dir
-cd ~/.flexget/cookbook/recipe_00
-
-# Run the Trakt cmd
-~/flexget/bin/flexget trakt auth <insert your trakt account name here>
-```
-
-2. Example of success
-
-```
-Please visit https://trakt.tv/activate and authorize Flexget.
-Your user code is 374634673. Your code expires in 10.0 minutes.
-Waiting............Successfully authorized Flexget app on Trakt.tv. Enjoy!
-```
-
-<h5><b>MVGroup credentials</b></h5>
-Create a valid MVGroup user account.
-Your MVGroup user account has a custom RSS url which is available here:
-
-```https://forums.mvgroup.org/rss.php?listfeeds=1```
-
-Your MVGroup username and password looks like this:
-```https://username:4d17d02aai8665cs8220a1e98e1e8d@forums.mvgroup.org/rss.php?torrentsonly=1```
-
-### 15.5.3. Input credentials - variable_default.yml
-All "recipe_00" settings for FlexGet and FileBot are contained in `~/.flexget/cookbook/recipe_00/variables_default.yml`.
-1. Open a PVE host SSH shell.
-2. Type the following:
--- `pct list` (Make a note of Geterr CTID)
--- `pct enter CTID`
--- `su - media` (Changes your shell to media user)
-3. Edit "recipe_00" configuration file.
-Type the following:
--- `nano ~/.flexget/cookbook/recipe_00/variables_default.yml`
-Edit Deluge settings if required
-Edit Trakt credentials:
--- trakt.account
--- trackt.username
-Edit MVGroup url:
--- mvgroup.url
-Save & exit:
--- `ctrl o`
--- `ctrl x`
-
-Restart your Geterr LXC.
-
-## 15.6. Geterr FAQ
-
-### 15.6.1. How is Geterr FlexGet and FileBot run?
-Geterr utilizes both systemd and bash scripts to operate. It relies on two systemd units:
-
-* flexget.timer
-* flexget.service
-
-The systemd unit "flexget.timer" is scheduled to run every 6 hours. On the other hand, the systemd unit "flexget.service" runs the `/home/media/.flexget/cookbook/cookbook.sh` script and uses the `/home/media/.flexget/cookbook/cookbook.ini` configuration file.
-
-### 15.6.2. How to check the status of FlexGet?
-To check the status of FlexGet, the simplest method is to use the systemd status report. You can achieve this by executing the command:
-
-```
-systemctl status flexget.service
-```
-
-### 15.6.3. Is the "recipe_00" package frequently updated?
-This package will automatically update once per week. The update does not overwrite your credentials.
-
-### 15.6.4. Can I add my own csv list to improve FileBOt identification?
-The "recipe_00" package comes with a user csv file located at `~/.flexget/cookbook/recipe_00/my_filter_lookup_list.txt` specifically for this task. You can input the name of a TV series or movie and its corresponding database ID number (tmdbid, tvdbid, imdbid, tvmazeid, or anidbid) into this file.
-
-The instructions for adding your entries can be found within the file itself. Please note that '~/.flexget/cookbook/recipe_00/filter_lookup_master_list.txt' should NOT be edited.
-
-### 15.6.5. Can I customize "recipe_00"?
-Certainly! However, if you wish to make modifications to "recipe_00," you must first disable our automatic update service located in the variables_default.yml file at ~/.flexget/cookbook/recipe_00/. If you do not disable this service, any customizations you make will be overwritten. Alternatively, you can duplicate the entire "recipe_00" to a new build recipe.
-
-### 15.6.6. Can I copy "recipe_00" to another recipe name.
-Yes. Follow these prompts.
-1. Open a PVE host SSH shell.
-2. Type the following:
--- `pct list` (Make a note of Geterr CTID)
--- `pct enter CTID`
--- `su - media` (Changes your shell to media user)
-3. Copy "recipe_00" to "recipe_01"
-Type the following:
--- `cp -rf ~/.flexget/cookbook/recipe_00 ~/.flexget/cookbook/recipe_01`
-4. Edit cookbook ini
--- `nano ~/.flexget/cookbook/cookbook.ini`
-Edit recipe_dir to be:
--- `recipe_dir="recipe_01"`
-Save & exit:
--- `ctrl o`
--- `ctrl x`
-
-Your Geterr is now configured to use recipe "recipe_01".
-
-### 15.6.7. Does "recipe_00" auto prune documentary media?
-Absolutely. "Recipe_00" is capable of automatically pruning documentary media. By default, the age limit for media files is pre-configured in the `variables_default.yml` file located at` ~/.flexget/cookbook/recipe_00/`.
-
-```
-
-# Prune is a action to delete video content after a set number of days.
-# Prune is applied to '.../video/documentary/{series,movies}' and
-# '/mnt/downloads/unsorted' only.
-# Example:
-#      'documentary_series_days: 14' will delete all content aged 14 days or more.
-# Set '0' to disable.
-prune:
-  # Documentary series (days)
-  age_documentary_series: 14
-  # Documentary movies (days)
-  age_documentary_movies: 21
-  # Unsorted media (days) (i.e /mnt/downloads/unsorted)
-  age_unsorted: 7
-```
-
----
-
-# 16. Kodirsync LXC
-Kodirsync is a media synchronization application for local and remote Kodi players and Linux devices. It uses the Linux Rsync utility to securely transfer media files to your CoreELEC, LibreELEC, Linux or Android device.
-
-Remote connectivity options over the internet include:
-
-1. SSLH Connection
-    * Internet access using HTTPS SSL 443
-    * A valid domain URL address forwarded to your HAProxy server
-    * HAProxy configured as per our pfSense HAProxy guide
-    * Kodirsync Certificate file: Acmi+SSLH+-+Kodirsync.crt (HAProxy Acmi SSLH)
-    * Kodirsync User key file: Acmi+SSLH+-+Kodirsync.key (HAProxy Acmi SSLH)
-
-2. SSH Port Forward (PF) Connection
-    * Dynamic DNS service provider
-    * Dynamic DNS client updater (ddclient PVE CT)
-    * WAN Gateway port forwarded to Kodirsync server"
-
-> If your CoreElec or LibreElec Kodi box is experiencing issues, you can use our Developer fix script to restore it to a healthy state. Go to section "Developer fix".
-
-## 16.1. Features
-1. USB Disk Portability: Easily connect your USB Kodirsync disk to CoreELEC, LibreELEC, Linux, and Android devices to perform media updates on LAN, WiFi or even cellular networks.
-2. Storage Disk Options: Choose between ext4 or exFAT formats for compatibility with Android devices (exfat only).
-3. Storage Options: Use internal SATA folders or portable USB disk storage for flexible storage management.
-4. Autodetect LAN Server: Kodirsync automatically detects LAN servers for fast media synchronization.
-5. Selective Media Synchronization: Users can choose specific media categories for synchronization, whether stored internally or on external drives.
-6. Daily Synchronization: Set up daily synchronization using a cron schedule (supported on CoreELEC, LibreELEC, and Linux devices).
-7. Auto-Prune Remote Media: Kodirsync intelligently removes the oldest remote media files to create space for new media.
-8. Data Limit Control: Define a data limit, and the remote device's disk will be filled up to that limit (in percentage or GB).
-9. HDR Content Download: Users can enable or disable the downloading of HDR content.
-10. Whitelist and Blacklist: Customize media series or movies by specifying full or partial names for whitelisting or blacklisting.
-11. Throttled Daylight Downloading: Schedule downloads to avoid internet congestion during peak daylight hours.
-12. Configuration File Customization: Users have the flexibility to customize the configuration file according to their preferences.
-13. Setup a storage node mirror: Mirror your primary Kodirsync media to another machine disk or folder over your LAN.
-14. Single or Parallel rsync threads: Remote connections use parallel mulipart rsync threads to maximise synchronization speed.
-
-
-## 16.2. Kodirsync management
-Medialab Easy Script Toolbox enables you to efficiently manage new user accounts and configure your Kodirsync server. It serves as a user-friendly front-end interface, providing easy access to various tasks and functionalities.
-
-When a new user account is created, an installer package is automatically generated and sent via email. This installer package contains all the necessary instructions and resources to facilitate the seamless setup of their remote device.
-
-## 16.3. Android-Termux
-If you configure your CoreELEC, LibreELEC or Linux device to use a USB storage disk then you can connect that same disk to a Android mobile to perform media updates.
-
-The USB storage disk filesystem must be exFAT.
-
-Follow the installation instructions in your installer email.
-
-## 16.4. Kodirsync FAQ
-Always read the [installer email](https://github.com/ahuacate/pve-medialab/blob/main/src/kodirsync/email_tml/kodirsync_instructions.pdf) which contains detailed installation instructions and more.
-
-### 16.4.1. How do I create a new user?
-Use Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Create a new user account` and follow the prompts to create a new user account. An installer package will be emailed to the new user and Proxmox administrator.
-
-### 16.4.2. Can I change the frequency and time when Kodirsync runs?
-Certainly! You have the ability to do so. Kodirsync employs the use of the cron system to arrange synchronization tasks. You can easily set up the desired cron schedule by adjusting the preset `cron_run_time='0 23 * * *'` in your 'kodirsync_clientapp_user.cfg' file. To activate this updated cron configuration, it is necessary to execute a Kodirsync software update.
-
-### 16.4.3. Can I connect my USB storage disk to my Android phone?
-Yes, you can connect your USB storage disk to your Android phone, but there are a few considerations to keep in mind. Firstly, you need to ensure that you have selected the disk portability option during the installation process. Additionally, Android requires the use of the exFAT filesystem for compatibility with external storage devices. To connect your USB storage disk, charger, and phone simultaneously, you will need a USB 'Y-cable'. It's worth noting that using a solid-state drive (SSD) disk may work without the need for charging, albeit with potential severe battery drain. However, rotational disks, are unlikely to function properly without an additional power source.
-
-### 16.4.4. Can I connect my USB storage disk to my Apple phone?
-No, connecting a USB storage disk directly to an Apple phone is not supported. However, there might be a possibility of making it work if you can run Linux bash/shell scripts on your Apple phone and possess the necessary knowledge to do so.
-
-### 16.4.5. What is parallel rsync synchronization?
-Parallel rsync empowers you to enhance the efficiency of file copying by harnessing the capabilities of multiple rsync threads. This method enables the simultaneous transfer of various files, leading to a notable boost in the overall copying speed. For optimal performance, we suggest setting a maximum limit of '10' for remote connections, '4' for LAN connections, and '5' for Termux Android environments. You can conveniently configure these presets in your `kodirsync_clientapp_user.cfg` file.
-
-### 16.4.6. What is parallel multipart rsync sychronisation?
-"Multipart" is a process that involves dividing large video source files into smaller, compressed zip files on the Kodirsync server. This functionality is exclusively available for remote connections and is initiated when the number of video files in the download queue falls below or is equal to twice the number of rsync threads.
-
-The primary objective of this feature is to optimize download speeds by enabling parallel rsync operations on individual files or sets of files simultaneously.
-
-### 16.4.7. How do I change a user's media share access?
-Use the Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Modify an existing user rsync shares` to modify a user's access. The Kodirsync client, such as your Kodi player, will automatically update when it is next scheduled to perform its synchronization. All unshared content will automatically be deleted from the client's storage on the next synchronization.
-
-### 16.4.8. Can I delete a user account?
-Use the Medialab Easy Script Toolbox on your server and select the `Kodirsync User Manager` option. Then select `Delete a user account` to delete the user account. The user will no longer have access.
-
-### 16.4.9. How do I change Kodirsync remote connection access service type?
-If you have an existing remote SSLH or Port Forward connection service first disable the existing remote access service. Use the Kodirsync Toolbox on your server and select `Disable SSLH access` or `Disable Port Forward access` option. Then select the remote connection service type you want to set up from the menu. Then delete all the users and create the users again. All clients will need to uninstall Kodirsync and run the new installer.
-
-### 16.4.10. Why are the dates and times of my downloaded files different from the originals?
-The discrepancy in file dates and times is due to the exFAT filesystem used on your disk, which is commonly employed for external USB disks to ensure portability across different devices. However, when using Rsync with exFAT file systems, certain issues arise, leading to inconsistencies in file dates. To address this problem, you can switch to the ext4 filesystem, which resolves the file date issues. It's important to note, though, that by transitioning to ext4, you may sacrifice the portability feature offered by exFAT.
-
-### 16.4.11. Node sync. What is it?
-Node Sync is designed to facilitate the synchronization of your local Kodirsync media library with another Linux machine (referred to as a "node") on your LAN network. This synchronization process is automatically initiated following each instance of Kodirsync.
-
-You can add as many nodes as required. Remember, a node must be on your LAN network.
-
-To set up the node machine, you will need to prepare a USB or internal storage disk, or alternatively, select a specific folder on your node. This can be achieved by executing our installer package on the node.
-
-1. Select the installer option - "Prepare Kodirsync disk or folder storage only (for node)"
-2. Record the node credentials - Take a note of the node hostname and IP address.
-3. Edit user configuration file - See section below "Manual editing of the user configuration file". Edit or add additional nodes as required.
-    * node2_localdomain_address_url='coreelec-03.local'
-    * node2_local_ip_address=''
-    * node2_ssh_port='22'
-    * node2_dst_max_storage_limit='0'
-    * node2_hdr_enable='0'<
-    * node2_ssh_private_key_path="$app_dir/kodirsync_node_rsa_key"
-4. Enable node sync - Edit user configuration file variable
-    * node_sync='1'
-
-To enable Node sync you must edit your user configuration file.
-
-For detailed guidance on the installation procedure, please refer to the instructions provided in the installer email you received.
-
-## 16.5. Developer fix
-If your CoreElec or LibreElec Kodi box is experiencing issues, you can use this script to restore it to a healthy state. This script will perform the following actions:
-
-1. Remove all old Kodirsync and script files.
-2. Update your Kodi Kodirsync settings to the latest version from the main GitHub repository.
-3. Retain your credentials and user keys.
-
-```
-bash -c "$(curl -sSL https://raw.githubusercontent.com/ahuacate/pve-medialab/main/src/kodirsync/clientapp/kodirsync_clientapp_dev_clean.sh)" || echo "Failed to download the script."
-```
----
-
-# 17. Tdarr LXC
+# 15. Tdarr LXC
 
 Tdarr is a versatile transcoding application designed for cross-platform use. It operates based on conditional rules, automating the management of media library transcodes and remuxes to meet specific requirements. With Tdarr, you can establish rules for codecs, containers, languages, and more, ensuring an organized media library that enhances compatibility with various devices. A popular application of Tdarr is the straightforward conversion of video files from h.264 to h.265 (HEVC), resulting in size savings of 40%-50%.
 
 The Tdarr website is [here](https://home.tdarr.io/).
 
-## 17.1. Setup Tdarr
+## 15.1. Setup Tdarr
 In your web browser URL type `http://tdarr.local:8265/#/` or `http://ct_ip_address:8265/#/`. The Tdarr WebGUI will appear.
 
-## 17.2. Ahuacate Custom Plugins
+## 15.2. Ahuacate Custom Plugins
 Included are our Ahuacate custom plugins to create a managed video stream library. The new plugins are available in your Tdarr local Classic Plugins tab. When used in sequence with other community plugins Ahuacate plugin options include:
 
 1. Tdarr_Plugin_ahuacate_filter_by_age_and_prune
@@ -902,17 +486,17 @@ Included are our Ahuacate custom plugins to create a managed video stream librar
 
 We recommend you always use the  Matroska Video file container, also known as MKV, because it encapsulates both audio and subtitles into one file. If you want quality video transcodes then disable iGPU to obtain x264/265 for far superior compression and outstanding video quality.
 
-## 17.3. Ahuacate Node settings (CPU & iGPU)
+## 15.3. Ahuacate Node settings (CPU & iGPU)
 The following settings are tested using an Intel N100 iGPU. For my requirements, I do not use the CPU for transcoding other than required processing tasks. This keeps the CPU overhead low for running other Proxmox LXCs and VMs.
 
 Ahuacate custom plugins require the following Tdarr settings.
 
-### 17.3.1. Node main settings
+### 15.3.1. Node main settings
 1. Navigate to `Tdarr` > `Transcode engine`:
 -- Transcode Engine: 0x CPU, 1x GPU
 -- Health Check Engine: 1x CPU, 0x GPU
 
-### 17.3.2. Node options
+### 15.3.2. Node options
 1. Navigate to `Tdarr` > `Nodes Section` > `Transcode engine` > `Options`:
 -- Specify the hardware encoding type: Any (nvenc,qsv,vaapi)
 -- GPU worker limit: 100
@@ -920,14 +504,14 @@ Ahuacate custom plugins require the following Tdarr settings.
 -- Always move failed transcodes to the Transcode Error tab: enable
 -- Low FFmpeg/HandBrake process priority: disable
 
-### 17.3.3. Staging section
+### 15.3.3. Staging section
 1. Navigate to `Tdarr` > `Staging Section`:
 -- Auto accept successful transcodes: enable
 
-### 17.3.4. Ahuacate stream settings
+### 15.3.4. Ahuacate stream settings
 Here's the Tdarr plugin library stack and settings utilized for streaming media. In this instance, I generate compact HEVC stream video files from my video series source folder.
 
-#### 17.3.4.1. Source
+#### 15.3.4.1. Source
 1. Navigate to `Tdarr` > `Libraries` > `Library+` or select library > `Source`.
 Key settings are:
 -- Scanner Settings: @eaDir,cache,recycle,#recycle,.Trash,lost+found,.DS_store,metadata,SYNOINDEX_MEDIA_INFO
@@ -943,12 +527,12 @@ It is crucial to incorporate the provided information. The retention period sett
 
 ![alt text](./images/Tdarr_01.png)
 
-#### 17.3.4.2. Transcode cache
+#### 15.3.4.2. Transcode cache
 1. Navigate to `Tdarr` > `Libraries` > `Select library` > `Transcode cache`.
 Key settings are:
 -- Transcode cache: /mnt/transcode/tdarr
 
-#### 17.3.4.3. Output folder
+#### 15.3.4.3. Output folder
 1. Navigate to `Tdarr` > `Libraries` > `Select library` > `Output folder`.
 Key settings are:
 -- Output Folder: enable
@@ -957,12 +541,12 @@ Key settings are:
 -- Record history: enable
 -- Output dir: /mnt/video/stream/documentary/series
 
-#### 17.3.4.4. Filters
+#### 15.3.4.4. Filters
 1. Navigate to `Tdarr` > `Libraries` > `Select library` > `Filters`.
 Key settings are:
 -- Filters at scan level: mkv,mp4,mov,m4v,mpg,mpeg,avi,flv,webm,wmv,vob,evo,iso,m2ts,ts
 
-#### 17.3.4.5. Transcode plugin options
+#### 15.3.4.5. Transcode plugin options
 1. Navigate to `Tdarr` > `Libraries` > `Select library` > `Transcode options`.
 Your Tdarr plugin stack overview should look like this:
 
@@ -978,86 +562,5 @@ Ahua-Transcode a video file' switch 'try_use_gpu'. For movies I disable this to 
 ![alt text](./images/Tdarr_03.png)
 
 When creating a manual source input such as `public/autoadd/tdarr/(in_movies or in_series)` we recommend you add the local plugin `Ahua-action remove empty, small dirs or folders` at the beginning of the plugin flow. This plugin cleans up any empty or erroneous folders left behind in your source and output folders.
-
----
-
-# 18. Vidcoderr LXC (Depreciated)
-
-Depreciated. Replaced with Tdarr.
-
-Vidcoderr is a tool designed to transcode video files, including home videos, movies, and TV series, into smaller HEVC or H264 video files, utilizing the encoding engine developed by [Don Melton](https://github.com/donmelton/other_video_transcoding).
-
-These smaller video files are ideal for streaming over the internet while keeping your main library of 4K, 4K HDR and large files intact.
-
-You can set a preferred video bitrate, codec and audio stream quality. Additionally, Vidcoderr can process subtitle files, making it easier to create complete video files.
-
-Vidcoderr outputs Matroska (MKV) container format, with the exception being MKV input files, which are outputted in the MP4 container format.
-
-**Manual Encodes**
-Vidcoderr supports the encoding of individual video files.
-
-For home video content always upload to the input folder `/public/autoadd/vidcoderr/in_homevideo`. The encoded HEVC 10-bit output file will be stored in the main home video library folder on your NAS. Home video encodes always use an optimum bitrate which overrides your presets, so there is no noticeable quality difference from the input original file.
-
-Alternatively, you can upload to the input folder `/public/autoadd/vidcoderr/in_unsorted`, and the encoded output file will be saved in `/public/autoadd/vidcoderr/out_unsorted`. Vidcoderr will use the same encoding presets you selected at configuration.
-
-To manually upload encodes, use the HTTP file upload frontend at `http://vidcoderr.local:8000/`. The processing occurs either every 6 hours (default setting) or sooner if InotifyWait works with your NAS shares.
-
-> It is recommended to always use the "copy" command when working with Vidcoderr, as this will ensure that your input file is not deleted automatically (with the exception of main library videos).
-
-**Auto Encodes** ( Optional )
-Automatic encoding feature is for users who want to enable a streaming capability to remote external clients beyond your local area network (LAN).
-
-By utilizing this feature, you can optimize your video files for seamless streaming. It is important to note that this feature is applicable only to newly added video files in your library. The newly encoded files will be saved in specific video stream folders, namely /video/stream/series, /video/stream/movies, /video/stream/pron, and /video/stream/documentary.
-
-The Vidcoderr platform comes equipped with a useful file pruning feature that applies to all video files located within the /video/stream folder. By default, the platform will prune (delete) any files that are older than 30 days. This helps to ensure that your video stream library stays organized and up-to-date, without accumulating unnecessary or outdated content.
-
-## 18.1. Enabling IOMMU​
-If you want to use hardware acceleration, which you will, you must edit your PVE hosts grub. Take the following steps in a CLI:
-```
-nano /etc/default/grub
-# Add intel_iommu=on to GRUB_CMDLINE_LINUX_DEFAULT="quiet"
-GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on"
-```
-Write Out the settings and Exit.
-```
-# Run the command update-grub to finalize changes
-update-grub
-```
-Reboot your PVE host. Now follow these instructions [here](https://pve.proxmox.com/wiki/PCI(e)_Passthrough).
-
-
-## 18.2. Setup Vidcoderr
-A Vidcoderr toolbox is available. Tasks include:
-* Run our Vidcoderr `Setup Assistant`
-* Update Vidcoderr (includes Vidcoderr software updates, host LXC updates and any patches)
-
-The User can modify, tweak or change any Vidcoderr settings within the configuration file: `/usr/local/bin/vidcoderr/vidcoderr.ini` ( Vidcoderr requires a restart after editing ).
-
-## 18.3. Vidcoderr FAQ
-### 18.3.1. Uploading hangs the web uploader page.
-If you are uploading a video file using the frontend interface at `http://vidcoderr.local:8000/`, your browser's loading icon will continue to spin until the upload task has been completed. The speed at which the upload is completed will depend on a number of factors, including your computer's network connection speed to the Vidcoderr LXC and the size of the video file being uploaded.
-
-### 18.3.2. How do I check if Vidcoderr is encoding?
-To check whether Vidcoderr is currently encoding a video file, the easiest method is to monitor the CPU usage in Proxmox. Start by selecting the Vidcoderr LXC, and then navigate to the summary tab. If the CPU usage meter displays a value of 0.00%, then Vidcoderr is currently idle and not processing any video files. However, if the CPU usage meter displays a value above 0.00%, then it's likely that Vidcoderr is currently in the process of encoding a video file.
-
-### 18.3.3. What's the best setting to get the smallest file size and quality balance?
-Use HEVC 10-bit.
-
-### 18.3.4. Can I change the time between processing for new content?
-Yes. Vidcoderr runs its scripts using a system.d timer. The default setting is 6 hourly. Use a Linux CLI editor like Nano to edit the value in '/etc/systemd/system/vidcoderr_watchdir_std.timer'. The steps in a Vidcoderr CLI are:
-
-```
-# Stop vidcoderr_watchdir_std.timer
-systemctl stop vidcoderr_watchdir_std.timer
-
-# Edit '/etc/systemd/system/vidcoderr_watchdir_std.timer'
-nano /etc/systemd/system/vidcoderr_watchdir_std.timer
-
-# Edit param 'OnUnitActiveSec'
-
-# Reload and start daemon
-systemctl daemon-reload
-systemctl restart vidcoderr_watchdir_std.timer
-```
 
 ---
