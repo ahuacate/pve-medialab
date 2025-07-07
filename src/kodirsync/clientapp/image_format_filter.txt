@@ -1,0 +1,14 @@
+# Add file extension only without a period (.)
+# Example <mpg>bmp
+jpeg
+jpg
+gif
+png
+tiff
+tif
+mng
+ico
+pcx
+tga
+webp
+bmp

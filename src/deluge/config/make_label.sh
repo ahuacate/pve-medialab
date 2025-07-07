@@ -41,10 +41,10 @@ done < <( printf '%s\n' "${dlclient_category_LIST[@]}" )
 # Edit manual labels
 tmp=$(mktemp)
 jq '.labels."manual-unsorted".move_completed = "true"' /tmp/label.conf > "$tmp" && mv "$tmp" /tmp/label.conf
-jq '.labels."manual-movie".move_completed = "true"' /tmp/label.conf > "$tmp" && mv "$tmp" /tmp/label.conf
+jq '.labels."manual-movies".move_completed = "true"' /tmp/label.conf > "$tmp" && mv "$tmp" /tmp/label.conf
 jq '.labels."manual-series".move_completed = "true"' /tmp/label.conf > "$tmp" && mv "$tmp" /tmp/label.conf
 jq '.labels."manual-documentary-series".move_completed = "true"' /tmp/label.conf > "$tmp" && mv "$tmp" /tmp/label.conf
-jq '.labels."manual-documentary-movie".move_completed = "true"' /tmp/label.conf > "$tmp" && mv "$tmp" /tmp/label.conf
+jq '.labels."manual-documentary-movies".move_completed = "true"' /tmp/label.conf > "$tmp" && mv "$tmp" /tmp/label.conf
 
 # Create label.conf file
 cat /tmp/label.conf | sed -e '1s/^/\{\n  "file": 1,\n  "format": 1\n\}/' > /home/$app_uid/.config/deluge/label.conf

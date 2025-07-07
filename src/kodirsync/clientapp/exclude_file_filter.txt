@@ -1,0 +1,16 @@
+# Block key file list (add any file keyword to exclude from rsync downloads)
+# Use escape \ with special characters (\#)
+@eaDir
+installer.run
+Thumbs.db
+.DS_Store
+\#recycle
+metadata
+.stfolder
+.stignore
+.partial~
+.foo_protect
+.kodirsync_storage
+@SynoEAStream
+SYNOINDEX_MEDIA_INFO
+\..*

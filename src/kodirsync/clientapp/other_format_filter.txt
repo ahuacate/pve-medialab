@@ -1,0 +1,5 @@
+# Other is for kodi, rsync or related files such as "nfo" or rsync ".PART" files
+# Add file extension only without a period (.)
+# Example <mpg>
+nfo
+PART

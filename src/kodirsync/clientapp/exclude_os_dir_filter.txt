@@ -1,0 +1,6 @@
+# Other safe Linux OS native dir/folders
+# (add any dir to exclude from dst removal)
+# Use escape \ with special characters (\#)
+lost+found
+images
+\#recycle

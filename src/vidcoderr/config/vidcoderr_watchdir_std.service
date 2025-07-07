@@ -1,0 +1,13 @@
+[Unit]
+Description=Medialab Vidcoderr Watchdir Service (called by systemd timer)
+Documentation=https://github.com/ahuacate/pve-medialab
+#Wants=vidcoderr_rsync_watchdir.timer
+
+[Service]
+User=media
+Group=medialab
+Type=oneshot
+ExecStart=/usr/local/bin/vidcoderr/vidcoderr_watchdir.sh
+
+[Install]
+WantedBy=multi-user.target

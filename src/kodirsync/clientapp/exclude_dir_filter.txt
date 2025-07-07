@@ -1,0 +1,13 @@
+# Block key dir/folder list (add any dir keyword to exclude from rsync downloads)
+# Use escape \ with special characters (\#)
+\..*
+cache
+\#recycle
+@eaDir
+\@eaDir
+lost+found
+ssh
+\.ssh
+images
+rsync_tmp
+tmp

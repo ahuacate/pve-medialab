@@ -1,0 +1,290 @@
+<html>
+  <head>
+    <title>Kodirsync Installation Package</title>
+    <style>
+      h1 {
+        font-family: 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 13px;
+      }
+      h2 {
+        font-family: 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 12px;
+      }
+      body {
+        font-family: 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 12px;
+      }
+      .codebox {
+        font-family: Courier, monospace, sans-serif;
+        font-size: 11px;
+        color: #333;
+        border: 1px solid #cccccc;
+        width: 100%; max-width: 500px;
+        line-height: 1.5em;
+        padding: 0.5em;
+        margin: 1.5em 0;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  
+<body>
+  <h1>Kodirsync Installation Package</h1>
+  <p>Welcome to your new Kodirsync account! It is now active and ready for you to start using.</p>
+  <p>To make things easier for you, your Kodirsync server administrator has already set up the connection settings. All connections will be established using a private SSH key, which is included in the installer package. If you have been authorized for remote access, you will establish a connection using either SSLH or Port Forward protocols, depending on the configuration of your Kodirsync server.
+    <ol>
+      <li>LAN Connection - Local connectivity
+        <p>For local connectivity, the LAN protocol is prioritized. This means that when your Kodirsync client is connected to the same LAN network as the Kodirsync server, this connection method will be used.</p>
+      </li>
+      <li>SSLH Connection - Remote connectivity
+        <p> For remote connectivity, the HTTPS SSL 443 protocol is available. It provides an additional layer of security for client connection authentication and ensures encrypted data transport. To establish an SSLH connection, your client will need to use SSL certificates and keys, in addition to the standard SSH key credentials included in the installer package.</p>
+      </li>
+      <li>Port Forward - Remote connectivity
+        <p>Another option for remote connectivity is through port forwarding. This is a basic method that allows remote access to the Kodirsync server. For this connection method, authentication is done using the SSH key only.</p>
+      </li>
+    </ol>
+  </p>
+  <p>For more detailed information about Kodirsync, you can visit our <a href="https://github.com/ahuacate" target="_blank">GitHub</a> page.</p>
+
+<hr style="color: grey">
+<br>
+
+<h1>Kodirsync Installation Instructions</h1>
+<p>Installing Kodirsync is an easy and straightforward process. We have provided you with an installer package that comes pre-configured with all the necessary access credentials. If you are using USB based storage for Kodirsync always have your client device connected with a blank USB storage device (disk) before running our installer. You also have option to select any folder on your client device.</p>
+<p>If you are new to SSH and use Windows OS we recommend <a href="https://www.putty.org/">Putty</a> SSH software.
+</p>
+<ol type="1">
+  <li><h2>Copy Installer to client device</h2> </li>
+  <p>Copy the email attachment file '<em>installer.run</em>' to the following folder location on your client device.</p>
+  <ol type="A">
+    <li>CoreELEC and LibreELEC client</li>
+      <div class="codebox">
+        ~/backup
+      </div>
+      <li>Termux-Android client</li>
+      <div class="codebox">
+        /downloads
+      </div>
+    <li>Other Linux hardware</li>
+      <div class="codebox">
+        /tmp
+      </div>
+  </ol>
+
+  <li><h2>Run the Kodirsync installer</h2></li>
+  <p>SSH into your client device or open a CLI terminal as root (i.e ssh root@coreelec.local and default pwd is 'coreelec'). Type the following command (or copy &amp; paste) including end brackets into your SSH terminal:</p>
+  <ol type="A">
+    <li>CoreELEC or LibreELEC</li>
+      <div class="codebox">
+        (mkdir -p /tmp/selftar ; cd /tmp/selftar ; ~/backup/installer.run)
+      </div>
+    <li>Termux-Android</li>
+      <p>You must have the Termux app installed on your Android device. We recommend the F-droid version available <a href="https://f-droid.org/en/packages/com.termux/" target="_blank">here</a>. You do not need to download the F-Droid app (via the Download F-Droid link) to install Termux. You can download the Termux APK directly from the site by clicking the Download APK link at the bottom of each version section.</p>
+      <p>Click on Termux APK in your Android Downloads folder and install Termux.</p>
+      <p>Next you can install Kodirsync scripts on your device. If you want to also prepare your blank USB disk then connect it now. But I recommend you first setup Kodirsync with your USB disk on a CoreELEC, LibreELEC or Linux device and always choose the exFAT filesystem during the Kodirsync install process for portability to Android devices.</p>
+      <p>If you must you can use Android to create a USB exFAT disk format but this method is NOT recommended. Android (unrooted devices) does not have the option to label your USB disk 'kodirsync' which may cause issues with SMB file sharing on other clients.</p>
+      <p>Android requires a exFAT filesystem, not ext4, unless your phone is rooted. Android has also imposed a USB storage limit of 2TB.</p>
+      <p>Execute each Termux-Android command line separately and in the order provided with or without a USB connected disk.</p>
+      <p>Type 'n' or 'no' if prompted in the terminal window udring the OS upgrade phase. </p>
+      <div class="codebox">
+        apt update -y && apt upgrade -y && yes | termux-setup-storage
+      </div>
+      <div class="codebox">
+        mkdir -p $PREFIX/tmp && cp $HOME/storage/downloads/installer.run $PREFIX/tmp/ && (mkdir -p $PREFIX/tmp/selftar ; cd $PREFIX/tmp/selftar ; bash $PREFIX/tmp/installer.run) 
+      </div>
+      <p>To run Kodirsync we use a Termux Android plugin app to run scripts in Termux with launcher shortcuts to Kodirsync. The app is called Termux-widget and is ready for installation on your Android device in > 'internal storage' > 'Download' folder (you must browse to this file using your Android file manager).</p>
+      <p>To install Termux-widget, follow these steps:</p>
+      <ol>
+        <li>Locate the Termux-widget install APK file in your device's downloads folder. Android has a native file browser app for this task.</li>
+        <li>Tap on the APK file to initiate the installation process.
+        Follow the on-screen instructions to complete the installation.</li>
+        <li>Once the installation is complete, find and add the Termux-widget to your Home screen.</li>
+        <li>In Termux-widget, you should see the 'Start Kodirsync.bash' and 'Stop Kodirsync.bash' and 'Update Widget.bash' command lines displayed.</li>
+        <li>Tap on the respective commands to start or stop Kodirsync operations. You must have your disk connected.</li>
+      </ol>
+      <p>For more detailed information and instructions, refer to the provided documentation or resources.</p>
+      
+      <p>By installing and using Termux-widget, you can conveniently access the 'Start' and 'Stop' functionalities for Kodirsync directly from the Termux-widget display on your Android device. Kodirsync on Termux-Android is manually started using the widget control.</p>
+    
+      <p>If you have any further questions or need additional assistance about Termux-widget, please go <a href="https://github.com/termux/termux-widget" target="_blank">here</a>.</p>
+
+    <li>Other Linux hardware</li>
+      <div class="codebox">
+        (mkdir -p /tmp/selftar ; cd /tmp/selftar ; /tmp/installer.run)
+      </div>
+  </ol>
+  <p>The above command will run our Kodirsync device installer. Follow the prompts.</p>
+  <li><h2>Configure Kodi Favorite Menu</h2> </li>
+  <p>Kodirsync can me manually run via the favorites menu in your Kodi player. You menu options are:</p>
+  <ol type="A">
+    <li>Kodirsync Start - manually start Kodirsync</li>
+    <li>Kodirsync Updater - update Kodirsync software</li>
+    <li>Kodirsync Status - check Kodirsync run status and download speed (checks inbound traffic on NIC)</li>
+  </ol>
+  <p>After installation of Kodirsync on your CoreELEC or LibreELEC player you need to enable Kodi favorite menu. In Kodi GUI complete the following steps:</p>
+    <ol type="1">
+    <li>Enable favourites menu - Settings > Interface > Skin > Configure skin > Main menu items > Favourites - enable</li>
+    <li>Reboot Kodi</li>
+    </ol>
+  <p>You now have Kodirsync options in the Kodi favorites menu.</p>
+</ol>
+<br>
+
+<h1>Manual run Kodirsync</h1>
+<ol type="A">
+  <li>CoreELEC, LibreELEC and Linux hardware</li>
+  <p>SSH into your client device as root. Type the following command (or copy &amp; paste) in your SSH terminal.</p>
+  <div class="codebox">
+    file_path=$(find / -not -path "/tmp/*" -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_run.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync not found on this device"
+  </div>
+
+  <li>Android-Termux</li>
+  <p>Kodirsync on Termux-Android is manually started using the Termux-widget control.</p>
+  <li>Kodi Player</li>
+  <p>Kodirsync menu options are available in the Kodi favourites menu.</p>
+</ol>
+<br>
+
+<h1>Uninstall & Remove Kodirsync</h1>
+<p>Copy the email attachment file '<em>installer.run</em>' to the following folder location on your client device.</p>
+<p>There is no need to uninstall on a Android-Termux device.</p>
+<ol type="A">
+  <li>CoreELEC and LibreELEC client</li>
+    <div class="codebox">
+      ~/backup
+    </div>
+  <li>Other Linux hardware</li>
+    <div class="codebox">
+      /tmp
+    </div>
+</ol>
+<p>SSH into your client device as root. Type the following command (or copy &amp; paste) in your SSH terminal and select the uninstall option when prompted.</p>
+<ol type="A">
+  <li>CoreELEC or LibreELEC</li>
+  <div class="codebox">
+    (mkdir -p /tmp/selftar ; cd /tmp/selftar ; ~/backup/installer.run)
+  </div>
+
+  <li>Other Linux hardware</li>
+  <div class="codebox">
+    (mkdir -p /tmp/selftar ; cd /tmp/selftar ; /tmp/installer.run)
+  </div>
+</ol>
+<br>
+
+<h1>Updating Kodirsync client SW</h1>
+<p>Kodirsync automatically updates its application scripts once a week to our latest GitHub version. Your settings are maintained.</p>
+<p>There is no Kodirsync updater for Android-Termux devices.</p>
+<p>If you want to perform a manual forced upgrade to the latest version you must run a CLI command. SSH into your Kodirsync client device as root. Type the following command (or copy &amp; paste) in your SSH terminal and press enter.</p>
+<ol type="A">
+  <li>CoreELEC, LibreELEC and Linux hardware</li>
+    <div class="codebox">
+      file_path=$(find / -not -path "/tmp/*" -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_gitupdater.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync updater not found on this device" 
+    </div>
+    <li>Kodi player</li>
+    <p>Kodirsync menu options are available in the Kodi favourites menu.</p>
+</ol>
+<p>Manually performing a update will kill all running Kodirsync processes. The processes will restart at the next scheduled synchronization of media.</p>
+<br>
+
+<h1>Setup Kodirsync node sync</h1>
+Run the Kodirsync installer as per instructions above on the machine node. You must have a USB disk connected or a storage folder available to select.
+
+<ol type="1">
+  <li>Select the installer option - "Prepare Kodirsync disk or folder storage only (for node)"</li>
+  <li>Record the node credentials - Take a note of the node hostname and IP address.</li>
+  <li>Edit user configuration file - See section below "Manual editing of the user configuration file". Edit or add only the node variables.</li>
+  <ol type="A">
+    <li>node2_localdomain_address_url='coreelec-03.local'</li>
+    <li>node2_local_ip_address=''</li>
+    <li>node2_ssh_port='22'</li>
+    <li>node2_dst_max_storage_limit='0'</li>
+    <li>node2_hdr_enable='0'</li>
+    <li>node2_ssh_private_key_path="$app_dir/kodirsync_node_rsa_key"</li>
+  </ol>
+  <li>Enable node sync - Set user configuration file variable 'node_sync='1' to enable.</li>
+</ol>
+
+<h1>Manual run Kodirsync node sync</h1>
+<p>Kodirsync node will automatically run after a daily Kodirsync.</p>
+<p>To manually start Kodirsync follow these instructions. SSH into your client device as root. Type the following command (or copy &amp; paste) in your SSH terminal.</p>
+<p>There is no Kodirsync node sync for Android-Termux devices.</p>
+<ol type="A">
+  <li>CoreELEC, LibreELEC and Linux hardware</li>
+  <div class="codebox">
+    file_path=$(find / -path "*/kodirsync_app/*" -type f -name "kodirsync_clientapp_node_run.sh" -print -quit 2>/dev/null) && [ -n "$file_path" ] && bash "$file_path" || echo "Kodirsync node sync not found on this device"
+  </div>
+  <li>Kodi player</li>
+  <p>Kodirsync menu options are available in the Kodi favourites menu.</p>
+</ol>
+<br>
+
+<h1>Changing media content sources</h1>
+<p>Changing a users content source types (i.e movies, series, photos) can only be done at the Kodirsync server. You must edit the user share profile to remove or add content.</p>
+<br>
+
+<h1>User Whitelist and Blacklist</h1>
+<p>You can whitelist or blacklist content of your choosing. Use nano or a text editor such as Notepad++ or TextPad to perform edits. Do not use the Windows default text editor. Follow the instructions contained in the "kodirsync_control_list" file.</p>
+<ol type="A">
+  <li>CoreELEC or LibreELEC</li>
+  <p>Kodirsync is accessible using SMB on your computer. Edit file: kodirsync_control_list.txt</p>
+  <div class="codebox">
+    \\coreelec-01.local\Kodirsync_Share\kodirsync_app
+  </div>
+  <p></p>
+  <li>Other Linux hardware</li>
+  <p>Locate the '.../Kodirsync_Share/kodirsync_app' folder. Edit file: kodirsync_control_list.txt.</p>
+</ol>
+<br>
+
+<h1>Manual editing of the User configuration file</h1>
+<p>We do not recommend Users make manual Kodirsync changes unless they know what they are doing.</p>
+<p>Users with basic Linux skills you can make configuration changes in the '<em>kodirsync_clientapp_user.cfg</em>' file. Do NOT edit any other file. Other changes must be performed server-side. Use nano or a text editor such as Notepad++ or TextPad to perform edits and strictly follow the format style.</p>
+<ol type="A">
+  <li>CoreELEC or LibreELEC</li>
+  <p>Kodirsync is accessible using SMB on your computer. Edit file: kodirsync_clientapp_user.cfg</p>
+  <div class="codebox">
+    \\coreelec-01.local\Kodirsync_Share\kodirsync_app
+  </div>
+  <p></p>
+  <li>Other Linux hardware</li>
+  <p>Locate the '.../Kodirsync_Share/kodirsync_app' folder. Edit file: kodirsync_clientapp_user.cfg.</p>
+</ol>
+<br>
+
+<h1>Android-Termux - How to Run Kodirsync</h1>
+
+<p>First, run our installer on your Android device as detailed in this email.</p>
+<p>On your Android device, you will find a Termux-widget in the app screens. You can move and resize this widget. Make sure your USB disk is connected to your Android phone. The widget should display three executable commands:</p>
+<ol type="1">
+  <li>Start Kodirsync.bash - Tap this option to start Kodirsync. The Termux terminal screen should appear, showing the script in progress.</li>
+  <li>Stop Kodirsync.bash - Tap this option to stop Kodirsync at any time. Partial downloads are preserved and will resume when Kodirsync runs again.</li>
+  <li>Update Widget.bash - Updates the Termux-Widget Kodirsync scripts.</li>
+</ol>
+<br>
+
+<h1>Kodi Player- How to play Kodirsync content</h1>
+
+<p>After installation of Kodirsync on your CoreELEC or LibreELEC player you need to make a new Kodi user profile.
+
+In Kodi complete the following steps:</p>
+<ol type="1">
+<li>Enable login screen - Settings > Profiles > General > Show login screen on startup - enable</li>
+<li>Create profile - Settings > Profiles > Profiles > Add profile > Profile - "Kodirsync" > Browse for folder - OK > Edit profile - OK > Add profile > Start fresh</li>
+<li>Reboot Kodi</li>
+<li>Login as "kodirsync"</li>
+<li>Set movie source - Settings > Media > Library > + Add videos > Add video source - Browse, Root filesystem, media, kodirsync, (Android/data/com.termux/files/kodirsync_storage/video/series) or (kodirsync_storage/video/series), OK, OK > Set content - Movies, OK</li>
+<li>Set TV series source - Settings > Media > Library > + Add videos > Add video source - Browse, Root filesystem, media, kodirsync, (Android/data/com.termux/files/kodirsync_storage/video/series) or (kodirsync_storage/video/series), OK, OK > Set content - TV shows, OK</li>
+</ol>
+
+<br>
+
+<h1>Q&A</h1>
+
+<p>For more detailed information about Kodirsync, you can visit our  <a href="https://github.com/ahuacate" target="_blank">GitHub</a> page.</p>
+<br>
+
+<hr style="color: grey">
+<p>Attached files: '<em>installer.run</em>'</p>
+</body>
+</html>

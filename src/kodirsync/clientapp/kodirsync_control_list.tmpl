@@ -1,0 +1,50 @@
+#---- BLACKLIST OR WHITELIST A FOLDER FROM KODIRSYNC -------------------------------
+# 
+# Kodirsync uses the media folder name to whitelist or blacklist media. 
+# To manage media folder whitelisting and blacklisting in Kodirsync, please follow
+# the format provided below. Each entry should consist of three fields separated
+# by ';' character only.
+#
+# Field 1:
+# Use 'B' or 'b' to blacklist a folder, preventing it from being encoded.
+# Use 'W' or 'w' to whitelist a folder, ensuring Kodirsync does not prune encoded
+# videos from the '-- video/stream' folder (lifespan forever).
+# 
+# Field 2:
+# Specify the location of the media using the following source category
+# paths exactly as shown:
+# 
+#     -- audio
+#     -- homevideo
+#     -- music
+#     -- photo
+#     -- video/documentary
+#     -- video/movies
+#     -- video/musicvideos
+#     -- video/pron
+#     -- video/series
+# 
+# Field 3:
+# Enter the media folder name in this field, not the media file name. To match
+# partial folder names, use the wildcard '*' at the end of the entry.
+# 
+# Example blacklisted folders:
+# 
+#     -- b;video/movies;What We Did*
+#     Blacklists all movie folders starting with "What We Did".
+#     -- b;video/movies;What We Did on Our Holiday (2014)
+#     Blacklists only the movie folder "What We Did on Our Holiday (2014)".
+# 
+# Example whitelisted folders:
+# 
+#     -- w;video/series;All Creatures Great*
+#     Whitelists all series folders starting with "All Creatures Great".
+#     -- w;video/movies;Toy Story (2019)
+#     Whitelists only the movie folder "Toy Story (2019)".
+# 
+#
+#-----------------------------------------------------------------------------------
+#
+# Example:
+# b;video/documentary;60 Minutes*
+# Input your entries here down (next line).
