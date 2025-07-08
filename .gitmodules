@@ -4,5 +4,5 @@
 	branch = main
 [submodule "SimpleHTTPServerWithUpload"]
 	path = SimpleHTTPServerWithUpload
-	url = //192.168.1.10/git/ahuacate/SimpleHTTPServerWithUpload
+	url = https://github.com/ahuacate/SimpleHTTPServerWithUpload
 	branch = main
